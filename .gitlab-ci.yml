@@ -1,0 +1,49 @@
+image: node:22
+
+variables:
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
+
+stages:
+  - test
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+  policy: pull-push
+
+# -----------------------------------------------------------
+# INSTALL + LINT + TEST + BUILD CHECK
+# -----------------------------------------------------------
+
+lint:
+  stage: test
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run lint
+  rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|edura)$/'
+
+unit_test:
+  stage: test
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run test -- --ci --runInBand
+  rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|edura)$/'
+
+build_check:
+  stage: test
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run build
+  rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|edura)$/'

@@ -1,8 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { setupSwagger } from './shared/infrastructure/documentation/swagger/swagger.setup';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+
+  app.setGlobalPrefix('api');
+
+  if (process.env.NODE_ENV !== 'production') {
+    setupSwagger(app);
+  }
+
+  await app.listen(process.env.PORT ?? 8080);
 }
-bootstrap();
+
+void bootstrap().catch((err) => {
+  console.error('Fatal error during bootstrap:', err);
+  process.exit(1);
+});
