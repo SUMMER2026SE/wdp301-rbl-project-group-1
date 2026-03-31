@@ -1,0 +1,2 @@
+// Decorators — NestJS custom decorators dùng chung ở presentation layer
+// Ví dụ: @CurrentUser(), @Roles(), @ApiPaginatedResponse()
