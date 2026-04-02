@@ -1,0 +1,62 @@
+image: node:22
+
+variables:
+  npm_config_cache: "$CI_PROJECT_DIR/.npm"
+  NEXT_TELEMETRY_DISABLED: "1"
+
+stages:
+  - test
+
+cache:
+  key:
+    files:
+      - package-lock.json
+  paths:
+    - .npm/
+    - .next/cache/
+  policy: pull-push
+
+# -----------------------------------------------------------
+# INSTALL + LINT
+# -----------------------------------------------------------
+lint:
+  stage: test
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run lint
+  rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|develop)$/'
+
+# -----------------------------------------------------------
+# UNIT TEST (Jest / Vitest)
+# -----------------------------------------------------------
+unit_test:
+  stage: test
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - |
+      if npm run | grep -q "test"; then
+        npm run test -- --ci --runInBand
+      else
+        echo "No test script, skipping..."
+      fi
+
+# -----------------------------------------------------------
+# BUILD CHECK (NEXT BUILD)
+# -----------------------------------------------------------
+build_check:
+  stage: test
+  before_script:
+    - npm ci --prefer-offline --no-audit
+  script:
+    - npm run build
+  artifacts:
+    paths:
+      - .next/
+    expire_in: 1 hour
+  rules:
+    - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|develop)$/'
