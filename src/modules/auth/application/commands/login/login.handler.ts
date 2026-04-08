@@ -31,7 +31,6 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
 
     const payload = {
       sub: user.id,
-      email: user.email,
       role: user.role,
     };
 

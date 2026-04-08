@@ -6,6 +6,7 @@ import { LoginCommand } from '../../application/commands/login/login.command';
 import { RegisterCommand } from '../../application/commands/register/register.command';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
+import { Public } from '../decorators/public.decorator';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -15,6 +16,7 @@ export class AuthController {
     private readonly queryBus: QueryBus,
   ) {}
 
+  @Public()
   @Post('register')
   @ApiOperation({ summary: 'Register a new user' })
   @ApiResponse({ status: 201, description: 'User successfully registered.' })
@@ -29,6 +31,7 @@ export class AuthController {
     return BaseResponse.ok(result);
   }
 
+  @Public()
   @Post('login')
   @ApiOperation({ summary: 'Login a user and return access token' })
   @ApiResponse({ status: 201, description: 'User successfully logged in.' })

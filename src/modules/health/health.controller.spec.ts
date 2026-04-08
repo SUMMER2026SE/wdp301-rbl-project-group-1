@@ -1,10 +1,10 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { HealthController } from './health.controller';
 import {
+  HealthCheckResult,
   HealthCheckService,
   MongooseHealthIndicator,
-  HealthIndicatorFunction,
 } from '@nestjs/terminus';
+import { Test, TestingModule } from '@nestjs/testing';
+import { HealthController } from './health.controller';
 import { PrismaHealthIndicator } from './prisma.health';
 
 jest.mock('./prisma.health', () => ({
@@ -14,33 +14,57 @@ jest.mock('./prisma.health', () => ({
 describe('HealthController', () => {
   let controller: HealthController;
 
-  const mockHealthCheckService = {
-    check: jest.fn(),
+  let healthCheckService: {
+    check: jest.MockedFunction<HealthCheckService['check']>;
   };
-
-  const mockMongooseIndicator = {
-    pingCheck: jest.fn(),
+  let mongooseIndicator: {
+    pingCheck: jest.MockedFunction<MongooseHealthIndicator['pingCheck']>;
   };
-
-  const mockPrismaIndicator = {
-    pingCheck: jest.fn(),
+  let prismaIndicator: {
+    pingCheck: jest.MockedFunction<PrismaHealthIndicator['pingCheck']>;
   };
 
   beforeEach(async () => {
+    const mongoosePingCheck = jest.fn() as jest.MockedFunction<
+      MongooseHealthIndicator['pingCheck']
+    >;
+    const prismaPingCheck = jest.fn() as jest.MockedFunction<
+      PrismaHealthIndicator['pingCheck']
+    >;
+    const healthCheck = jest.fn() as jest.MockedFunction<
+      HealthCheckService['check']
+    >;
+
+    mongooseIndicator = {
+      pingCheck: mongoosePingCheck,
+    };
+    mongooseIndicator.pingCheck.mockResolvedValue({
+      mongodb: { status: 'up' },
+    });
+
+    prismaIndicator = {
+      pingCheck: prismaPingCheck,
+    };
+    prismaIndicator.pingCheck.mockResolvedValue({ prisma: { status: 'up' } });
+
+    healthCheckService = {
+      check: healthCheck,
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HealthController],
       providers: [
         {
           provide: HealthCheckService,
-          useValue: mockHealthCheckService,
+          useValue: healthCheckService,
         },
         {
           provide: MongooseHealthIndicator,
-          useValue: mockMongooseIndicator,
+          useValue: mongooseIndicator,
         },
         {
           provide: PrismaHealthIndicator,
-          useValue: mockPrismaIndicator,
+          useValue: prismaIndicator,
         },
       ],
     }).compile();
@@ -52,38 +76,43 @@ describe('HealthController', () => {
     jest.clearAllMocks();
   });
 
-  it('should return health check result', async () => {
-    const mongooseResult = { mongodb: { status: 'up' } };
-    const prismaResult = { prisma: { status: 'up' } };
-
-    mockMongooseIndicator.pingCheck.mockResolvedValue(mongooseResult);
-    mockPrismaIndicator.pingCheck.mockResolvedValue(prismaResult);
-
-    mockHealthCheckService.check.mockImplementation(
-      async (indicators: HealthIndicatorFunction[]) => {
-        const results = await Promise.all(
-          indicators.map((fn) => Promise.resolve(fn())),
-        );
-        const info = results.reduce(
-          (acc, current) => ({ ...acc, ...current }),
-          {},
-        );
-        return {
-          status: 'ok',
-          info,
-        };
+  it('should return health check result with ok status', async () => {
+    const mockResult: HealthCheckResult = {
+      status: 'ok',
+      info: {
+        mongodb: { status: 'up' },
+        prisma: { status: 'up' },
       },
-    );
+      details: {},
+    };
+
+    healthCheckService.check.mockResolvedValue(mockResult);
+
+    const result = await controller.check();
+
+    expect(result).toEqual(mockResult);
+    expect(healthCheckService.check).toHaveBeenCalled();
+  });
+  it('should call health indicators through health check service', async () => {
+    const mockResult: HealthCheckResult = {
+      status: 'ok',
+      info: {
+        mongodb: { status: 'up' },
+        prisma: { status: 'up' },
+      },
+      details: {},
+    };
+
+    healthCheckService.check.mockImplementation(async (indicators) => {
+      await Promise.all(indicators.map((fn) => Promise.resolve(fn())));
+      return mockResult;
+    });
 
     const result = await controller.check();
 
     expect(result.status).toBe('ok');
-    expect(result.info).toEqual({
-      mongodb: { status: 'up' },
-      prisma: { status: 'up' },
-    });
-    expect(mockMongooseIndicator.pingCheck).toHaveBeenCalledWith('mongodb');
-    expect(mockPrismaIndicator.pingCheck).toHaveBeenCalledWith('prisma');
-    expect(mockHealthCheckService.check).toHaveBeenCalled();
+    expect(healthCheckService.check).toHaveBeenCalledWith(expect.any(Array));
+    expect(mongooseIndicator.pingCheck).toHaveBeenCalledWith('mongodb');
+    expect(prismaIndicator.pingCheck).toHaveBeenCalledWith('prisma');
   });
 });

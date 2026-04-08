@@ -5,6 +5,7 @@ import {
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
 import { PrismaHealthIndicator } from './prisma.health';
+import { Public } from 'src/modules/auth/presentation/decorators/public.decorator';
 
 @Controller('health')
 export class HealthController {
@@ -14,6 +15,7 @@ export class HealthController {
     private prismaDb: PrismaHealthIndicator,
   ) {}
 
+  @Public()
   @Get()
   @HealthCheck()
   check() {
