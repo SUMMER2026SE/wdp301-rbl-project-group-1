@@ -1,6 +1,9 @@
-import type { InputFieldDetail } from '@/src/shared/components/@types/input';
+import type { InputFieldDetail } from "@/src/shared/components/@types/input";
 
 export type TextBoxPresenterProps = InputFieldDetail & {
   value?: string | number | readonly string[];
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  icon?: string;
+  className?: string;
+  inputClassName?: string;
 };

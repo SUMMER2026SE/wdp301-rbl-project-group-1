@@ -1,30 +1,45 @@
-import React from 'react';
+import React from "react";
 
-import { Input } from '@/src/shared/components/ui/input';
-import { Label } from '@/src/shared/components/ui/label';
+import { Input } from "@/src/shared/components/ui/input";
+import { Label } from "@/src/shared/components/ui/label";
+import { cn } from "@/src/shared/lib/utils";
 
-import type { TextBoxPresenterProps } from './type';
+import type { TextBoxPresenterProps } from "./type";
 
 const TextBoxPresenter: React.FC<TextBoxPresenterProps> = ({
   label,
   name,
-  type = 'text',
+  type = "text",
   value,
   placeholder,
   onChange,
+  icon,
+  className,
+  inputClassName,
 }) => {
   return (
-    <div className="grid w-full max-w-sm items-center gap-3">
+    <div className={cn("grid w-full items-center gap-3", className)}>
       {label && <Label htmlFor={name}>{label}</Label>}
-      <Input
-        id={name}
-        name={name}
-        type={type}
-        value={value}
-        placeholder={placeholder}
-        onChange={onChange}
-        className="border border-border shadow-sm bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary"
-      />
+      <div className="relative">
+        {icon && (
+          <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xl text-muted-foreground">
+            {icon}
+          </span>
+        )}
+        <Input
+          id={name}
+          name={name}
+          type={type}
+          value={value}
+          placeholder={placeholder}
+          onChange={onChange}
+          className={cn(
+            "border border-border bg-card text-foreground shadow-sm focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none",
+            icon && "h-12",
+            inputClassName,
+          )}
+        />
+      </div>
     </div>
   );
 };
