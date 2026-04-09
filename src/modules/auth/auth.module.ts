@@ -3,9 +3,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { StringValue } from 'ms';
 
 import { LoginCommandHandler } from './application/commands/login/login.handler';
+import { LogoutCommandHandler } from './application/commands/logout/logout.handler';
+import { RefreshTokenCommandHandler } from './application/commands/refresh-token/refresh-token.handler';
 import { RegisterCommandHandler } from './application/commands/register/register.handler';
+import { IAuthRepository } from './domain/repositories/auth.repository.interface';
+import { PrismaAuthRepository } from './infrastructure/repositories/auth.repository.impl';
 import { AuthController } from './presentation/controllers/auth.controller';
 
 import { IHashService } from './application/services/hash.service';
@@ -16,7 +21,12 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
 
 import { UserModule } from '../user/user.module';
 
-const CommandHandlers = [RegisterCommandHandler, LoginCommandHandler];
+const CommandHandlers = [
+  RegisterCommandHandler,
+  LoginCommandHandler,
+  RefreshTokenCommandHandler,
+  LogoutCommandHandler,
+];
 
 @Module({
   imports: [
@@ -25,10 +35,17 @@ const CommandHandlers = [RegisterCommandHandler, LoginCommandHandler];
     UserModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('SECRET_KEY'),
-        signOptions: { expiresIn: '1d' },
-      }),
+      useFactory: (configService: ConfigService) => {
+        const accessTokenExpires =
+          configService.get<string>('auth.accessTokenExpires') ?? '2m';
+
+        return {
+          secret: configService.get<string>('auth.secretKey'),
+          signOptions: {
+            expiresIn: accessTokenExpires as StringValue,
+          },
+        };
+      },
       inject: [ConfigService],
     }),
   ],
@@ -43,6 +60,10 @@ const CommandHandlers = [RegisterCommandHandler, LoginCommandHandler];
     {
       provide: IJwtService,
       useClass: JwtServiceImpl,
+    },
+    {
+      provide: IAuthRepository,
+      useClass: PrismaAuthRepository,
     },
   ],
 })

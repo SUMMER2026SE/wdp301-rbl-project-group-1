@@ -102,6 +102,8 @@ model User {
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  refreshTokens RefreshToken[]
+
   tutor   Tutor?
   student Student?
   parent  Parent?
@@ -176,6 +178,23 @@ model ParentStudent {
 
   @@id([parentId, studentId])
   @@map("parent_student")
+}
+
+//////////////////////////////////////////////////
+// AUTH
+//////////////////////////////////////////////////
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revoked   Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_token")
 }
 
 //////////////////////////////////////////////////

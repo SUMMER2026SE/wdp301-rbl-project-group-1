@@ -1,15 +1,12 @@
 import {
+  CallHandler,
+  ExecutionContext,
   Injectable,
   NestInterceptor,
-  ExecutionContext,
-  CallHandler,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import {
-  BaseResponse,
-  PaginatedResponse,
-} from '../../application/common/base-response';
+import { BaseResponse, PaginatedResponse } from '../responses/base-response';
 
 type AnyResponse<T> = BaseResponse<T> | PaginatedResponse<T>;
 

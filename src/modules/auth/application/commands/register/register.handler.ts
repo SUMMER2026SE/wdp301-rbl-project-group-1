@@ -4,6 +4,7 @@ import { User } from '../../../../user/domain/entities/user.entity';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { IHashService } from '../../services/hash.service';
 import { RegisterCommand } from './register.command';
+import { RegisterResult } from './register.result';
 
 @CommandHandler(RegisterCommand)
 export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> {
@@ -12,7 +13,7 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
     private readonly hashService: IHashService,
   ) {}
 
-  async execute(command: RegisterCommand): Promise<string> {
+  async execute(command: RegisterCommand): Promise<RegisterResult> {
     const existingUser = await this.userRepository.findByEmail(command.email);
     if (existingUser) {
       throw new ConflictException('Email already in use');
@@ -34,6 +35,6 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
 
     const savedUser = await this.userRepository.save(userToSave);
 
-    return savedUser.id.toString();
+    return { userId: savedUser.id.toString() };
   }
 }

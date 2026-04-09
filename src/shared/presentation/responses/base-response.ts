@@ -1,4 +1,4 @@
-import { PaginatedResult } from './pagination';
+import { PaginatedResult } from '../../application/common/pagination';
 
 export class BaseResponse<T> {
   readonly success: boolean;

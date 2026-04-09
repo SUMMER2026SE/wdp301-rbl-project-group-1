@@ -1,3 +1,4 @@
+import fastifyCookie from '@fastify/cookie';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
@@ -11,6 +12,10 @@ async function bootstrap() {
     AppModule,
     new FastifyAdapter(),
   );
+
+  await app.register(fastifyCookie as any, {
+    secret: process.env.SECRET_KEY,
+  });
 
   app.setGlobalPrefix('api');
 

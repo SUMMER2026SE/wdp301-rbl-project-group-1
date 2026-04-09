@@ -25,6 +25,7 @@
     "^src/(.*)$": "<rootDir>/$1"
   },
   "dependencies": {
+    "@fastify/cookie": "^11.0.2",
     "@fastify/static": "^9.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",

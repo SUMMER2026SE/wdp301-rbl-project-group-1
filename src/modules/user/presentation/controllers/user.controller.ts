@@ -1,12 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import {
-  ApiOperation,
-  ApiTags,
-  ApiResponse,
   ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
 } from '@nestjs/swagger';
-import { BaseResponse } from '../../../../shared/application/common/base-response';
+import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
 import { User } from '../../domain/entities/user.entity';
 import { UserResponseDto } from '../dto/user-response.dto';

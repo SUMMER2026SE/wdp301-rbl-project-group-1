@@ -4,44 +4,56 @@ import { UnauthorizedException } from '../../../../../shared/domain/exceptions/d
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { IAuthRepository } from '../../../domain/repositories/auth.repository.interface';
-import { IHashService } from '../../services/hash.service';
 import { IJwtService, type JwtServicePort } from '../../services/jwt.service';
-import { LoginCommand } from './login.command';
-import { LoginResult } from './login.result';
+import { RefreshTokenCommand } from './refresh-token.command';
+import { RefreshTokenResult } from './refresh-token.result';
 
-@CommandHandler(LoginCommand)
-export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
+@CommandHandler(RefreshTokenCommand)
+export class RefreshTokenCommandHandler implements ICommandHandler<RefreshTokenCommand> {
   constructor(
     private readonly userRepository: IUserRepository,
     private readonly authRepository: IAuthRepository,
-    private readonly hashService: IHashService,
     private readonly jwtService: IJwtService,
   ) {}
 
-  async execute(command: LoginCommand): Promise<LoginResult> {
+  async execute(command: RefreshTokenCommand): Promise<RefreshTokenResult> {
     const jwtService = this.jwtService as JwtServicePort;
-    const user = await this.userRepository.findByEmail(command.email);
+    let payload: AuthTokenPayload;
 
-    if (!user || !user.password) {
-      throw new UnauthorizedException('Invalid credentials');
+    try {
+      payload = await jwtService.verifyRefresh<AuthTokenPayload>(
+        command.refreshToken,
+      );
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const isPasswordMatch = await this.hashService.compare(
-      command.password,
-      user.password,
-    );
-
-    if (!isPasswordMatch) {
-      throw new UnauthorizedException('Invalid credentials');
+    const storedRefreshToken =
+      await this.authRepository.findRefreshTokenByToken(command.refreshToken);
+    if (
+      !storedRefreshToken ||
+      storedRefreshToken.revoked ||
+      storedRefreshToken.isExpired() ||
+      storedRefreshToken.userId !== Number(payload.sub)
+    ) {
+      throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const payload: AuthTokenPayload = {
+    const user = await this.userRepository.findById(Number(payload.sub));
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    storedRefreshToken.revoke();
+    await this.authRepository.saveRefreshToken(storedRefreshToken);
+
+    const tokenPayload: AuthTokenPayload = {
       sub: String(user.id),
       role: user.role,
     };
 
-    const accessToken = await jwtService.sign(payload);
-    const refreshToken = await jwtService.signRefresh(payload);
+    const accessToken = await jwtService.sign(tokenPayload);
+    const refreshToken = await jwtService.signRefresh(tokenPayload);
 
     const refreshPayload = await jwtService.verifyRefresh<
       AuthTokenPayload & { exp?: number }
