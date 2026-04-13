@@ -1,12 +1,12 @@
 "use client";
 
-import { Bell } from "lucide-react";
 import { Button } from "@/src/shared/components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/src/shared/components/ui/popover";
+import { Bell } from "lucide-react";
 import { useState } from "react";
 
 interface Notification {
@@ -55,8 +55,6 @@ const notifications: Notification[] = [
 
 export function NotificationPopover() {
   const [isOpen, setIsOpen] = useState(false);
-
-  const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
