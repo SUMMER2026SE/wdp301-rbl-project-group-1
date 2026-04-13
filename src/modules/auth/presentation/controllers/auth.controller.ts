@@ -17,6 +17,10 @@ import {
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { LoginResult } from 'src/modules/auth/application/commands/login/login.result';
 import { RegisterResult } from 'src/modules/auth/application/commands/register/register.result';
+import {
+  ApiCreatedResponseWrapped,
+  ApiOkResponseWrappedNoData,
+} from 'src/shared/presentation/decorators/api-response.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { LoginCommand } from '../../application/commands/login/login.command';
 import { LogoutCommand } from '../../application/commands/logout/logout.command';
@@ -25,6 +29,7 @@ import { RefreshTokenResult } from '../../application/commands/refresh-token/ref
 import { RegisterCommand } from '../../application/commands/register/register.command';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { Public } from '../decorators/public.decorator';
+import { AuthTokenPairDto, RegisterResultDto } from '../dto/auth-response.dto';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 
@@ -39,8 +44,10 @@ export class AuthController {
 
   @Public()
   @Post('register')
-  @ApiOperation({ summary: 'Register a new user' })
-  @ApiResponse({ status: 201, description: 'User successfully registered.' })
+  @ApiOperation({ operationId: 'register', summary: 'Register a new user' })
+  @ApiCreatedResponseWrapped(RegisterResultDto, {
+    description: 'User successfully registered.',
+  })
   @ApiResponse({
     status: 400,
     description: 'Email already exists or invalid data.',
@@ -58,9 +65,12 @@ export class AuthController {
   @Public()
   @Post('login')
   @ApiOperation({
+    operationId: 'login',
     summary: 'Login and receive access token + refresh token cookie',
   })
-  @ApiResponse({ status: 201, description: 'User successfully logged in.' })
+  @ApiCreatedResponseWrapped(AuthTokenPairDto, {
+    description: 'User successfully logged in.',
+  })
   @ApiResponse({
     status: 401,
     description: 'Unauthorized / Invalid credentials.',
@@ -68,7 +78,7 @@ export class AuthController {
   async login(
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: FastifyReply,
-  ): Promise<BaseResponse<{ accessToken: string; refreshToken: string }>> {
+  ): Promise<BaseResponse<LoginResult>> {
     const result = await this.commandBus.execute<LoginCommand, LoginResult>(
       new LoginCommand(dto.email, dto.password),
     );
@@ -83,8 +93,13 @@ export class AuthController {
 
   @Public()
   @Post('refresh')
-  @ApiOperation({ summary: 'Refresh access token using refresh token cookie' })
-  @ApiResponse({ status: 201, description: 'New access token issued.' })
+  @ApiOperation({
+    operationId: 'refresh',
+    summary: 'Refresh access token using refresh token cookie',
+  })
+  @ApiCreatedResponseWrapped(AuthTokenPairDto, {
+    description: 'New access token issued.',
+  })
   @ApiResponse({
     status: 401,
     description: 'Invalid or expired refresh token.',
@@ -92,7 +107,7 @@ export class AuthController {
   async refresh(
     @Req() req: FastifyRequest,
     @Res({ passthrough: true }) res: FastifyReply,
-  ): Promise<BaseResponse<{ accessToken: string; refreshToken: string }>> {
+  ): Promise<BaseResponse<RefreshTokenResult>> {
     const refreshToken = (req.cookies as Record<string, string | undefined>)
       ?.refresh_token;
 
@@ -115,8 +130,13 @@ export class AuthController {
 
   @Post('logout')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Logout and clear refresh token cookie' })
-  @ApiResponse({ status: 200, description: 'User successfully logged out.' })
+  @ApiOperation({
+    operationId: 'logout',
+    summary: 'Logout and clear refresh token cookie',
+  })
+  @ApiOkResponseWrappedNoData({
+    description: 'User successfully logged out.',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async logout(
     @CurrentUser() user: { userId: string },

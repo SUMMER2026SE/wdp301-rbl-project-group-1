@@ -96,3 +96,184 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+```
+edura-api
+├─ .prettierrc
+├─ eslint.config.mjs
+├─ generated
+├─ GIT_NAMING_CONVENTION_RULES.md
+├─ nest-cli.json
+├─ package-lock.json
+├─ package.json
+├─ prisma
+│  ├─ migrations
+│  │  ├─ 20260327095030_init
+│  │  │  └─ migration.sql
+│  │  ├─ 20260330164725_create_base_database
+│  │  │  └─ migration.sql
+│  │  ├─ 20260410134022_add_refresh_token
+│  │  │  └─ migration.sql
+│  │  └─ migration_lock.toml
+│  └─ schema.prisma
+├─ prisma.config.ts
+├─ README.md
+├─ src
+│  ├─ app.module.ts
+│  ├─ main.ts
+│  ├─ modules
+│  │  ├─ auth
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ login
+│  │  │  │  │  │  ├─ login.command.ts
+│  │  │  │  │  │  ├─ login.handler.ts
+│  │  │  │  │  │  └─ login.result.ts
+│  │  │  │  │  ├─ logout
+│  │  │  │  │  │  ├─ logout.command.ts
+│  │  │  │  │  │  └─ logout.handler.ts
+│  │  │  │  │  ├─ refresh-token
+│  │  │  │  │  │  ├─ refresh-token.command.ts
+│  │  │  │  │  │  ├─ refresh-token.handler.ts
+│  │  │  │  │  │  └─ refresh-token.result.ts
+│  │  │  │  │  └─ register
+│  │  │  │  │     ├─ register.command.ts
+│  │  │  │  │     ├─ register.handler.ts
+│  │  │  │  │     └─ register.result.ts
+│  │  │  │  ├─ queries
+│  │  │  │  │  └─ get-login-history
+│  │  │  │  └─ services
+│  │  │  │     ├─ hash.service.ts
+│  │  │  │     └─ jwt.service.ts
+│  │  │  ├─ auth.module.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ refresh-token.entity.ts
+│  │  │  │  ├─ repositories
+│  │  │  │  │  └─ auth.repository.interface.ts
+│  │  │  │  └─ value-objects
+│  │  │  │     └─ auth-token-payload.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ repositories
+│  │  │  │  │  ├─ auth.repository.impl.ts
+│  │  │  │  │  └─ auth.repository.types.ts
+│  │  │  │  └─ services
+│  │  │  │     ├─ hash.service.ts
+│  │  │  │     └─ jwt.service.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  └─ auth.controller.ts
+│  │  │     ├─ decorators
+│  │  │     │  ├─ auth-metadata.constants.ts
+│  │  │     │  ├─ current-user.decorator.ts
+│  │  │     │  ├─ public.decorator.ts
+│  │  │     │  └─ role.decorator.ts
+│  │  │     ├─ dto
+│  │  │     │  ├─ auth-response.dto.ts
+│  │  │     │  ├─ login.dto.ts
+│  │  │     │  └─ register.dto.ts
+│  │  │     ├─ guards
+│  │  │     │  ├─ jwt-auth.guard.ts
+│  │  │     │  └─ roles.guard.ts
+│  │  │     └─ strategies
+│  │  │        └─ jwt.strategy.ts
+│  │  ├─ health
+│  │  │  ├─ health.controller.spec.ts
+│  │  │  ├─ health.controller.ts
+│  │  │  ├─ health.module.ts
+│  │  │  └─ prisma.health.ts
+│  │  └─ user
+│  │     ├─ application
+│  │     │  ├─ commands
+│  │     │  └─ queries
+│  │     │     └─ get-users
+│  │     │        ├─ get-users.handler.ts
+│  │     │        └─ get-users.query.ts
+│  │     ├─ domain
+│  │     │  ├─ entities
+│  │     │  │  ├─ parent.entity.ts
+│  │     │  │  ├─ student.entity.ts
+│  │     │  │  ├─ tutor.entity.ts
+│  │     │  │  └─ user.entity.ts
+│  │     │  ├─ events
+│  │     │  ├─ repositories
+│  │     │  │  └─ user.repository.interface.ts
+│  │     │  ├─ services
+│  │     │  └─ value-objects
+│  │     ├─ infrastructure
+│  │     │  ├─ mappers
+│  │     │  ├─ repositories
+│  │     │  │  └─ user.repository.impl.ts
+│  │     │  └─ user.infrastructure.module.ts
+│  │     ├─ presentation
+│  │     │  ├─ controllers
+│  │     │  │  └─ user.controller.ts
+│  │     │  └─ dto
+│  │     │     └─ user-response.dto.ts
+│  │     └─ user.module.ts
+│  ├─ shared
+│  │  ├─ application
+│  │  │  ├─ common
+│  │  │  │  └─ pagination.ts
+│  │  │  └─ interfaces
+│  │  │     ├─ mapper.interface.ts
+│  │  │     └─ use-case.interface.ts
+│  │  ├─ domain
+│  │  │  ├─ entities
+│  │  │  │  ├─ aggregate-root.ts
+│  │  │  │  ├─ auditable.entity.ts
+│  │  │  │  └─ base-entity.ts
+│  │  │  ├─ enums
+│  │  │  │  └─ enums.ts
+│  │  │  ├─ events
+│  │  │  │  └─ domain-event.ts
+│  │  │  ├─ exceptions
+│  │  │  │  └─ domain-exception.ts
+│  │  │  ├─ repositories
+│  │  │  │  └─ repository.interface.ts
+│  │  │  ├─ result.ts
+│  │  │  ├─ services
+│  │  │  │  └─ domain-service.interface.ts
+│  │  │  └─ value-objects
+│  │  │     └─ value-object.ts
+│  │  ├─ infrastructure
+│  │  │  ├─ config
+│  │  │  │  ├─ config.module.ts
+│  │  │  │  ├─ configuration.ts
+│  │  │  │  └─ env.validation.ts
+│  │  │  ├─ database
+│  │  │  │  ├─ database.module.ts
+│  │  │  │  ├─ mongo
+│  │  │  │  │  └─ mongoose.module.ts
+│  │  │  │  └─ prisma
+│  │  │  │     ├─ prisma.module.ts
+│  │  │  │     └─ prisma.service.ts
+│  │  │  ├─ documentation
+│  │  │  │  └─ swagger
+│  │  │  │     ├─ swagger.config.ts
+│  │  │  │     └─ swagger.setup.ts
+│  │  │  └─ logger
+│  │  │     ├─ exception.filter.ts
+│  │  │     ├─ logger.module.ts
+│  │  │     ├─ logger.service.ts
+│  │  │     └─ logging.interceptor.ts
+│  │  └─ presentation
+│  │     ├─ decorators
+│  │     │  └─ api-response.decorator.ts
+│  │     ├─ filters
+│  │     ├─ guards
+│  │     ├─ interceptors
+│  │     │  ├─ logging.interceptor.ts
+│  │     │  └─ response-transform.interceptor.ts
+│  │     └─ responses
+│  │        ├─ api-response.ts
+│  │        └─ base-response.ts
+│  └─ types
+│     └─ fastify.d.ts
+├─ test
+│  ├─ app.e2e-spec.ts
+│  └─ jest-e2e.json
+├─ tsconfig.build.json
+└─ tsconfig.json
+
+```

@@ -5,4 +5,7 @@ export const swaggerConfig = new DocumentBuilder()
   .setDescription('API documentation')
   .setVersion('1.0')
   .addBearerAuth()
+  .addTag('Auth', 'Authentication endpoints')
+  .addTag('Users', 'User management endpoints')
+  .addTag('Health', 'Health check endpoints')
   .build();

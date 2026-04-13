@@ -44,3 +44,14 @@ export class UserResponseDto {
     return dto;
   }
 }
+
+export class UsersListResponseDto {
+  @ApiProperty({ example: true })
+  success!: boolean;
+
+  @ApiProperty({ example: 'Success' })
+  message!: string;
+
+  @ApiProperty({ type: () => UserResponseDto, isArray: true, nullable: true })
+  data!: UserResponseDto[] | null;
+}
