@@ -29,7 +29,11 @@ import { RefreshTokenResult } from '../../application/commands/refresh-token/ref
 import { RegisterCommand } from '../../application/commands/register/register.command';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { Public } from '../decorators/public.decorator';
-import { AuthTokenPairDto, RegisterResultDto } from '../dto/auth-response.dto';
+import {
+  AuthTokenPairDto,
+  LoginResponseDto,
+  RegisterResultDto,
+} from '../dto/auth-response.dto';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
 
@@ -68,7 +72,7 @@ export class AuthController {
     operationId: 'login',
     summary: 'Login and receive access token + refresh token cookie',
   })
-  @ApiCreatedResponseWrapped(AuthTokenPairDto, {
+  @ApiCreatedResponseWrapped(LoginResponseDto, {
     description: 'User successfully logged in.',
   })
   @ApiResponse({
@@ -88,6 +92,7 @@ export class AuthController {
     return BaseResponse.ok({
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
+      user: result.user,
     });
   }
 

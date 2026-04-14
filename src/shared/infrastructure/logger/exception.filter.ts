@@ -25,7 +25,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       headers?: Record<string, string | string[] | undefined>;
     }>();
     const response = ctx.getResponse<{
-      status: (code: number) => { json: (body: unknown) => void };
+      status: (code: number) => { send: (body: unknown) => void };
     }>();
 
     const { method, url } = request;
@@ -59,7 +59,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
             path: url,
           };
 
-    response.status(statusCode).json(responseBody);
+    response.status(statusCode).send(responseBody);
   }
 
   private getHeader(

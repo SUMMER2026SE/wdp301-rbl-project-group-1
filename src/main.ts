@@ -13,8 +13,23 @@ async function bootstrap() {
     new FastifyAdapter(),
   );
 
-  await app.register(fastifyCookie as any, {
-    secret: process.env.SECRET_KEY,
+  const corsOrigins = process.env.CORS_ORIGINS?.split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean) ?? ['http://localhost:3000'];
+
+  app.enableCors({
+    origin: corsOrigins,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    maxAge: 86400,
+  });
+
+  const cookieSecret = process.env.SECRET_KEY ?? 'dev-cookie-secret';
+
+  // @ts-expect-error Type mismatch between NestFastify and @fastify/cookie plugin typings.
+  await app.register(fastifyCookie, {
+    secret: cookieSecret,
   });
 
   app.setGlobalPrefix('api');

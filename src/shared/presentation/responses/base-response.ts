@@ -1,11 +1,9 @@
-import { PaginatedResult } from '../../application/common/pagination';
-
 export class BaseResponse<T> {
   readonly success: boolean;
   readonly message: string;
-  readonly data: T | null;
+  readonly data: T;
 
-  private constructor(success: boolean, message: string, data: T | null) {
+  private constructor(success: boolean, message: string, data: T) {
     this.success = success;
     this.message = message;
     this.data = data;
@@ -26,23 +24,6 @@ export class BaseResponse<T> {
     return new BaseResponse(true, message, null);
   }
 
-  static paginated<T>(
-    result: PaginatedResult<T>,
-    message = 'Success',
-  ): PaginatedResponse<T> {
-    return {
-      success: true,
-      message,
-      data: result.data,
-      meta: {
-        total: result.total,
-        page: result.page,
-        limit: result.limit,
-        totalPages: result.totalPages,
-      },
-    };
-  }
-
   static error(
     message: string,
     errors?: Record<string, string>,
@@ -53,18 +34,6 @@ export class BaseResponse<T> {
       errors: errors ?? null,
     };
   }
-}
-
-export interface PaginatedResponse<T> {
-  success: boolean;
-  message: string;
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-  };
 }
 
 export interface ErrorResponse {

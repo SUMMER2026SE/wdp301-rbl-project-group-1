@@ -61,6 +61,18 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
 
     await this.authRepository.saveRefreshToken(refreshTokenToSave);
 
-    return { accessToken, refreshToken };
+    return {
+      accessToken,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+        nickname: user.nickname ?? null,
+        isActive: user.isActive,
+        isVerified: user.isVerified,
+        createdAt: user.createdAt,
+      },
+    };
   }
 }

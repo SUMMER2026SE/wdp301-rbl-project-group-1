@@ -63,6 +63,41 @@ function buildWrappedSchema(
   };
 }
 
+function buildQueryWrappedSchema(model?: Type<unknown>) {
+  const ref = model
+    ? { $ref: `#/components/schemas/${model.name}` }
+    : undefined;
+
+  return {
+    type: 'object',
+    properties: {
+      success: {
+        type: 'boolean',
+        example: true,
+      },
+      message: {
+        type: 'string',
+        example: 'Success',
+      },
+      data: {
+        type: 'array',
+        items: ref ?? { type: 'object', additionalProperties: true },
+      },
+      meta: {
+        type: 'object',
+        properties: {
+          total: { type: 'number', example: 0 },
+          page: { type: 'number', example: 1 },
+          limit: { type: 'number', example: 10 },
+          totalPages: { type: 'number', example: 1 },
+        },
+        required: ['total', 'page', 'limit', 'totalPages'],
+      },
+    },
+    required: ['success', 'message', 'data', 'meta'],
+  };
+}
+
 export const ApiOkResponseWrapped = <TModel extends Type<any>>(
   model: TModel,
   options?: WrappedResponseOptions,
@@ -92,5 +127,17 @@ export const ApiOkResponseWrappedNoData = (options?: WrappedResponseOptions) =>
     ApiOkResponse({
       description: options?.description,
       schema: buildWrappedSchema(undefined, options),
+    }),
+  );
+
+export const ApiOkResponseQueryWrapped = <TModel extends Type<any>>(
+  model: TModel,
+  options?: { description?: string },
+) =>
+  applyDecorators(
+    ApiExtraModels(model),
+    ApiOkResponse({
+      description: options?.description,
+      schema: buildQueryWrappedSchema(model),
     }),
   );
