@@ -15,5 +15,6 @@ export const store = configureStore({
 
 setupListeners(store.dispatch);
 
-export type RootState = ReturnType<typeof store.getState>;
+export type AppStore = ReturnType<typeof configureStore>;
+export type RootState = ReturnType<AppStore["getState"]>;
 export type AppDispatch = typeof store.dispatch;

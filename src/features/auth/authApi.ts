@@ -37,7 +37,7 @@ export type RegisterApiArg = {
 export type LoginApiResponse = /** status 201 User successfully logged in. */ {
   success: boolean;
   message: string;
-  data: AuthTokenPairDto;
+  data: LoginResponseDto;
 };
 export type LoginApiArg = {
   loginDto: LoginDto;
@@ -69,17 +69,33 @@ export type RegisterDto = {
   /** Optional nickname */
   nickname?: string;
 };
-export type AuthTokenPairDto = {
+export type LoginUserDto = {
+  id: number;
+  email: string;
+  role: "ADMIN" | "TUTOR" | "STUDENT" | "PARENT";
+  nickname: object | null;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+};
+export type LoginResponseDto = {
   /** JWT access token */
   accessToken: string;
   /** Refresh token used to rotate access token */
   refreshToken: string;
+  user: LoginUserDto;
 };
 export type LoginDto = {
   /** The email of the user */
   email: string;
   /** The password of the user */
   password: string;
+};
+export type AuthTokenPairDto = {
+  /** JWT access token */
+  accessToken: string;
+  /** Refresh token used to rotate access token */
+  refreshToken: string;
 };
 export const {
   useRegisterMutation,

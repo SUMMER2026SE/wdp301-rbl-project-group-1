@@ -13,13 +13,20 @@ const TextBoxPresenter: React.FC<TextBoxPresenterProps> = ({
   value,
   placeholder,
   onChange,
+  onBlur,
+  reference,
   icon,
   className,
   inputClassName,
+  error,
 }) => {
+  const errorId = error ? `${name}-error` : undefined;
+
   return (
     <div className={cn("grid w-full items-center gap-3", className)}>
-      {label && <Label htmlFor={name}>{label}</Label>}
+      {label && <Label htmlFor={name} className="font-bold">
+        {label}
+      </Label>}
       <div className="relative">
         {icon && (
           <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xl text-muted-foreground">
@@ -33,13 +40,24 @@ const TextBoxPresenter: React.FC<TextBoxPresenterProps> = ({
           value={value}
           placeholder={placeholder}
           onChange={onChange}
+          onBlur={onBlur}
+          ref={reference}
+          aria-invalid={Boolean(error)}
+          aria-describedby={errorId}
           className={cn(
             "border border-border bg-card text-foreground shadow-sm focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none",
+            error &&
+              "border-destructive focus:border-destructive focus:ring-destructive/20",
             icon && "h-12",
             inputClassName,
           )}
         />
       </div>
+      {error && (
+        <p id={errorId} className="text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 };

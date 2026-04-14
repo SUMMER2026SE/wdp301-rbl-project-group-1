@@ -12,6 +12,7 @@ export default function Login() {
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLFiK7hc5ufQixR_FIGulZ4zJ4F1SWffaRYieH6yt87xna3CPJSL1ZDdgs0kzYv-YNqMvsH1DKnxvOd9YrC7XDMkG6UgoysDqjsbL2eOveYAHUEZGk7uoMKdDhkpFFuAj3Lo1kyJC3j8F6mIdaJ-QJsArtaYZvhrP1C_OK9JlRLjAxo3I5u1PIlBi9139JwtQGK4oz3Ux0c-ntdfNnXLuxzhDuvewWAM5hO030BIIMPJZGYWQ14-IScVemrqvwTTMQoD-0KzsUXTw"
           alt="Students studying together"
           fill
+          sizes="(min-width: 1024px) 50vw, 100vw"
           className="object-cover opacity-90"
           priority
         />

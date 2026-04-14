@@ -1,19 +1,21 @@
-import React from 'react';
+import React from "react";
 import {
   Controller,
   type ControllerRenderProps,
   type RegisterOptions,
   useFormContext,
-} from 'react-hook-form';
+} from "react-hook-form";
 
-type ExcludeType = 'value';
+type ExcludeType = "value";
 
 export type ValidationRules = Exclude<
   RegisterOptions,
-  'valueAsNumber' | 'valueAsDate' | 'setValueAs'
+  "valueAsNumber" | "valueAsDate" | "setValueAs"
 >;
 
-export type FormController = Partial<Pick<ControllerRenderProps, 'onChange' | 'onBlur'>> & {
+export type FormController = Partial<
+  Pick<ControllerRenderProps, "onChange" | "onBlur">
+> & {
   name: string;
   value?: string | boolean | Date | FileList | null;
   defaultValue?: string | boolean | Date | FileList | null;
@@ -30,14 +32,18 @@ export type FormController = Partial<Pick<ControllerRenderProps, 'onChange' | 'o
 };
 
 export type ControllerChangeEvent =
-  | React.ChangeEvent<HTMLSelectElement | HTMLTextAreaElement | HTMLInputElement>
+  | React.ChangeEvent<
+      HTMLSelectElement | HTMLTextAreaElement | HTMLInputElement
+    >
   | Date
   | null
   | string;
 
 export const withFormController = <P extends object>(
-  Component: React.ComponentType<P & FormController>
-): React.NamedExoticComponent<Omit<P, 'onChange'> & Omit<FormController, ExcludeType>> => {
+  Component: React.ComponentType<P & FormController>,
+): React.NamedExoticComponent<
+  Omit<P, "onChange"> & Omit<FormController, ExcludeType>
+> => {
   const Wrapped = React.memo(
     ({
       name,
@@ -48,7 +54,7 @@ export const withFormController = <P extends object>(
       error,
       ariaLabel,
       ...rest
-    }: Omit<P, 'onChange'> & Omit<FormController, ExcludeType>) => {
+    }: Omit<P, "onChange"> & Omit<FormController, ExcludeType>) => {
       const { control } = useFormContext();
 
       const handleOnChange =
@@ -68,7 +74,10 @@ export const withFormController = <P extends object>(
           control={control}
           defaultValue={defaultValue}
           rules={validationRules}
-          render={({ field: { onChange, onBlur, value, ref } }): React.ReactElement => (
+          render={({
+            field: { onChange, onBlur, value, ref },
+            fieldState,
+          }): React.ReactElement => (
             <Component
               {...(rest as P & FormController)}
               name={name}
@@ -77,18 +86,18 @@ export const withFormController = <P extends object>(
               onChange={handleOnChange(onChange)}
               onBlur={onBlurProps || onBlur}
               reference={ref}
-              error={error}
+              error={error || fieldState.error?.message}
               ariaLabel={ariaLabel}
             />
           )}
         />
       );
-    }
+    },
   );
 
-  Wrapped.displayName = `${Component.displayName || Component.name || 'Component'})`;
+  Wrapped.displayName = `${Component.displayName || Component.name || "Component"})`;
 
   return Wrapped as React.NamedExoticComponent<
-    Omit<P, 'onChange'> & Omit<FormController, ExcludeType>
+    Omit<P, "onChange"> & Omit<FormController, ExcludeType>
   >;
 };

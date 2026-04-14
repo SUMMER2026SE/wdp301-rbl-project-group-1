@@ -10,9 +10,10 @@ const config = {
       filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
       exportName: "authApi",
     },
-    // "./src/features/user/userApi.ts": {
-    //   filterEndpoints: [/User/i],
-    // },
+    "./src/features/user/userApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
+      exportName: "userApi",
+    },
   },
 
   hooks: true,

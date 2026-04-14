@@ -58,6 +58,7 @@ export type InputFieldDetail =
   | TimingInput;
 
 export type InputFormContainerProps<TForm extends FieldValues> = {
+  resolver?: UseFormProps<TForm>['resolver'];
   defaultValues: UseFormProps<TForm>['defaultValues'];
   onSubmit: (data: TForm) => void;
   children: React.ReactNode;

@@ -8,9 +8,10 @@ import InputFormPresenter from './input-form-presenter';
 const InputFormContainer = <TypeValues extends FieldValues>(
   props: InputFormContainerProps<TypeValues>
 ) => {
-  const { defaultValues, onSubmit, ...rest } = props;
+  const { defaultValues, resolver, onSubmit, ...rest } = props;
 
   const methods = useForm<TypeValues>({
+    resolver,
     defaultValues,
   });
 

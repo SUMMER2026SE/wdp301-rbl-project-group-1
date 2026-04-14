@@ -1,59 +1,63 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 
+import { useLoginMutation } from "@/src/features/auth/authApi";
+import { setAuth } from "@/src/features/auth/authSlice";
 import {
   loginFormSchema,
   type LoginFormData,
 } from "@/src/features/auth/schemas/authSchemas";
+import { toast } from "sonner";
 import SubmitButton from "@/src/shared/components/atoms/submit-button/submit-button";
 import TextBox from "@/src/shared/components/atoms/text-box/text-box";
 import InputForm from "@/src/shared/components/organisms/input-form/input-form";
+import { useAppDispatch } from "@/src/shared/store/hooks";
 
 export default function LoginForm() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState("");
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleSubmit = async (data: LoginFormData) => {
     const validatedData = loginFormSchema.safeParse(data);
 
-    if (!validatedData.success) {
-      setError(
-        validatedData.error.issues[0]?.message ??
-          "Vui lòng nhập lại thông tin đăng nhập.",
-      );
-      return;
-    }
-
-    setError("");
-    setIsLoading(true);
+    if (!validatedData.success) return;
 
     try {
-      // Placeholder for real login API integration.
-      await new Promise((resolve) => {
-        setTimeout(resolve, 900);
-      });
+      const response = await login({
+        loginDto: validatedData.data,
+      }).unwrap();
+
+      dispatch(
+        setAuth({
+          user: {
+            id: response.data.user.id,
+            email: response.data.user.email,
+            role: response.data.user.role,
+          },
+          accessToken: response.data.accessToken,
+        }),
+      );
+
+      router.push("/student/home");
     } catch {
-      setError("Đăng nhập thất bại. Vui lòng thử lại.");
-    } finally {
-      setIsLoading(false);
+      toast.error(
+        "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại.",
+      );
     }
   };
 
   return (
     <InputForm<LoginFormData>
       id="login-form"
+      resolver={zodResolver(loginFormSchema)}
       defaultValues={{ email: "", password: "" }}
       onSubmit={handleSubmit}
     >
       <div className="space-y-5 mt-6">
-        {error && (
-          <div className="rounded-lg border border-destructive bg-background p-3 text-sm text-destructive">
-            {error}
-          </div>
-        )}
-
         <TextBox
           id="email"
           label="Email"
