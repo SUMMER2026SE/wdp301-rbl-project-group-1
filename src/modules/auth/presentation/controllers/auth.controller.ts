@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
   Req,
   Res,
@@ -19,6 +20,7 @@ import { LoginResult } from 'src/modules/auth/application/commands/login/login.r
 import { RegisterResult } from 'src/modules/auth/application/commands/register/register.result';
 import {
   ApiCreatedResponseWrapped,
+  ApiOkResponseWrapped,
   ApiOkResponseWrappedNoData,
 } from 'src/shared/presentation/decorators/api-response.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
@@ -27,10 +29,13 @@ import { LogoutCommand } from '../../application/commands/logout/logout.command'
 import { RefreshTokenCommand } from '../../application/commands/refresh-token/refresh-token.command';
 import { RefreshTokenResult } from '../../application/commands/refresh-token/refresh-token.result';
 import { RegisterCommand } from '../../application/commands/register/register.command';
+import { GetMeQuery } from '../../application/queries/get-me/get-me.query';
+import { GetMeResult } from '../../application/queries/get-me/get-me.result';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { Public } from '../decorators/public.decorator';
 import {
   AuthTokenPairDto,
+  UserDto,
   LoginResponseDto,
   RegisterResultDto,
 } from '../dto/auth-response.dto';
@@ -160,6 +165,32 @@ export class AuthController {
     });
 
     return BaseResponse.ok(null, 'User successfully logged out.');
+  }
+
+  @Get('me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getMe',
+    summary: 'Get current user basic information',
+  })
+  @ApiOkResponseWrapped(UserDto, {
+    description: 'Current user information returned successfully.',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  async getMe(
+    @CurrentUser() user: { userId: string },
+  ): Promise<BaseResponse<GetMeResult>> {
+    const userId = Number(user.userId);
+
+    if (!Number.isInteger(userId) || userId <= 0) {
+      throw new UnauthorizedException('Invalid user identifier');
+    }
+
+    const result = await this.queryBus.execute<GetMeQuery, GetMeResult>(
+      new GetMeQuery(userId),
+    );
+
+    return BaseResponse.ok(result);
   }
 
   private setRefreshTokenCookie(res: FastifyReply, refreshToken: string): void {

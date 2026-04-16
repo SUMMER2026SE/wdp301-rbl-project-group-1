@@ -9,6 +9,7 @@ import { LoginCommandHandler } from './application/commands/login/login.handler'
 import { LogoutCommandHandler } from './application/commands/logout/logout.handler';
 import { RefreshTokenCommandHandler } from './application/commands/refresh-token/refresh-token.handler';
 import { RegisterCommandHandler } from './application/commands/register/register.handler';
+import { GetMeQueryHandler } from './application/queries/get-me/get-me.handler';
 import { IAuthRepository } from './domain/repositories/auth.repository.interface';
 import { PrismaAuthRepository } from './infrastructure/repositories/auth.repository.impl';
 import { AuthController } from './presentation/controllers/auth.controller';
@@ -27,6 +28,8 @@ const CommandHandlers = [
   RefreshTokenCommandHandler,
   LogoutCommandHandler,
 ];
+
+const QueryHandlers = [GetMeQueryHandler];
 
 @Module({
   imports: [
@@ -52,6 +55,7 @@ const CommandHandlers = [
   controllers: [AuthController],
   providers: [
     ...CommandHandlers,
+    ...QueryHandlers,
     JwtStrategy,
     {
       provide: IHashService,

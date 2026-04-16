@@ -34,7 +34,7 @@ export class AuthTokenPairDto {
   refreshToken!: string;
 }
 
-export class LoginUserDto {
+export class UserDto {
   @ApiProperty({ example: 1 })
   id!: number;
 
@@ -44,8 +44,8 @@ export class LoginUserDto {
   @ApiProperty({ enum: UserRole, example: UserRole.STUDENT })
   role!: UserRole;
 
-  @ApiProperty({ example: 'JohnDoe', nullable: true })
-  nickname!: string | null;
+  @ApiProperty({ example: 'JohnDoe' })
+  nickname!: string;
 
   @ApiProperty({ example: true })
   isActive!: boolean;
@@ -70,6 +70,6 @@ export class LoginResponseDto {
   })
   refreshToken!: string;
 
-  @ApiProperty({ type: () => LoginUserDto })
-  user!: LoginUserDto;
+  @ApiProperty({ type: () => UserDto })
+  user!: UserDto;
 }

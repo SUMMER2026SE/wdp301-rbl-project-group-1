@@ -93,7 +93,7 @@ model User {
   email    String   @unique
   password String
   role     UserRole
-  nickname String?
+  nickname String
 
   isActive    Boolean @default(true) @map("is_active")
   isVerified  Boolean @default(false) @map("is_verified")

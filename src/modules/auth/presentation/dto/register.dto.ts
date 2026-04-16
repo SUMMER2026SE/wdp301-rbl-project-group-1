@@ -23,8 +23,7 @@ export class RegisterDto {
 
   @ApiProperty({
     example: 'johndoe',
-    description: 'Optional nickname',
-    required: false,
+    description: 'The nickname of the user',
   })
-  nickname?: string;
+  nickname!: string;
 }

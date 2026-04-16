@@ -68,7 +68,7 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
         id: user.id,
         email: user.email,
         role: user.role,
-        nickname: user.nickname ?? null,
+        nickname: user.nickname ?? '',
         isActive: user.isActive,
         isVerified: user.isVerified,
         createdAt: user.createdAt,

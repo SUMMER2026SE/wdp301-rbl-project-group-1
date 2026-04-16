@@ -4,7 +4,7 @@ export interface LoginUserResult {
   id: number;
   email: string;
   role: UserRole;
-  nickname: string | null;
+  nickname: string;
   isActive: boolean;
   isVerified: boolean;
   createdAt: Date;
