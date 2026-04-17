@@ -4,8 +4,9 @@ import {
   HealthCheckService,
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
-import { PrismaHealthIndicator } from './prisma.health';
 import { Public } from 'src/modules/auth/presentation/decorators/public.decorator';
+import { PrismaHealthIndicator } from './prisma.health';
+import { RedisHealthIndicator } from './redis.health';
 
 @Controller('health')
 export class HealthController {
@@ -13,6 +14,7 @@ export class HealthController {
     private health: HealthCheckService,
     private mongoose: MongooseHealthIndicator,
     private prismaDb: PrismaHealthIndicator,
+    private redisDb: RedisHealthIndicator,
   ) {}
 
   @Public()
@@ -22,6 +24,7 @@ export class HealthController {
     return this.health.check([
       async () => this.mongoose.pingCheck('mongodb'),
       async () => this.prismaDb.pingCheck('prisma'),
+      async () => this.redisDb.pingCheck('redis'),
     ]);
   }
 }

@@ -44,6 +44,7 @@
     "@types/pg": "^8.20.0",
     "bcrypt": "^6.0.0",
     "fastify": "^5.8.4",
+    "ioredis": "^5.10.1",
     "mongoose": "^9.2.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

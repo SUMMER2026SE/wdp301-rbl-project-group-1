@@ -6,9 +6,14 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { HealthController } from './health.controller';
 import { PrismaHealthIndicator } from './prisma.health';
+import { RedisHealthIndicator } from './redis.health';
 
 jest.mock('./prisma.health', () => ({
   PrismaHealthIndicator: class PrismaHealthIndicator {},
+}));
+
+jest.mock('./redis.health', () => ({
+  RedisHealthIndicator: class RedisHealthIndicator {},
 }));
 
 describe('HealthController', () => {
@@ -23,6 +28,9 @@ describe('HealthController', () => {
   let prismaIndicator: {
     pingCheck: jest.MockedFunction<PrismaHealthIndicator['pingCheck']>;
   };
+  let redisIndicator: {
+    pingCheck: jest.MockedFunction<RedisHealthIndicator['pingCheck']>;
+  };
 
   beforeEach(async () => {
     const mongoosePingCheck = jest.fn() as jest.MockedFunction<
@@ -30,6 +38,9 @@ describe('HealthController', () => {
     >;
     const prismaPingCheck = jest.fn() as jest.MockedFunction<
       PrismaHealthIndicator['pingCheck']
+    >;
+    const redisPingCheck = jest.fn() as jest.MockedFunction<
+      RedisHealthIndicator['pingCheck']
     >;
     const healthCheck = jest.fn() as jest.MockedFunction<
       HealthCheckService['check']
@@ -46,6 +57,11 @@ describe('HealthController', () => {
       pingCheck: prismaPingCheck,
     };
     prismaIndicator.pingCheck.mockResolvedValue({ prisma: { status: 'up' } });
+
+    redisIndicator = {
+      pingCheck: redisPingCheck,
+    };
+    redisIndicator.pingCheck.mockResolvedValue({ redis: { status: 'up' } });
 
     healthCheckService = {
       check: healthCheck,
@@ -66,6 +82,10 @@ describe('HealthController', () => {
           provide: PrismaHealthIndicator,
           useValue: prismaIndicator,
         },
+        {
+          provide: RedisHealthIndicator,
+          useValue: redisIndicator,
+        },
       ],
     }).compile();
 
@@ -82,6 +102,7 @@ describe('HealthController', () => {
       info: {
         mongodb: { status: 'up' },
         prisma: { status: 'up' },
+        redis: { status: 'up' },
       },
       details: {},
     };
@@ -99,6 +120,7 @@ describe('HealthController', () => {
       info: {
         mongodb: { status: 'up' },
         prisma: { status: 'up' },
+        redis: { status: 'up' },
       },
       details: {},
     };
@@ -114,5 +136,6 @@ describe('HealthController', () => {
     expect(healthCheckService.check).toHaveBeenCalledWith(expect.any(Array));
     expect(mongooseIndicator.pingCheck).toHaveBeenCalledWith('mongodb');
     expect(prismaIndicator.pingCheck).toHaveBeenCalledWith('prisma');
+    expect(redisIndicator.pingCheck).toHaveBeenCalledWith('redis');
   });
 });

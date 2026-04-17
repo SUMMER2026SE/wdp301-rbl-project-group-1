@@ -6,6 +6,9 @@ export default () => ({
   prisma: {
     url: process.env.PRISMA_URL,
   },
+  redis: {
+    url: process.env.REDIS_URL,
+  },
   auth: {
     secretKey: process.env.SECRET_KEY,
     refreshSecretKey: process.env.REFRESH_SECRET_KEY,

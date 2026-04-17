@@ -23,6 +23,7 @@ import {
   ApiOkResponseWrapped,
   ApiOkResponseWrappedNoData,
 } from 'src/shared/presentation/decorators/api-response.decorator';
+import { RateLimit } from 'src/shared/presentation/decorators/rate-limit.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { LoginCommand } from '../../application/commands/login/login.command';
 import { LogoutCommand } from '../../application/commands/logout/logout.command';
@@ -73,6 +74,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
+  @RateLimit(5, 60)
   @ApiOperation({
     operationId: 'login',
     summary: 'Login and receive access token + refresh token cookie',

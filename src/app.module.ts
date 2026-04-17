@@ -5,6 +5,7 @@ import { UserModule } from 'src/modules/user/user.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/presentation/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/presentation/guards/roles.guard';
+import { RateLimitGuard } from 'src/shared/presentation/guards/rate-limit.guard';
 import { AppConfigModule } from './shared/infrastructure/config/config.module';
 import { DatabaseModule } from './shared/infrastructure/database/database.module';
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
@@ -19,6 +20,10 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
     UserModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
+    },
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
