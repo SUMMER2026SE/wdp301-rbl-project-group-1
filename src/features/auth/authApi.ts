@@ -21,6 +21,9 @@ const injectedRtkApi = api.injectEndpoints({
     logout: build.mutation<LogoutApiResponse, LogoutApiArg>({
       query: () => ({ url: `/api/auth/logout`, method: "POST" }),
     }),
+    getMe: build.query<GetMeApiResponse, GetMeApiArg>({
+      query: () => ({ url: `/api/auth/me` }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -55,6 +58,13 @@ export type LogoutApiResponse =
     data?: ((null | null) | (object | null)) | null;
   };
 export type LogoutApiArg = void;
+export type GetMeApiResponse =
+  /** status 200 Current user information returned successfully. */ {
+    success: boolean;
+    message: string;
+    data: UserDto;
+  };
+export type GetMeApiArg = void;
 export type RegisterResultDto = {
   /** Created user id */
   userId: string;
@@ -66,14 +76,14 @@ export type RegisterDto = {
   password: string;
   /** The role of the user */
   role: "ADMIN" | "TUTOR" | "STUDENT" | "PARENT";
-  /** Optional nickname */
-  nickname?: string;
+  /** The nickname of the user */
+  nickname: string;
 };
-export type LoginUserDto = {
+export type UserDto = {
   id: number;
   email: string;
   role: "ADMIN" | "TUTOR" | "STUDENT" | "PARENT";
-  nickname: object | null;
+  nickname: string;
   isActive: boolean;
   isVerified: boolean;
   createdAt: string;
@@ -83,7 +93,7 @@ export type LoginResponseDto = {
   accessToken: string;
   /** Refresh token used to rotate access token */
   refreshToken: string;
-  user: LoginUserDto;
+  user: UserDto;
 };
 export type LoginDto = {
   /** The email of the user */
@@ -102,4 +112,5 @@ export const {
   useLoginMutation,
   useRefreshMutation,
   useLogoutMutation,
+  useGetMeQuery,
 } = injectedRtkApi;

@@ -1,6 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { useGetMeQuery } from "@/src/features/auth/authApi";
+import { clearAuth } from "@/src/features/auth/authSlice";
+import { useAppDispatch, useAppSelector } from "@/src/shared/store/hooks";
 
 import {
   Avatar,
@@ -14,6 +19,7 @@ import {
   PopoverTrigger,
 } from "@/src/shared/components/ui/popover";
 import { Separator } from "@/src/shared/components/ui/separator";
+import { getSummaryName } from "@/src/shared/utils/common";
 
 const menuItems = [
   {
@@ -82,6 +88,21 @@ const menuItems = [
 ];
 
 export function UserPopover() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { data: getMeResponse } = useGetMeQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const user = getMeResponse?.data;
+
+  const initials = getSummaryName(user?.nickname || "User");
+
+  const handleLogout = () => {
+    dispatch(clearAuth());
+    router.push("/login");
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -92,11 +113,8 @@ export function UserPopover() {
           aria-label="Mở menu người dùng"
         >
           <Avatar className="size-9">
-            <AvatarImage
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD8Sulrh2EkvNYXoDEU12zH3PGEI2k-Re-3XMxq_V7PQjk7oCQpBGyFf8pxKmMDsDQNFYe8J_XThu2aKkITb8JKr1gOAIxsGLINmwcBsYW8JQJC7Hetcrpg8yZhThwH0t0Z9tp8qoGmqkYNXrcaH9zhF9BKunDUE9CYX9opUtBnwUyE83g73thD33cyKwf6Bmo-XH_5ND0TUD1VXKiApgz7W4Dl5uQp37hPyhAy8s2KnsA4I9RejtihW931AykDvwvp9besb6YDLo"
-              alt="Nguyễn Minh Tuấn"
-            />
-            <AvatarFallback>NT</AvatarFallback>
+            <AvatarImage alt={user?.nickname || "User"} />
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
         </Button>
       </PopoverTrigger>
@@ -104,18 +122,15 @@ export function UserPopover() {
       <PopoverContent align="end" className="w-72 p-0">
         <div className="flex items-center gap-3 p-4">
           <Avatar className="size-10 shrink-0">
-            <AvatarImage
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD8Sulrh2EkvNYXoDEU12zH3PGEI2k-Re-3XMxq_V7PQjk7oCQpBGyFf8pxKmMDsDQNFYe8J_XThu2aKkITb8JKr1gOAIxsGLINmwcBsYW8JQJC7Hetcrpg8yZhThwH0t0Z9tp8qoGmqkYNXrcaH9zhF9BKunDUE9CYX9opUtBnwUyE83g73thD33cyKwf6Bmo-XH_5ND0TUD1VXKiApgz7W4Dl5uQp37hPyhAy8s2KnsA4I9RejtihW931AykDvwvp9besb6YDLo"
-              alt="Nguyễn Minh Tuấn"
-            />
-            <AvatarFallback>NT</AvatarFallback>
+            <AvatarImage alt={user?.nickname || "User"} />
+            <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">
-              Nguyễn Minh Tuấn
+              {user?.nickname || "User"}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              tuan.nguyen@email.com
+              {user?.email ?? "Chưa có email"}
             </p>
           </div>
         </div>
@@ -141,9 +156,7 @@ export function UserPopover() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 px-4 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => {
-              // Handle logout here
-            }}
+            onClick={handleLogout}
           >
             <svg
               className="size-5 shrink-0"

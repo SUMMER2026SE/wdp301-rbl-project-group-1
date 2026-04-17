@@ -4,17 +4,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useLoginMutation } from "@/src/features/auth/authApi";
+import { authApi, useLoginMutation } from "@/src/features/auth/authApi";
 import { setAuth } from "@/src/features/auth/authSlice";
 import {
   loginFormSchema,
   type LoginFormData,
 } from "@/src/features/auth/schemas/authSchemas";
-import { toast } from "sonner";
 import SubmitButton from "@/src/shared/components/atoms/submit-button/submit-button";
 import TextBox from "@/src/shared/components/atoms/text-box/text-box";
 import InputForm from "@/src/shared/components/organisms/input-form/input-form";
 import { useAppDispatch } from "@/src/shared/store/hooks";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const dispatch = useAppDispatch();
@@ -33,12 +33,15 @@ export default function LoginForm() {
 
       dispatch(
         setAuth({
-          user: {
-            id: response.data.user.id,
-            email: response.data.user.email,
-            role: response.data.user.role,
-          },
           accessToken: response.data.accessToken,
+        }),
+      );
+
+      dispatch(
+        authApi.util.upsertQueryData("getMe", undefined, {
+          success: true,
+          message: response.message,
+          data: response.data.user,
         }),
       );
 

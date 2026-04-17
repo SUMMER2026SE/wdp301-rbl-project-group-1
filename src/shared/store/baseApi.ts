@@ -1,4 +1,4 @@
-import { clearAuth } from "@/src/features/auth/authSlice";
+import { clearAuth, setAuth } from "@/src/features/auth/authSlice";
 import type {
   BaseQueryFn,
   FetchArgs,
@@ -12,6 +12,17 @@ const mutex = new Mutex();
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   credentials: "include",
+  prepareHeaders: (headers, { getState }) => {
+    const accessToken = (
+      getState() as { auth?: { accessToken?: string | null } }
+    ).auth?.accessToken;
+
+    if (accessToken) {
+      headers.set("authorization", `Bearer ${accessToken}`);
+    }
+
+    return headers;
+  },
 });
 
 const handleAuthFailure = (api: { dispatch: (action: unknown) => unknown }) => {
@@ -34,14 +45,17 @@ const baseQueryWithReauth: BaseQueryFn<
 
   let result = await baseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
+  const requestUrl = typeof args === "string" ? args : (args as FetchArgs).url;
+  const isRefreshCall = requestUrl?.includes("/api/auth/refresh") ?? false;
+
+  if (result.error?.status === 401 && !isRefreshCall) {
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
 
       try {
         const refreshResult = await baseQuery(
           {
-            url: "/auth/refresh",
+            url: "/api/auth/refresh",
             method: "POST",
           },
           api,
@@ -49,6 +63,16 @@ const baseQueryWithReauth: BaseQueryFn<
         );
 
         if (refreshResult.data) {
+          const refreshedAccessToken = (
+            refreshResult.data as { data?: { accessToken?: string } }
+          ).data?.accessToken;
+
+          if (refreshedAccessToken) {
+            api.dispatch(setAuth({ accessToken: refreshedAccessToken }));
+          }
+
+          api.dispatch(baseApi.util.invalidateTags(["User"]));
+
           result = await baseQuery(args, api, extraOptions);
         } else {
           handleAuthFailure(api);
@@ -68,5 +92,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["User"],
   endpoints: () => ({}),
 });

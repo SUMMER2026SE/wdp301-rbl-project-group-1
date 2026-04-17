@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -103,14 +104,14 @@ export default function NavigationBar({
                       </NavigationMenuTrigger>
                     ) : (
                       <NavigationMenuLink
+                        asChild
                         active={active}
                         className={cn(
                           "bg-transparent cursor-pointer rounded-md text-sm font-semibold flex items-center justify-center",
                           active ? activeStyle : triggerStyle(),
                         )}
-                        href={href}
                       >
-                        {trigger}
+                        <Link href={href || "#"}>{trigger}</Link>
                       </NavigationMenuLink>
                     )}
                     {content && content.length > 0 && (
@@ -123,9 +124,8 @@ export default function NavigationBar({
                               "hover:bg-foreground/48 text-2xl font-semibold text-center data-[active=true]:focus:bg-foreground/48 data-[active=true]:bg-foreground/48 focus:bg-foreground/48",
                               contentStyle(),
                             )}
-                            href={href}
                           >
-                            {element}
+                            <Link href={href}>{element}</Link>
                           </NavigationMenuLink>
                         ))}
                       </NavigationMenuContent>
