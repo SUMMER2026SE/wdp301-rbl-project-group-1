@@ -1,6 +1,6 @@
 export class UpdateProfileResult {
   constructor(
-    public readonly id: number,
+    public readonly id: string,
     public readonly message: string,
   ) {}
 }

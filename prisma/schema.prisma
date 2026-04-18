@@ -98,7 +98,7 @@ enum ReportStatus {
 //////////////////////////////////////////////////
 
 model User {
-  id       Int      @id @default(autoincrement())
+  id       String   @id @default(cuid())
   email    String   @unique
   password String
   role     UserRole
@@ -131,8 +131,8 @@ model User {
 }
 
 model Profile {
-  id     Int @id @default(autoincrement())
-  userId Int @unique @map("user_id")
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
 
   nickname    String
   avatarUrl   String?  @map("avatar_url")
@@ -147,7 +147,7 @@ model Profile {
 }
 
 model Tutor {
-  id   Int  @id @map("id")
+  id   String  @id @map("id")
   user User @relation(fields: [id], references: [id])
 
   bio            String?
@@ -166,7 +166,7 @@ model Tutor {
 }
 
 model Student {
-  id   Int  @id
+  id   String  @id
   user User @relation(fields: [id], references: [id])
 
   grade        String?
@@ -184,7 +184,7 @@ model Student {
 }
 
 model Parent {
-  id   Int  @id
+  id   String  @id
   user User @relation(fields: [id], references: [id])
 
   phone   String?
@@ -196,8 +196,8 @@ model Parent {
 }
 
 model ParentStudent {
-  parentId  Int @map("parent_id")
-  studentId Int @map("student_id")
+  parentId  String @map("parent_id")
+  studentId String @map("student_id")
 
   parent  Parent  @relation(fields: [parentId], references: [id])
   student Student @relation(fields: [studentId], references: [id])
@@ -211,8 +211,8 @@ model ParentStudent {
 //////////////////////////////////////////////////
 
 model RefreshToken {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
   token     String   @unique
   expiresAt DateTime @map("expires_at")
   createdAt DateTime @default(now()) @map("created_at")
@@ -228,8 +228,8 @@ model RefreshToken {
 //////////////////////////////////////////////////
 
 model Course {
-  id      Int @id @default(autoincrement())
-  tutorId Int @map("tutor_id")
+  id      String @id @default(cuid())
+  tutorId String @map("tutor_id")
 
   title       String
   description String?
@@ -252,8 +252,8 @@ model Course {
 }
 
 model Lesson {
-  id       Int @id @default(autoincrement())
-  courseId Int @map("course_id")
+  id       String @id @default(cuid())
+  courseId String @map("course_id")
 
   title      String
   content    String?
@@ -266,9 +266,9 @@ model Lesson {
 }
 
 model Enrollment {
-  id        Int @id @default(autoincrement())
-  studentId Int @map("student_id")
-  courseId  Int @map("course_id")
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  courseId  String @map("course_id")
 
   status     EnrollmentStatus
   enrolledAt DateTime         @default(now()) @map("enrolled_at")
@@ -281,9 +281,9 @@ model Enrollment {
 }
 
 model CourseReview {
-  id        Int @id @default(autoincrement())
-  courseId  Int @map("course_id")
-  studentId Int @map("student_id")
+  id        String @id @default(cuid())
+  courseId  String @map("course_id")
+  studentId String @map("student_id")
 
   rating    Int
   comment   String?
@@ -300,8 +300,8 @@ model CourseReview {
 //////////////////////////////////////////////////
 
 model Schedule {
-  id       Int @id @default(autoincrement())
-  courseId Int @map("course_id")
+  id       String @id @default(cuid())
+  courseId String @map("course_id")
 
   title      String
   startTime  DateTime @map("start_time")
@@ -318,8 +318,8 @@ model Schedule {
 }
 
 model ScheduleStudent {
-  scheduleId Int @map("schedule_id")
-  studentId  Int @map("student_id")
+  scheduleId String @map("schedule_id")
+  studentId  String @map("student_id")
 
   attendanceStatus AttendanceStatus @map("attendance_status")
 
@@ -335,8 +335,8 @@ model ScheduleStudent {
 //////////////////////////////////////////////////
 
 model Post {
-  id     Int @id @default(autoincrement())
-  userId Int @map("user_id")
+  id     String @id @default(cuid())
+  userId String @map("user_id")
 
   title     String
   content   String?
@@ -352,9 +352,9 @@ model Post {
 }
 
 model Comment {
-  id     Int @id @default(autoincrement())
-  postId Int @map("post_id")
-  userId Int @map("user_id")
+  id     String @id @default(cuid())
+  postId String @map("post_id")
+  userId String @map("user_id")
 
   content   String
   createdAt DateTime @default(now()) @map("created_at")
@@ -366,8 +366,8 @@ model Comment {
 }
 
 model PostLike {
-  userId Int @map("user_id")
-  postId Int @map("post_id")
+  userId String @map("user_id")
+  postId String @map("post_id")
 
   user User @relation(fields: [userId], references: [id])
   post Post @relation(fields: [postId], references: [id])
@@ -377,7 +377,7 @@ model PostLike {
 }
 
 model Category {
-  id   Int    @id @default(autoincrement())
+  id   String @id @default(cuid())
   name String
 
   posts PostCategory[]
@@ -386,8 +386,8 @@ model Category {
 }
 
 model PostCategory {
-  postId     Int @map("post_id")
-  categoryId Int @map("category_id")
+  postId     String @map("post_id")
+  categoryId String @map("category_id")
 
   post     Post     @relation(fields: [postId], references: [id])
   category Category @relation(fields: [categoryId], references: [id])
@@ -401,7 +401,7 @@ model PostCategory {
 //////////////////////////////////////////////////
 
 model Notification {
-  id        Int              @id @default(autoincrement())
+  id        String           @id @default(cuid())
   title     String
   content   String?
   type      NotificationType
@@ -413,8 +413,8 @@ model Notification {
 }
 
 model NotificationTarget {
-  notificationId Int @map("notification_id")
-  userId         Int @map("user_id")
+  notificationId String @map("notification_id")
+  userId         String @map("user_id")
 
   isRead Boolean @default(false) @map("is_read")
 
@@ -430,9 +430,9 @@ model NotificationTarget {
 //////////////////////////////////////////////////
 
 model Payment {
-  id        Int @id @default(autoincrement())
-  studentId Int @map("student_id")
-  courseId  Int @map("course_id")
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  courseId  String @map("course_id")
 
   amount        Float
   status        PaymentStatus
@@ -451,7 +451,7 @@ model Payment {
 //////////////////////////////////////////////////
 
 model Conversation {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(cuid())
   createdAt DateTime @default(now()) @map("created_at")
 
   participants ConversationParticipant[]
@@ -461,8 +461,8 @@ model Conversation {
 }
 
 model ConversationParticipant {
-  conversationId Int @map("conversation_id")
-  userId         Int @map("user_id")
+  conversationId String @map("conversation_id")
+  userId         String @map("user_id")
 
   conversation Conversation @relation(fields: [conversationId], references: [id])
   user         User         @relation(fields: [userId], references: [id])
@@ -472,9 +472,9 @@ model ConversationParticipant {
 }
 
 model Message {
-  id             Int @id @default(autoincrement())
-  conversationId Int @map("conversation_id")
-  senderId       Int @map("sender_id")
+  id             String @id @default(cuid())
+  conversationId String @map("conversation_id")
+  senderId       String @map("sender_id")
 
   content   String
   createdAt DateTime @default(now()) @map("created_at")
@@ -490,7 +490,7 @@ model Message {
 //////////////////////////////////////////////////
 
 model SystemStats {
-  id   Int      @id @default(autoincrement())
+  id   String   @id @default(cuid())
   date DateTime @unique
 
   totalUsers         Int   @map("total_users")
@@ -509,7 +509,7 @@ model SystemStats {
 }
 
 model TutorStats {
-  tutorId Int @id @map("tutor_id")
+  tutorId String @id @map("tutor_id")
 
   totalStudents Int   @map("total_students")
   totalCourses  Int   @map("total_courses")
@@ -522,7 +522,7 @@ model TutorStats {
 }
 
 model CourseStats {
-  courseId Int @id @map("course_id")
+  courseId String @id @map("course_id")
 
   totalStudents Int   @map("total_students")
   totalRevenue  Float @map("total_revenue")
@@ -534,8 +534,8 @@ model CourseStats {
 }
 
 model ActivityLog {
-  id     Int @id @default(autoincrement())
-  userId Int @map("user_id")
+  id     String @id @default(cuid())
+  userId String @map("user_id")
 
   action     String
   entityType String @map("entity_type")
@@ -549,8 +549,8 @@ model ActivityLog {
 }
 
 model Report {
-  id         Int @id @default(autoincrement())
-  reporterId Int @map("reporter_id")
+  id         String @id @default(cuid())
+  reporterId String @map("reporter_id")
 
   targetType String       @map("target_type")
   targetId   Int          @map("target_id")

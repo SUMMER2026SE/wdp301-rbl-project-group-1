@@ -1,6 +1,6 @@
 export type PrismaRefreshTokenRecord = {
-  id: number;
-  userId: number;
+  id: string;
+  userId: string;
   token: string;
   expiresAt: Date;
   createdAt: Date;
@@ -8,7 +8,7 @@ export type PrismaRefreshTokenRecord = {
 };
 
 export type RefreshTokenWriteData = {
-  userId: number;
+  userId: string;
   token: string;
   expiresAt: Date;
   createdAt: Date;
@@ -23,7 +23,7 @@ export type RefreshTokenDelegate = {
     data: RefreshTokenWriteData;
   }): Promise<PrismaRefreshTokenRecord>;
   update(args: {
-    where: { id: number };
+    where: { id: string };
     data: RefreshTokenWriteData;
   }): Promise<PrismaRefreshTokenRecord>;
 };

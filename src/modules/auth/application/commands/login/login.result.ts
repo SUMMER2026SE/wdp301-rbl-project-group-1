@@ -1,7 +1,7 @@
 import { UserRole } from 'src/shared/domain/enums/enums';
 
 export interface LoginUserResult {
-  id: number;
+  id: string;
   email: string;
   role: UserRole;
   nickname: string;

@@ -37,11 +37,11 @@ import { Public } from '../decorators/public.decorator';
 import {
   AuthTokenPairDto,
   LoginResponseDto,
+  MeUserDto,
   RegisterResultDto,
-  UserDto,
-} from '../dto/auth-response.dto';
-import { LoginDto } from '../dto/login.dto';
-import { RegisterDto } from '../dto/register.dto';
+} from '../schemas/auth-response.dto';
+import { LoginDto } from '../schemas/login.dto';
+import { RegisterDto } from '../schemas/register.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -75,7 +75,7 @@ export class AuthController {
         dto.role,
         dto.nickname,
         dto.phone,
-        dto.dateOfBirth,
+        new Date(dto.dateOfBirth),
       ),
     );
     return BaseResponse.ok(result);
@@ -184,21 +184,15 @@ export class AuthController {
     operationId: 'getMe',
     summary: 'Get current user basic information',
   })
-  @ApiOkResponseWrapped(UserDto, {
+  @ApiOkResponseWrapped(MeUserDto, {
     description: 'Current user information returned successfully.',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized.' })
   async getMe(
     @CurrentUser() user: { userId: string },
   ): Promise<BaseResponse<GetMeResult>> {
-    const userId = Number(user.userId);
-
-    if (!Number.isInteger(userId) || userId <= 0) {
-      throw new UnauthorizedException('Invalid user identifier');
-    }
-
     const result = await this.queryBus.execute<GetMeQuery, GetMeResult>(
-      new GetMeQuery(userId),
+      new GetMeQuery(user.userId),
     );
 
     return BaseResponse.ok(result);

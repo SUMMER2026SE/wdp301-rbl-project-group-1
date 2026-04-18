@@ -2,7 +2,7 @@ import { BaseEntity } from 'src/shared/domain/entities/base-entity';
 import { Gender } from 'src/shared/domain/enums/enums';
 
 export interface ProfileProps {
-  userId: number;
+  userId: string;
   nickname: string;
   avatarUrl?: string;
   phone: string;
@@ -11,19 +11,19 @@ export interface ProfileProps {
   address?: string;
 }
 
-export class Profile extends BaseEntity<number> {
+export class Profile extends BaseEntity<string> {
   private props: ProfileProps;
 
-  private constructor(id: number, props: ProfileProps) {
+  private constructor(id: string, props: ProfileProps) {
     super(id);
     this.props = props;
   }
 
-  static create(id: number, props: ProfileProps): Profile {
+  static create(id: string, props: ProfileProps): Profile {
     return new Profile(id, props);
   }
 
-  get userId(): number {
+  get userId(): string {
     return this.props.userId;
   }
 

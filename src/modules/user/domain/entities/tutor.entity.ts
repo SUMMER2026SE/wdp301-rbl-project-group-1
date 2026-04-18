@@ -1,7 +1,7 @@
 import { BaseEntity } from '../../../../shared/domain/entities/base-entity';
 
 export interface TutorProps {
-  userId: number;
+  userId: string;
   bio?: string | null;
   specialization?: string | null;
   experience?: number | null;
@@ -12,19 +12,19 @@ export interface TutorProps {
   studentCount: number;
 }
 
-export class Tutor extends BaseEntity<number> {
+export class Tutor extends BaseEntity<string> {
   private props: TutorProps;
 
-  private constructor(id: number, props: TutorProps) {
+  private constructor(id: string, props: TutorProps) {
     super(id);
     this.props = props;
   }
 
-  static create(id: number, props: TutorProps): Tutor {
+  static create(id: string, props: TutorProps): Tutor {
     return new Tutor(id, props);
   }
 
-  get userId(): number {
+  get userId(): string {
     return this.props.userId;
   }
 

@@ -1,8 +1,8 @@
 import { AggregateRoot } from '../../../../shared/domain/entities/aggregate-root';
 import { UserRole } from '../../../../shared/domain/enums/enums';
-import { Tutor } from './tutor.entity';
-import { Student } from './student.entity';
 import { Parent } from './parent.entity';
+import { Student } from './student.entity';
+import { Tutor } from './tutor.entity';
 
 export interface UserProps {
   email: string;
@@ -19,15 +19,15 @@ export interface UserProps {
   parent?: Parent | null;
 }
 
-export class User extends AggregateRoot<number> {
+export class User extends AggregateRoot<string> {
   private props: UserProps;
 
-  private constructor(id: number, props: UserProps) {
+  private constructor(id: string, props: UserProps) {
     super(id);
     this.props = props;
   }
 
-  static create(id: number, props: UserProps): User {
+  static create(id: string, props: UserProps): User {
     return new User(id, props);
   }
 

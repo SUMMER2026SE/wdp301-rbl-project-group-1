@@ -3,7 +3,7 @@ import { Gender } from 'src/shared/domain/enums/enums';
 
 export class UpdateProfileCommand implements ICommand {
   constructor(
-    public readonly userId: number,
+    public readonly userId: string,
     public readonly profileData: {
       nickname?: string;
       avatarUrl?: string;

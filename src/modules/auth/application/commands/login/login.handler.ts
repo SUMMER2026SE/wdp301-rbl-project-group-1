@@ -54,7 +54,7 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
       ? new Date(refreshPayload.exp * 1000)
       : new Date();
 
-    const refreshTokenToSave = RefreshToken.create(0, {
+    const refreshTokenToSave = RefreshToken.create('', {
       userId: user.id,
       token: refreshToken,
       expiresAt,

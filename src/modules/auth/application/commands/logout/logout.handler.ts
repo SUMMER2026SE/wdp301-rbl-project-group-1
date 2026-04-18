@@ -20,7 +20,7 @@ export class LogoutCommandHandler implements ICommandHandler<LogoutCommand> {
       return;
     }
 
-    if (storedRefreshToken.userId !== Number(command.userId)) {
+    if (storedRefreshToken.userId !== command.userId) {
       return;
     }
 

@@ -24,7 +24,7 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
 
     const hashedPassword = await this.hashService.hash(command.password);
 
-    const userToSave = User.create(0, {
+    const userToSave = User.create('', {
       email: command.email,
       password: hashedPassword,
       role: command.role,
@@ -37,7 +37,7 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
 
     const savedUser = await this.userRepository.save(userToSave);
 
-    const profileToSave = Profile.create(0, {
+    const profileToSave = Profile.create('', {
       userId: savedUser.id,
       nickname: command.nickname,
       phone: command.phone,
@@ -46,6 +46,6 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
 
     await this.profileRepository.save(profileToSave);
 
-    return { userId: savedUser.id.toString() };
+    return { userId: savedUser.id };
   }
 }

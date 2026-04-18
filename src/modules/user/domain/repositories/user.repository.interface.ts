@@ -17,6 +17,6 @@ export type FindAllUsersResult = {
 export abstract class IUserRepository {
   abstract save(user: User): Promise<User>;
   abstract findByEmail(email: string): Promise<User | null>;
-  abstract findById(id: number): Promise<User | null>;
+  abstract findById(id: string): Promise<User | null>;
   abstract findAll(params: FindAllUsersParams): Promise<FindAllUsersResult>;
 }

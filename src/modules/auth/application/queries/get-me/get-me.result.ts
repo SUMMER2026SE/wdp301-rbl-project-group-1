@@ -1,7 +1,7 @@
 import { UserRole } from '../../../../../shared/domain/enums/enums';
 
 export interface GetMeResult {
-  id: number;
+  id: string;
   email: string;
   role: UserRole;
   nickname: string;

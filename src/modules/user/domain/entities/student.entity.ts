@@ -1,25 +1,25 @@
 import { BaseEntity } from '../../../../shared/domain/entities/base-entity';
 
 export interface StudentProps {
-  userId: number;
+  userId: string;
   grade?: string | null;
   school?: string | null;
   learningGoal?: string | null;
 }
 
-export class Student extends BaseEntity<number> {
+export class Student extends BaseEntity<string> {
   private props: StudentProps;
 
-  private constructor(id: number, props: StudentProps) {
+  private constructor(id: string, props: StudentProps) {
     super(id);
     this.props = props;
   }
 
-  static create(id: number, props: StudentProps): Student {
+  static create(id: string, props: StudentProps): Student {
     return new Student(id, props);
   }
 
-  get userId(): number {
+  get userId(): string {
     return this.props.userId;
   }
 

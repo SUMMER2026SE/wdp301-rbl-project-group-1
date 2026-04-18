@@ -1,7 +1,7 @@
 import { QueryApiResponse } from '../../../../../shared/presentation/responses/query-response';
 
 export interface GetUsersResultData {
-  id: number;
+  id: string;
   email: string;
   role: string;
   nickname: string | null;

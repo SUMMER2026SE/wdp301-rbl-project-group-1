@@ -20,9 +20,9 @@ import {
   GetUsersResult,
   GetUsersResultData,
 } from '../../application/queries/get-users/get-users.result';
-import { ProfileResponseDto } from '../dto/profile-response.dto';
-import { UpdateProfileDto } from '../dto/update-profile.dto';
-import { UserResponseDto } from '../dto/user-response.dto';
+import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
+import { UpdateProfileDto } from '../schemas/update-profile.dto';
+import { UserResponseDto } from '../schemas/user-response.dto';
 
 @ApiTags('Users')
 @Controller('users')
@@ -55,7 +55,7 @@ export class UserController {
     operationId: 'updateProfile',
     summary: 'Update current user profile',
   })
-  @ApiOkResponseWrapped(ProfileResponseDto, {
+  @ApiOkResponseWrapped(UpdateProfileResultDto, {
     description: 'Profile updated successfully.',
   })
   async updateProfile(
@@ -65,7 +65,12 @@ export class UserController {
     const result = await this.commandBus.execute<
       UpdateProfileCommand,
       UpdateProfileResult
-    >(new UpdateProfileCommand(Number(user.userId), dto));
+    >(
+      new UpdateProfileCommand(user.userId, {
+        ...dto,
+        dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
+      }),
+    );
 
     return BaseResponse.ok(result);
   }

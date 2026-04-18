@@ -34,12 +34,12 @@ export class RefreshTokenCommandHandler implements ICommandHandler<RefreshTokenC
       !storedRefreshToken ||
       storedRefreshToken.revoked ||
       storedRefreshToken.isExpired() ||
-      storedRefreshToken.userId !== Number(payload.sub)
+      storedRefreshToken.userId !== payload.sub
     ) {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
 
-    const user = await this.userRepository.findById(Number(payload.sub));
+    const user = await this.userRepository.findById(payload.sub);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
@@ -62,7 +62,7 @@ export class RefreshTokenCommandHandler implements ICommandHandler<RefreshTokenC
       ? new Date(refreshPayload.exp * 1000)
       : new Date();
 
-    const refreshTokenToSave = RefreshToken.create(0, {
+    const refreshTokenToSave = RefreshToken.create('', {
       userId: user.id,
       token: refreshToken,
       expiresAt,

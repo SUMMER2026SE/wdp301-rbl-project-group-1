@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Profile as PrismaProfile } from '../../../../../generated/prisma/client';
-import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Gender } from '../../../../shared/domain/enums/enums';
+import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Profile } from '../../domain/entities/profile.entity';
 import { IProfileRepository } from '../../domain/repositories/profile.repository.interface';
 
@@ -41,7 +41,7 @@ export class PrismaProfileRepository implements IProfileRepository {
     return this.mapToDomain(savedProfile);
   }
 
-  async findByUserId(userId: number): Promise<Profile | null> {
+  async findByUserId(userId: string): Promise<Profile | null> {
     const profile = await this.prisma.profile.findUnique({
       where: { userId },
     });

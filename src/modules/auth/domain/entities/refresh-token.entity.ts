@@ -2,7 +2,7 @@ import { AggregateRoot } from '../../../../shared/domain/entities/aggregate-root
 import { User } from '../../../user/domain/entities/user.entity';
 
 export interface RefreshTokenProps {
-  userId: number;
+  userId: string;
   token: string;
   expiresAt: Date;
   createdAt: Date;
@@ -11,19 +11,19 @@ export interface RefreshTokenProps {
   user?: User | null;
 }
 
-export class RefreshToken extends AggregateRoot<number> {
+export class RefreshToken extends AggregateRoot<string> {
   private props: RefreshTokenProps;
 
-  private constructor(id: number, props: RefreshTokenProps) {
+  private constructor(id: string, props: RefreshTokenProps) {
     super(id);
     this.props = props;
   }
 
-  static create(id: number, props: RefreshTokenProps): RefreshToken {
+  static create(id: string, props: RefreshTokenProps): RefreshToken {
     return new RefreshToken(id, props);
   }
 
-  get userId(): number {
+  get userId(): string {
     return this.props.userId;
   }
 
