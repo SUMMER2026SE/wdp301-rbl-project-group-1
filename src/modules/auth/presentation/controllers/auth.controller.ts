@@ -36,9 +36,9 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { Public } from '../decorators/public.decorator';
 import {
   AuthTokenPairDto,
-  UserDto,
   LoginResponseDto,
   RegisterResultDto,
+  UserDto,
 } from '../dto/auth-response.dto';
 import { LoginDto } from '../dto/login.dto';
 import { RegisterDto } from '../dto/register.dto';
@@ -68,7 +68,16 @@ export class AuthController {
     const result = await this.commandBus.execute<
       RegisterCommand,
       RegisterResult
-    >(new RegisterCommand(dto.email, dto.password, dto.role, dto.nickname));
+    >(
+      new RegisterCommand(
+        dto.email,
+        dto.password,
+        dto.role,
+        dto.nickname,
+        dto.phone,
+        dto.dateOfBirth,
+      ),
+    );
     return BaseResponse.ok(result);
   }
 

@@ -30,12 +30,15 @@ export class UserResponseDto {
   @ApiProperty({ example: '2025-01-01T00:00:00.000Z' })
   createdAt!: Date;
 
-  static fromDomain(user: User): UserResponseDto {
+  static fromDomain(
+    user: User,
+    nickname: string | null = null,
+  ): UserResponseDto {
     const dto = new UserResponseDto();
     dto.id = user.id;
     dto.email = user.email;
     dto.role = user.role;
-    dto.nickname = user.nickname ?? null;
+    dto.nickname = nickname;
     dto.isActive = user.isActive;
     dto.isVerified = user.isVerified;
     dto.isFlag = user.isFlag;

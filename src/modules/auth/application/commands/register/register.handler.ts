@@ -1,6 +1,8 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ConflictException } from '../../../../../shared/domain/exceptions/domain-exception';
+import { Profile } from '../../../../user/domain/entities/profile.entity';
 import { User } from '../../../../user/domain/entities/user.entity';
+import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { IHashService } from '../../services/hash.service';
 import { RegisterCommand } from './register.command';
@@ -10,6 +12,7 @@ import { RegisterResult } from './register.result';
 export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> {
   constructor(
     private readonly userRepository: IUserRepository,
+    private readonly profileRepository: IProfileRepository,
     private readonly hashService: IHashService,
   ) {}
 
@@ -25,7 +28,6 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
       email: command.email,
       password: hashedPassword,
       role: command.role,
-      nickname: command.nickname,
       isActive: true,
       isVerified: false,
       isFlag: false,
@@ -34,6 +36,15 @@ export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> 
     });
 
     const savedUser = await this.userRepository.save(userToSave);
+
+    const profileToSave = Profile.create(0, {
+      userId: savedUser.id,
+      nickname: command.nickname,
+      phone: command.phone,
+      dateOfBirth: command.dateOfBirth,
+    });
+
+    await this.profileRepository.save(profileToSave);
 
     return { userId: savedUser.id.toString() };
   }

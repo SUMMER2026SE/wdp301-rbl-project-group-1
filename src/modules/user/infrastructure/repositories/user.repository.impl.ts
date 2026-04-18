@@ -22,7 +22,6 @@ export class PrismaUserRepository implements IUserRepository {
       email: userPrisma.email,
       password: userPrisma.password,
       role: userPrisma.role as UserRole,
-      nickname: userPrisma.nickname,
       isActive: userPrisma.isActive,
       isVerified: userPrisma.isVerified,
       isFlag: userPrisma.isFlag,
@@ -35,18 +34,12 @@ export class PrismaUserRepository implements IUserRepository {
     const where: Prisma.UserWhereInput = {};
 
     if (params.search) {
-      where.OR = [
-        { email: { contains: params.search, mode: 'insensitive' } },
-        { nickname: { contains: params.search, mode: 'insensitive' } },
-      ];
+      where.email = { contains: params.search, mode: 'insensitive' };
     }
 
     const filterMap: Record<string, (value: string) => Prisma.UserWhereInput> =
       {
         email: (value) => ({ email: { contains: value, mode: 'insensitive' } }),
-        nickname: (value) => ({
-          nickname: { contains: value, mode: 'insensitive' },
-        }),
         role: (value) => ({ role: value as PrismaUserRole }),
         isActive: (value) => ({ isActive: value === 'true' }),
         isVerified: (value) => ({ isVerified: value === 'true' }),
@@ -73,7 +66,6 @@ export class PrismaUserRepository implements IUserRepository {
       email: user.email,
       password: user.password!,
       role: user.role as unknown as PrismaUserRole,
-      nickname: user.nickname,
       isActive: user.isActive,
       isVerified: user.isVerified,
       isFlag: user.isFlag,
@@ -82,20 +74,29 @@ export class PrismaUserRepository implements IUserRepository {
     };
 
     const savedUser = user.id
-      ? await this.prisma.user.update({ where: { id: user.id }, data })
-      : await this.prisma.user.create({ data });
+      ? await this.prisma.user.update({
+          where: { id: user.id },
+          data,
+        })
+      : await this.prisma.user.create({
+          data: data as Prisma.UserCreateInput,
+        });
 
     return this.mapToDomain(savedUser);
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
     if (!user) return null;
     return this.mapToDomain(user);
   }
 
   async findById(id: number): Promise<User | null> {
-    const user = await this.prisma.user.findUnique({ where: { id } });
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
     if (!user) return null;
     return this.mapToDomain(user);
   }

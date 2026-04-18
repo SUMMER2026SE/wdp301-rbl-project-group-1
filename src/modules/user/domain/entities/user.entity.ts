@@ -8,7 +8,6 @@ export interface UserProps {
   email: string;
   password?: string;
   role: UserRole;
-  nickname: string;
   isActive: boolean;
   isVerified: boolean;
   isFlag: boolean;
@@ -44,10 +43,6 @@ export class User extends AggregateRoot<number> {
     return this.props.role;
   }
 
-  get nickname(): string {
-    return this.props.nickname;
-  }
-
   get isActive(): boolean {
     return this.props.isActive;
   }
@@ -78,10 +73,6 @@ export class User extends AggregateRoot<number> {
 
   get parent(): Parent | null | undefined {
     return this.props.parent;
-  }
-
-  updateProfile(nickname: string): void {
-    this.props.nickname = nickname;
   }
 
   activate(): void {

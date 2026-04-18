@@ -25,6 +25,15 @@ enum UserRole {
   @@map("user_role")
 }
 
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+
+  @@map("gender")
+}
+
 enum CourseStatus {
   DRAFT
   PUBLISHED
@@ -93,7 +102,6 @@ model User {
   email    String   @unique
   password String
   role     UserRole
-  nickname String
 
   isActive    Boolean @default(true) @map("is_active")
   isVerified  Boolean @default(false) @map("is_verified")
@@ -101,6 +109,8 @@ model User {
   reportCount Int     @default(0) @map("report_count")
 
   createdAt DateTime @default(now()) @map("created_at")
+
+  profile   Profile?
 
   refreshTokens RefreshToken[]
 
@@ -118,6 +128,22 @@ model User {
   activityLogs             ActivityLog[]
 
   @@map("user")
+}
+
+model Profile {
+  id     Int @id @default(autoincrement())
+  userId Int @unique @map("user_id")
+
+  nickname    String
+  avatarUrl   String?  @map("avatar_url")
+  phone       String   @map("phone")
+  dateOfBirth DateTime @map("date_of_birth")
+  gender      Gender?  @map("gender")
+  address     String?  @map("address")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profile")
 }
 
 model Tutor {

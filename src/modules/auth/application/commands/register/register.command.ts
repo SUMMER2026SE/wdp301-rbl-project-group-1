@@ -6,5 +6,7 @@ export class RegisterCommand {
     public readonly password: string,
     public readonly role: UserRole,
     public readonly nickname: string,
+    public readonly phone: string,
+    public readonly dateOfBirth: Date,
   ) {}
 }

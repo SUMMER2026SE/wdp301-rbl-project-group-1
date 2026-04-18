@@ -1,12 +1,16 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
+import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { GetMeQuery } from './get-me.query';
 import { GetMeResult } from './get-me.result';
 
 @QueryHandler(GetMeQuery)
 export class GetMeQueryHandler implements IQueryHandler<GetMeQuery> {
-  constructor(private readonly userRepository: IUserRepository) {}
+  constructor(
+    private readonly userRepository: IUserRepository,
+    private readonly profileRepository: IProfileRepository,
+  ) {}
 
   async execute(query: GetMeQuery): Promise<GetMeResult> {
     const user = await this.userRepository.findById(query.userId);
@@ -15,11 +19,13 @@ export class GetMeQueryHandler implements IQueryHandler<GetMeQuery> {
       throw new UnauthorizedException('User not found');
     }
 
+    const profile = await this.profileRepository.findByUserId(user.id);
+
     return {
       id: user.id,
       email: user.email,
       role: user.role,
-      nickname: user.nickname,
+      nickname: profile?.nickname ?? '',
       isActive: user.isActive,
       isVerified: user.isVerified,
       isFlag: user.isFlag,

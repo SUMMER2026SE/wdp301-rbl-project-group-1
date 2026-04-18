@@ -25,5 +25,20 @@ export class RegisterDto {
     example: 'johndoe',
     description: 'The nickname of the user',
   })
+  @ApiProperty({
+    example: 'Tu VN',
+    description: 'The nickname of the user',
+  })
   nickname!: string;
+
+  @ApiProperty({ example: '+1234567890', description: 'Phone number' })
+  phone!: string;
+
+  @ApiProperty({
+    example: '1990-01-01',
+    description: 'Date of birth',
+    type: String,
+    format: 'date',
+  })
+  dateOfBirth!: Date;
 }

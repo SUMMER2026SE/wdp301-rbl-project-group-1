@@ -1,6 +1,7 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthTokenPayload } from 'src/modules/auth/domain/value-objects/auth-token-payload';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
+import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { IAuthRepository } from '../../../domain/repositories/auth.repository.interface';
@@ -13,6 +14,7 @@ import { LoginResult } from './login.result';
 export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
   constructor(
     private readonly userRepository: IUserRepository,
+    private readonly profileRepository: IProfileRepository,
     private readonly authRepository: IAuthRepository,
     private readonly hashService: IHashService,
     private readonly jwtService: IJwtService,
@@ -39,6 +41,8 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
       sub: String(user.id),
       role: user.role,
     };
+
+    const profile = await this.profileRepository.findByUserId(user.id);
 
     const accessToken = await jwtService.sign(payload);
     const refreshToken = await jwtService.signRefresh(payload);
@@ -68,7 +72,7 @@ export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
         id: user.id,
         email: user.email,
         role: user.role,
-        nickname: user.nickname ?? '',
+        nickname: profile?.nickname ?? '',
         isActive: user.isActive,
         isVerified: user.isVerified,
         createdAt: user.createdAt,
