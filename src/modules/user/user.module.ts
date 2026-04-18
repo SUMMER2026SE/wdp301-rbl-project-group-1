@@ -6,6 +6,7 @@ import { PrismaUserRepository } from './infrastructure/repositories/user.reposit
 import { PrismaProfileRepository } from './infrastructure/repositories/profile.repository.impl';
 import { GetUsersQueryHandler } from './application/queries/get-users/get-users.handler';
 import { UpdateProfileHandler } from './application/commands/update-profile/update-profile.handler';
+import { ChangeAvatarHandler } from './application/commands/change-avatar/change-avatar.handler';
 import { UserController } from './presentation/controllers/user.controller';
 
 @Module({
@@ -14,6 +15,7 @@ import { UserController } from './presentation/controllers/user.controller';
   providers: [
     GetUsersQueryHandler,
     UpdateProfileHandler,
+    ChangeAvatarHandler,
     {
       provide: IUserRepository,
       useClass: PrismaUserRepository,

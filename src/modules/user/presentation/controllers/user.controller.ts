@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Patch, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { ApiImageUpload } from 'src/shared/presentation/decorators/api-image-upload.decorator';
 import {
   QueryParams,
   QueryResult,
@@ -10,9 +12,13 @@ import {
   ApiOkResponseWrapped,
 } from '../../../../shared/presentation/decorators/api-response.decorator';
 import { Query as QueryParamsDecorator } from '../../../../shared/presentation/decorators/query.decorator';
+import { UploadedImage } from '../../../../shared/presentation/decorators/uploaded-image.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
+import { UploadedImageDto } from '../../../../shared/presentation/schemas/upload-image.dto';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
+import { ChangeAvatarCommand } from '../../application/commands/change-avatar/change-avatar.command';
+import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';
 import { UpdateProfileCommand } from '../../application/commands/update-profile/update-profile.command';
 import { UpdateProfileResult } from '../../application/commands/update-profile/update-profile.result';
 import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
@@ -20,10 +26,10 @@ import {
   GetUsersResult,
   GetUsersResultData,
 } from '../../application/queries/get-users/get-users.result';
+import { ChangeAvatarResultDto } from '../schemas/change-avatar-response.dto';
 import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
 import { UpdateProfileDto } from '../schemas/update-profile.dto';
 import { UserResponseDto } from '../schemas/user-response.dto';
-
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
@@ -71,6 +77,29 @@ export class UserController {
         dateOfBirth: dto.dateOfBirth ? new Date(dto.dateOfBirth) : undefined,
       }),
     );
+
+    return BaseResponse.ok(result);
+  }
+
+  @Patch('avatar')
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'changeAvatar',
+    summary: 'Change current user avatar',
+  })
+  @ApiImageUpload('avatar')
+  @ApiOkResponseWrapped(ChangeAvatarResultDto, {
+    description: 'Avatar updated successfully.',
+  })
+  @UseInterceptors(FileInterceptor('avatar'))
+  async changeAvatar(
+    @CurrentUser() user: { userId: string },
+    @UploadedImage() file: UploadedImageDto,
+  ): Promise<BaseResponse<ChangeAvatarResult>> {
+    const result = await this.commandBus.execute<
+      ChangeAvatarCommand,
+      ChangeAvatarResult
+    >(new ChangeAvatarCommand(user.userId, file.buffer, file.mimetype));
 
     return BaseResponse.ok(result);
   }
