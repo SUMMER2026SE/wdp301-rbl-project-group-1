@@ -11,6 +11,9 @@ export const envValidationSchema = z.object({
   DEFAULT_TOKEN_EXPIRES: z.string().default('5m'),
   REFRESH_TOKEN_EXPIRES: z.string().default('30d'),
   COOKIE_EXPIRES: z.string().default('30d'),
+  CLOUDINARY_CLOUD_NAME: z.string(),
+  CLOUDINARY_API_KEY: z.string(),
+  CLOUDINARY_API_SECRET: z.string(),
 });
 
 export const validateEnv = (config: Record<string, unknown>) =>
