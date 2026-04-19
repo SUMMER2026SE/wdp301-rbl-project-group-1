@@ -2,40 +2,24 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { RefreshToken } from '../../domain/entities/refresh-token.entity';
 import { IAuthRepository } from '../../domain/repositories/auth.repository.interface';
+import { RefreshTokenMapper } from '../mapper/refresh-token.mapper';
 import {
   PrismaRefreshTokenRecord,
   RefreshTokenDelegate,
-  RefreshTokenWriteData,
 } from './auth.repository.types';
 
 @Injectable()
 export class PrismaAuthRepository implements IAuthRepository {
+  private readonly mapper = new RefreshTokenMapper();
+
   constructor(private readonly prisma: PrismaService) {}
 
   private get refreshTokenDelegate(): RefreshTokenDelegate {
     return this.prisma.refreshToken as unknown as RefreshTokenDelegate;
   }
 
-  private mapToDomain(
-    refreshTokenPrisma: PrismaRefreshTokenRecord,
-  ): RefreshToken {
-    return RefreshToken.create(refreshTokenPrisma.id, {
-      userId: refreshTokenPrisma.userId,
-      token: refreshTokenPrisma.token,
-      expiresAt: refreshTokenPrisma.expiresAt,
-      createdAt: refreshTokenPrisma.createdAt,
-      revoked: refreshTokenPrisma.revoked,
-    });
-  }
-
   async saveRefreshToken(refreshToken: RefreshToken): Promise<RefreshToken> {
-    const data: RefreshTokenWriteData = {
-      userId: refreshToken.userId,
-      token: refreshToken.token,
-      expiresAt: refreshToken.expiresAt,
-      createdAt: refreshToken.createdAt,
-      revoked: refreshToken.revoked,
-    };
+    const data = this.mapper.toPersistence(refreshToken);
 
     const savedRefreshToken = refreshToken.id
       ? await this.refreshTokenDelegate.update({
@@ -44,7 +28,7 @@ export class PrismaAuthRepository implements IAuthRepository {
         })
       : await this.refreshTokenDelegate.create({ data });
 
-    return this.mapToDomain(savedRefreshToken);
+    return this.mapper.toDomain(savedRefreshToken);
   }
 
   async findRefreshTokenByToken(token: string): Promise<RefreshToken | null> {
@@ -67,6 +51,6 @@ export class PrismaAuthRepository implements IAuthRepository {
       return null;
     }
 
-    return this.mapToDomain(refreshTokenPrisma);
+    return this.mapper.toDomain(refreshTokenPrisma);
   }
 }

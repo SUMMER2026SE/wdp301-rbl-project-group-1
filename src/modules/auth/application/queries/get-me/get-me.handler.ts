@@ -1,14 +1,19 @@
+import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
-import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
+import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { GetMeQuery } from './get-me.query';
 import { GetMeResult } from './get-me.result';
 
 @QueryHandler(GetMeQuery)
-export class GetMeQueryHandler implements IQueryHandler<GetMeQuery> {
+export class GetMeQueryHandler
+  implements IQueryHandler<GetMeQuery>, IQuery<GetMeQuery, GetMeResult>
+{
   constructor(
-    private readonly userRepository: IUserRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
   ) {}
 

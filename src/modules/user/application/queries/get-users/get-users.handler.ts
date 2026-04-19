@@ -7,12 +7,17 @@ import {
   createQueryResult,
   QueryResult,
 } from '../../../../../shared/application/common/query';
+import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
 import { GetUsersQuery } from './get-users.query';
 import { GetUsersResultData } from './get-users.result';
 
 @QueryHandler(GetUsersQuery)
-export class GetUsersQueryHandler implements IQueryHandler<GetUsersQuery> {
+export class GetUsersQueryHandler
+  implements
+    IQueryHandler<GetUsersQuery>,
+    IQuery<GetUsersQuery, QueryResult<GetUsersResultData>>
+{
   constructor(private readonly prisma: PrismaService) {}
 
   private buildWhereClause(

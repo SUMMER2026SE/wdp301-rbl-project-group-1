@@ -14,9 +14,10 @@ export type FindAllUsersResult = {
   total: number;
 };
 
-export abstract class IUserRepository {
-  abstract save(user: User): Promise<User>;
-  abstract findByEmail(email: string): Promise<User | null>;
-  abstract findById(id: string): Promise<User | null>;
-  abstract findAll(params: FindAllUsersParams): Promise<FindAllUsersResult>;
+export const IUserRepository = Symbol('IUserRepository');
+export interface IUserRepository {
+  save(user: User): Promise<User>;
+  findByEmail(email: string): Promise<User | null>;
+  findById(id: string): Promise<User | null>;
+  findAll(params: FindAllUsersParams): Promise<FindAllUsersResult>;
 }

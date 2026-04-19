@@ -1,4 +1,6 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { ConflictException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { Profile } from '../../../../user/domain/entities/profile.entity';
 import { User } from '../../../../user/domain/entities/user.entity';
@@ -9,9 +11,14 @@ import { RegisterCommand } from './register.command';
 import { RegisterResult } from './register.result';
 
 @CommandHandler(RegisterCommand)
-export class RegisterCommandHandler implements ICommandHandler<RegisterCommand> {
+export class RegisterCommandHandler
+  implements
+    ICommandHandler<RegisterCommand>,
+    ICommand<RegisterCommand, RegisterResult>
+{
   constructor(
-    private readonly userRepository: IUserRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
     private readonly hashService: IHashService,
   ) {}

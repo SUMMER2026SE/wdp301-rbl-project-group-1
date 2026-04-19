@@ -1,6 +1,7 @@
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Readable } from 'node:stream';
+import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { CloudinaryService } from '../../../../../shared/infrastructure/database/cloudinary/cloudinary.service';
 import { IProfileRepository } from '../../../domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
@@ -8,9 +9,14 @@ import { ChangeAvatarCommand } from './change-avatar.command';
 import { ChangeAvatarResult } from './change-avatar.result';
 
 @CommandHandler(ChangeAvatarCommand)
-export class ChangeAvatarHandler implements ICommandHandler<ChangeAvatarCommand> {
+export class ChangeAvatarHandler
+  implements
+    ICommandHandler<ChangeAvatarCommand>,
+    ICommand<ChangeAvatarCommand, ChangeAvatarResult>
+{
   constructor(
-    private readonly userRepository: IUserRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
     private readonly cloudinaryService: CloudinaryService,
   ) {}

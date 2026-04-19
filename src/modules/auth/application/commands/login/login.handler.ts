@@ -1,5 +1,7 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthTokenPayload } from 'src/modules/auth/domain/value-objects/auth-token-payload';
+import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
@@ -11,11 +13,14 @@ import { LoginCommand } from './login.command';
 import { LoginResult } from './login.result';
 
 @CommandHandler(LoginCommand)
-export class LoginCommandHandler implements ICommandHandler<LoginCommand> {
+export class LoginCommandHandler
+  implements ICommandHandler<LoginCommand>, ICommand<LoginCommand, LoginResult>
+{
   constructor(
-    private readonly userRepository: IUserRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
-    private readonly authRepository: IAuthRepository,
+    @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
     private readonly hashService: IHashService,
     private readonly jwtService: IJwtService,
   ) {}

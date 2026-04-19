@@ -1,14 +1,20 @@
-import { NotFoundException } from '@nestjs/common';
+import { Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { IProfileRepository } from '../../../domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { UpdateProfileCommand } from './update-profile.command';
 import { UpdateProfileResult } from './update-profile.result';
 
 @CommandHandler(UpdateProfileCommand)
-export class UpdateProfileHandler implements ICommandHandler<UpdateProfileCommand> {
+export class UpdateProfileHandler
+  implements
+    ICommandHandler<UpdateProfileCommand>,
+    ICommand<UpdateProfileCommand, UpdateProfileResult>
+{
   constructor(
-    private readonly userRepository: IUserRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
   ) {}
 

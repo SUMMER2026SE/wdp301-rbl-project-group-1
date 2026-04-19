@@ -1,5 +1,7 @@
+import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { AuthTokenPayload } from 'src/modules/auth/domain/value-objects/auth-token-payload';
+import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
@@ -9,10 +11,14 @@ import { RefreshTokenCommand } from './refresh-token.command';
 import { RefreshTokenResult } from './refresh-token.result';
 
 @CommandHandler(RefreshTokenCommand)
-export class RefreshTokenCommandHandler implements ICommandHandler<RefreshTokenCommand> {
+export class RefreshTokenCommandHandler
+  implements
+    ICommandHandler<RefreshTokenCommand>,
+    ICommand<RefreshTokenCommand, RefreshTokenResult>
+{
   constructor(
-    private readonly userRepository: IUserRepository,
-    private readonly authRepository: IAuthRepository,
+    @Inject(IUserRepository) private readonly userRepository: IUserRepository,
+    @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
     private readonly jwtService: IJwtService,
   ) {}
 

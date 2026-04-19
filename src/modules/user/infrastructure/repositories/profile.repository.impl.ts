@@ -1,36 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { Profile as PrismaProfile } from '../../../../../generated/prisma/client';
-import { Gender } from '../../../../shared/domain/enums/enums';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Profile } from '../../domain/entities/profile.entity';
 import { IProfileRepository } from '../../domain/repositories/profile.repository.interface';
 
+import { ProfileMapper } from '../mappers/profile.mapper';
+
 @Injectable()
 export class PrismaProfileRepository implements IProfileRepository {
+  private readonly mapper = new ProfileMapper();
+
   constructor(private readonly prisma: PrismaService) {}
 
-  private mapToDomain(profilePrisma: PrismaProfile): Profile {
-    return Profile.create(profilePrisma.id, {
-      userId: profilePrisma.userId,
-      nickname: profilePrisma.nickname,
-      avatarUrl: profilePrisma.avatarUrl ?? undefined,
-      phone: profilePrisma.phone,
-      dateOfBirth: profilePrisma.dateOfBirth,
-      gender: (profilePrisma.gender as Gender) ?? undefined,
-      address: profilePrisma.address ?? undefined,
-    });
-  }
-
   async save(profile: Profile): Promise<Profile> {
-    const data = {
-      userId: profile.userId,
-      nickname: profile.nickname,
-      avatarUrl: profile.avatarUrl ?? null,
-      phone: profile.phone,
-      dateOfBirth: profile.dateOfBirth,
-      gender: profile.gender ?? null,
-      address: profile.address ?? null,
-    };
+    const data = this.mapper.toPersistence(profile);
 
     const savedProfile = await this.prisma.profile.upsert({
       where: { userId: profile.userId },
@@ -38,7 +20,7 @@ export class PrismaProfileRepository implements IProfileRepository {
       update: data,
     });
 
-    return this.mapToDomain(savedProfile);
+    return this.mapper.toDomain(savedProfile);
   }
 
   async findByUserId(userId: string): Promise<Profile | null> {
@@ -47,6 +29,6 @@ export class PrismaProfileRepository implements IProfileRepository {
     });
 
     if (!profile) return null;
-    return this.mapToDomain(profile);
+    return this.mapper.toDomain(profile);
   }
 }
