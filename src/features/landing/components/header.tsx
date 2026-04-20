@@ -22,12 +22,12 @@ export default function Header() {
             >
               Tìm gia sư
             </a>
-            <a
+            <Link
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              href="#cta"
+              href="/register-tutor"
             >
               Trở thành gia sư
-            </a>
+            </Link>
             <a
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
               href="#features"
@@ -50,12 +50,13 @@ export default function Header() {
           </div>
         </div>
 
-        <button
+        <Button
+          variant="ghost"
           className="p-2 text-foreground md:hidden"
           aria-label="Open menu"
         >
           <span className="material-symbols-outlined">menu</span>
-        </button>
+        </Button>
       </div>
     </header>
   );

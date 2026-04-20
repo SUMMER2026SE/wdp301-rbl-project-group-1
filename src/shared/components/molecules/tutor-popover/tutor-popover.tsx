@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import { TUTOR_MENU_ITEMS } from "./tutor-popover.constants";
+
 import {
   Avatar,
   AvatarFallback,
@@ -15,11 +17,12 @@ import {
 } from "@/src/shared/components/ui/popover";
 import { Separator } from "@/src/shared/components/ui/separator";
 
-const menuItems = [
-  {
-    href: "/tutor/profile",
-    label: "Hồ sơ cá nhân",
-    icon: (
+const getMenuItemWithIcon = (
+  item: (typeof TUTOR_MENU_ITEMS)[0],
+  iconType: "profile" | "dashboard" | "settings",
+) => {
+  const iconMap = {
+    profile: (
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -34,11 +37,7 @@ const menuItems = [
         />
       </svg>
     ),
-  },
-  {
-    href: "/tutor/home",
-    label: "Bảng điều khiển",
-    icon: (
+    dashboard: (
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -53,11 +52,7 @@ const menuItems = [
         />
       </svg>
     ),
-  },
-  {
-    href: "/tutor/settings",
-    label: "Cài đặt",
-    icon: (
+    settings: (
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -78,7 +73,14 @@ const menuItems = [
         />
       </svg>
     ),
-  },
+  };
+  return { ...item, icon: iconMap[iconType] };
+};
+
+const menuItemsWithIcons = [
+  getMenuItemWithIcon(TUTOR_MENU_ITEMS[0], "profile"),
+  getMenuItemWithIcon(TUTOR_MENU_ITEMS[1], "dashboard"),
+  getMenuItemWithIcon(TUTOR_MENU_ITEMS[2], "settings"),
 ];
 
 export function TutorPopover() {
@@ -123,7 +125,7 @@ export function TutorPopover() {
         <Separator />
 
         <div className="flex flex-col py-2">
-          {menuItems.map((item) => (
+          {menuItemsWithIcons.map((item) => (
             <Link
               key={item.href}
               href={item.href}

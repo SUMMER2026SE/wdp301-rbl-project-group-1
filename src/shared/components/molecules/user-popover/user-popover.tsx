@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useGetMeQuery } from "@/src/features/auth/authApi";
 import { clearAuth } from "@/src/features/auth/authSlice";
 import { useAppDispatch, useAppSelector } from "@/src/shared/store/hooks";
+import { USER_MENU_ITEMS } from "./user-popover.constants";
 
 import {
   Avatar,
@@ -21,11 +22,12 @@ import {
 import { Separator } from "@/src/shared/components/ui/separator";
 import { getSummaryName } from "@/src/shared/utils/common";
 
-const menuItems = [
-  {
-    href: "/student/profile",
-    label: "Hồ sơ cá nhân",
-    icon: (
+const getMenuItemWithIcon = (
+  item: (typeof USER_MENU_ITEMS)[0],
+  iconType: "profile" | "dashboard" | "settings",
+) => {
+  const iconMap = {
+    profile: (
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -40,11 +42,7 @@ const menuItems = [
         />
       </svg>
     ),
-  },
-  {
-    href: "/student/dashboard",
-    label: "Bảng điều khiển",
-    icon: (
+    dashboard: (
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -59,11 +57,7 @@ const menuItems = [
         />
       </svg>
     ),
-  },
-  {
-    href: "/student/settings",
-    label: "Cài đặt",
-    icon: (
+    settings: (
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -84,7 +78,14 @@ const menuItems = [
         />
       </svg>
     ),
-  },
+  };
+  return { ...item, icon: iconMap[iconType] };
+};
+
+const menuItemsWithIcons = [
+  getMenuItemWithIcon(USER_MENU_ITEMS[0], "profile"),
+  getMenuItemWithIcon(USER_MENU_ITEMS[1], "dashboard"),
+  getMenuItemWithIcon(USER_MENU_ITEMS[2], "settings"),
 ];
 
 export function UserPopover() {
@@ -138,7 +139,7 @@ export function UserPopover() {
         <Separator />
 
         <div className="flex flex-col py-2">
-          {menuItems.map((item) => (
+          {menuItemsWithIcons.map((item) => (
             <Link
               key={item.href}
               href={item.href}

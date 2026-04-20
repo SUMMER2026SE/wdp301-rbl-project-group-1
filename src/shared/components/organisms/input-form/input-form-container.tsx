@@ -8,8 +8,7 @@ import InputFormPresenter from './input-form-presenter';
 const InputFormContainer = <TypeValues extends FieldValues>(
   props: InputFormContainerProps<TypeValues>
 ) => {
-  const { defaultValues, resolver, onSubmit, ...rest } = props;
-
+  const { defaultValues, resolver, onSubmit, className, ...rest } = props;
   const methods = useForm<TypeValues>({
     resolver,
     defaultValues,
@@ -20,7 +19,7 @@ const InputFormContainer = <TypeValues extends FieldValues>(
   return (
     <RequestCorrelationCheckProvider>
       <FormProvider {...methods}>
-        <InputFormPresenter onSubmit={handleSubmit(onSubmit)} {...rest} />
+        <InputFormPresenter onSubmit={handleSubmit(onSubmit)} className={className} {...rest} />
       </FormProvider>
     </RequestCorrelationCheckProvider>
   );

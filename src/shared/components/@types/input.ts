@@ -63,4 +63,5 @@ export type InputFormContainerProps<TForm extends FieldValues> = {
   onSubmit: (data: TForm) => void;
   children: React.ReactNode;
   id?: string;
+  className?: string;
 };

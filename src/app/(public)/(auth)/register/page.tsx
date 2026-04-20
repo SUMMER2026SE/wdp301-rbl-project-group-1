@@ -1,9 +1,10 @@
-export default function Register() {
-  return (
-    <div className="flex min-h-screen items-center justify-center">
-      <h1 className="text-2xl font-bold tracking-tight text-foreground">
-        Đăng ký
-      </h1>
-    </div>
-  );
+import RegisterForm from "@/src/features/auth/components/register-form";
+
+export const metadata = {
+  title: "Đăng ký - Edura",
+  description: "Đăng ký tài khoản học sinh",
+};
+
+export default function RegisterPage() {
+  return <RegisterForm />;
 }
