@@ -78,7 +78,10 @@ describe('RateLimitGuard', () => {
       expect.any(Function),
     ]);
     expect(redisClient.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
-    expect(redisClient.expire).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1', 60);
+    expect(redisClient.expire).toHaveBeenCalledWith(
+      'rate:GET:/health:127.0.0.1',
+      60,
+    );
   });
 
   it('uses route metadata limit and ttl when decorator is present', async () => {
@@ -95,4 +98,3 @@ describe('RateLimitGuard', () => {
     expect(redisClient.expire).not.toHaveBeenCalled();
   });
 });
-

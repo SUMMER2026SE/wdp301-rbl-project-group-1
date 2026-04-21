@@ -14,6 +14,10 @@ export const envValidationSchema = z.object({
   CLOUDINARY_CLOUD_NAME: z.string(),
   CLOUDINARY_API_KEY: z.string(),
   CLOUDINARY_API_SECRET: z.string(),
+  EMAIL_HOST: z.string(),
+  EMAIL_PORT: z.string().default('587'),
+  EMAIL_USER: z.string(),
+  EMAIL_PASS: z.string(),
 });
 
 export const validateEnv = (config: Record<string, unknown>) =>

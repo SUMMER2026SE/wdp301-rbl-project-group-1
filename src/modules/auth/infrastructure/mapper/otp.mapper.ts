@@ -1,10 +1,11 @@
 import { IMapper } from '../../../../shared/application/interfaces/mapper.interface';
 import { Otp } from '../../domain/entities/otp.entity';
-import { OtpWriteData, PrismaOtpRecord } from '../repositories/otp.repository.types';
+import {
+  OtpWriteData,
+  PrismaOtpRecord,
+} from '../repositories/otp.repository.types';
 
-export class OtpMapper
-  implements IMapper<Otp, PrismaOtpRecord | OtpWriteData>
-{
+export class OtpMapper implements IMapper<Otp, PrismaOtpRecord | OtpWriteData> {
   toDomain(raw: PrismaOtpRecord): Otp {
     return Otp.create(raw.id, {
       email: raw.email,

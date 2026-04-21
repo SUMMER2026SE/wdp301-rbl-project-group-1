@@ -41,9 +41,7 @@ export type OtpDelegate = {
     };
     orderBy?: { createdAt: 'asc' | 'desc' };
   }): Promise<PrismaOtpRecord | null>;
-  findUnique(args: {
-    where: { id: string };
-  }): Promise<PrismaOtpRecord | null>;
+  findUnique(args: { where: { id: string } }): Promise<PrismaOtpRecord | null>;
   update(args: {
     where: { id: string };
     data: Partial<OtpWriteData>;

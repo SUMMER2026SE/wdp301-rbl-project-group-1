@@ -26,10 +26,7 @@ export class PrismaOtpRepository implements IOtpRepository {
    * Luôn lấy OTP mới nhất chưa bị dùng theo email + type.
    * Dùng raw query để đảm bảo ORDER BY createdAt DESC LIMIT 1.
    */
-  async findByEmailAndType(
-    email: string,
-    type: OtpType,
-  ): Promise<Otp | null> {
+  async findByEmailAndType(email: string, type: OtpType): Promise<Otp | null> {
     const rows = await this.prisma.$queryRaw<PrismaOtpRecord[]>`
       SELECT
         id,
