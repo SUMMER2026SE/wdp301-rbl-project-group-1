@@ -19,7 +19,7 @@ export class RefreshTokenCommandHandler
   constructor(
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
     @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
-    private readonly jwtService: IJwtService,
+    @Inject(IJwtService) private readonly jwtService: IJwtService,
   ) {}
 
   async execute(command: RefreshTokenCommand): Promise<RefreshTokenResult> {

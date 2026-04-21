@@ -21,8 +21,8 @@ export class LoginCommandHandler
     @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
     @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
-    private readonly hashService: IHashService,
-    private readonly jwtService: IJwtService,
+    @Inject(IHashService) private readonly hashService: IHashService,
+    @Inject(IJwtService) private readonly jwtService: IJwtService,
   ) {}
 
   async execute(command: LoginCommand): Promise<LoginResult> {

@@ -1,22 +1,16 @@
 import { Global, Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import Redis from 'ioredis';
+import { CACHE_SERVICE } from 'src/shared/application/constants/cache.constants';
+import { RedisService } from './redis.service';
 
 @Global()
 @Module({
   providers: [
+    RedisService,
     {
-      provide: 'REDIS',
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const redis = new Redis(configService.get('redis.url') as string, {
-          tls: {},
-          maxRetriesPerRequest: null,
-        });
-        return redis;
-      },
+      provide: CACHE_SERVICE,
+      useClass: RedisService,
     },
   ],
-  exports: ['REDIS'],
+  exports: [CACHE_SERVICE],
 })
 export class RedisModule {}

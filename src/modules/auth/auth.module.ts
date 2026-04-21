@@ -16,8 +16,12 @@ import { AuthController } from './presentation/controllers/auth.controller';
 
 import { IHashService } from './application/services/hash.service';
 import { IJwtService } from './application/services/jwt.service';
+import { IOtpService } from './application/services/otp.service';
 import { BcryptService } from './infrastructure/services/hash.service';
 import { JwtServiceImpl } from './infrastructure/services/jwt.service';
+import { OtpService } from './infrastructure/services/otp.service';
+import { PrismaOtpRepository } from './infrastructure/repositories/otp.repository.impl';
+import { IOtpRepository } from './domain/repositories/otp.repository';
 import { JwtStrategy } from './presentation/strategies/jwt.strategy';
 
 import { UserModule } from '../user/user.module';
@@ -68,6 +72,14 @@ const QueryHandlers = [GetMeQueryHandler];
     {
       provide: IAuthRepository,
       useClass: PrismaAuthRepository,
+    },
+    {
+      provide: IOtpRepository,
+      useClass: PrismaOtpRepository,
+    },
+    {
+      provide: IOtpService,
+      useClass: OtpService,
     },
   ],
 })

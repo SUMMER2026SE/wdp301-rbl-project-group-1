@@ -20,7 +20,7 @@ export class RegisterCommandHandler
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
     @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
-    private readonly hashService: IHashService,
+    @Inject(IHashService) private readonly hashService: IHashService,
   ) {}
 
   async execute(command: RegisterCommand): Promise<RegisterResult> {

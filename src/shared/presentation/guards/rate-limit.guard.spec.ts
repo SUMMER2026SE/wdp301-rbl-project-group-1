@@ -1,15 +1,18 @@
 import { HttpStatus } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Test, TestingModule } from '@nestjs/testing';
-import Redis from 'ioredis';
-import { REDIS_CLIENT } from '../../infrastructure/database/redis/redis.constants';
+import { CACHE_SERVICE } from 'src/shared/application/constants/cache.constants';
 import { RATE_LIMIT_KEY } from '../decorators/decorator.constants';
 import { RateLimitGuard } from './rate-limit.guard';
 
 describe('RateLimitGuard', () => {
   let guard: RateLimitGuard;
   let redisClient: {
-    eval: jest.MockedFunction<Redis['eval']>;
+    incr: jest.Mock<any, any>;
+    expire: jest.Mock<any, any>;
+  };
+  let cacheService: {
+    getClient: jest.Mock<any, any>;
   };
   let reflector: {
     getAllAndOverride: jest.MockedFunction<Reflector['getAllAndOverride']>;
@@ -31,7 +34,12 @@ describe('RateLimitGuard', () => {
 
   beforeEach(async () => {
     redisClient = {
-      eval: jest.fn(),
+      incr: jest.fn(),
+      expire: jest.fn(),
+    };
+
+    cacheService = {
+      getClient: jest.fn().mockReturnValue(redisClient),
     };
 
     reflector = {
@@ -42,8 +50,8 @@ describe('RateLimitGuard', () => {
       providers: [
         RateLimitGuard,
         {
-          provide: REDIS_CLIENT,
-          useValue: redisClient,
+          provide: CACHE_SERVICE,
+          useValue: cacheService,
         },
         {
           provide: Reflector,
@@ -61,7 +69,7 @@ describe('RateLimitGuard', () => {
 
   it('uses default limit and ttl when route has no metadata', async () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
-    redisClient.eval.mockResolvedValue(1 as never);
+    redisClient.incr.mockResolvedValue(1);
 
     await expect(guard.canActivate(createContext())).resolves.toBe(true);
 
@@ -69,17 +77,13 @@ describe('RateLimitGuard', () => {
       expect.any(Function),
       expect.any(Function),
     ]);
-    expect(redisClient.eval).toHaveBeenCalledWith(
-      expect.any(String),
-      1,
-      'rate:GET:/health:127.0.0.1',
-      '60',
-    );
+    expect(redisClient.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
+    expect(redisClient.expire).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1', 60);
   });
 
   it('uses route metadata limit and ttl when decorator is present', async () => {
     reflector.getAllAndOverride.mockReturnValue({ limit: 2, ttl: 15 });
-    redisClient.eval.mockResolvedValue(3 as never);
+    redisClient.incr.mockResolvedValue(3);
 
     await expect(guard.canActivate(createContext())).rejects.toEqual(
       expect.objectContaining({
@@ -87,11 +91,8 @@ describe('RateLimitGuard', () => {
       }),
     );
 
-    expect(redisClient.eval).toHaveBeenCalledWith(
-      expect.any(String),
-      1,
-      'rate:GET:/health:127.0.0.1',
-      '15',
-    );
+    expect(redisClient.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
+    expect(redisClient.expire).not.toHaveBeenCalled();
   });
 });
+

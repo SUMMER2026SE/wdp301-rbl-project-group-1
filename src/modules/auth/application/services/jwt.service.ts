@@ -1,11 +1,10 @@
-export abstract class IJwtService {
-  abstract sign(payload: Record<string, unknown>): Promise<string>;
-  abstract verify<T extends object = Record<string, unknown>>(
-    token: string,
-  ): Promise<T>;
+export const IJwtService = Symbol('IJwtService');
+export interface IJwtService {
+  sign(payload: Record<string, unknown>): Promise<string>;
+  verify<T extends object = Record<string, unknown>>(token: string): Promise<T>;
 
-  abstract signRefresh(payload: Record<string, unknown>): Promise<string>;
-  abstract verifyRefresh<T extends object = Record<string, unknown>>(
+  signRefresh(payload: Record<string, unknown>): Promise<string>;
+  verifyRefresh<T extends object = Record<string, unknown>>(
     token: string,
   ): Promise<T>;
 }

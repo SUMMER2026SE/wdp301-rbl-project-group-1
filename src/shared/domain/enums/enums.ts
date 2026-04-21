@@ -11,6 +11,12 @@ export enum UserRole {
   PARENT = 'PARENT',
 }
 
+export enum OtpType {
+  VERIFY_EMAIL = 'VERIFY_EMAIL',
+  RESET_PASSWORD = 'RESET_PASSWORD',
+  TWO_FACTOR = 'TWO_FACTOR',
+}
+
 export enum CourseStatus {
   DRAFT = 'DRAFT',
   PUBLISHED = 'PUBLISHED',

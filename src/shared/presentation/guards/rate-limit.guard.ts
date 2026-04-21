@@ -7,24 +7,18 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import Redis from 'ioredis';
-import { REDIS_CLIENT } from '../../infrastructure/database/redis/redis.constants';
+import { CACHE_SERVICE } from 'src/shared/application/constants/cache.constants';
+import { ICache } from 'src/shared/application/interfaces/cache.interface';
+import { RedisService } from '../../infrastructure/database/redis/redis.service';
 import { RATE_LIMIT_KEY } from '../decorators/decorator.constants';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private static readonly INCREMENT_SCRIPT = `
-    local current = redis.call('INCR', KEYS[1])
-    if current == 1 then
-      redis.call('EXPIRE', KEYS[1], ARGV[1])
-    end
-    return current
-  `;
   private static readonly DEFAULT_LIMIT = 10;
   private static readonly DEFAULT_TTL_SECONDS = 60;
 
   constructor(
-    @Inject(REDIS_CLIENT) private readonly redisClient: Redis,
+    @Inject(CACHE_SERVICE) private readonly cacheService: ICache,
     private readonly reflector: Reflector,
   ) {}
 
@@ -34,7 +28,7 @@ export class RateLimitGuard implements CanActivate {
       method?: string;
       originalUrl?: string;
       url?: string;
-      headers?: Record<string, string | string[] | undefined>;
+      headers?: Record<string, string[] | undefined>;
       raw?: { url?: string };
     }>();
 
@@ -51,14 +45,15 @@ export class RateLimitGuard implements CanActivate {
     const routePath = this.resolveRoutePath(request);
     const key = `rate:${request.method ?? 'UNKNOWN'}:${routePath}:${clientIp}`;
 
-    const current = Number(
-      await this.redisClient.eval(
-        RateLimitGuard.INCREMENT_SCRIPT,
-        1,
-        key,
-        String(ttlSeconds),
-      ),
-    );
+    const current = await (this.cacheService as RedisService)
+      .getClient()
+      .incr(key);
+
+    if (current === 1) {
+      await (this.cacheService as RedisService)
+        .getClient()
+        .expire(key, ttlSeconds);
+    }
 
     if (current > limit) {
       throw new HttpException(
