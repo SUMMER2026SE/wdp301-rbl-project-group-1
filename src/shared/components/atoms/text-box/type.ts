@@ -1,4 +1,4 @@
-import type { ChangeEvent, FocusEventHandler, Ref } from "react";
+import type { ChangeEvent, FocusEventHandler, ReactNode, Ref } from "react";
 
 import type { InputFieldDetail } from "@/src/shared/components/@types/input";
 
@@ -8,7 +8,7 @@ export type TextBoxPresenterProps = InputFieldDetail & {
   onBlur?: FocusEventHandler<HTMLInputElement>;
   reference?: Ref<HTMLInputElement>;
   error?: string;
-  icon?: string;
+  icon?: string | ReactNode;
   className?: string;
   inputClassName?: string;
 };

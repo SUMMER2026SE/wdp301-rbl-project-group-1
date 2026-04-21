@@ -24,14 +24,24 @@ const TextBoxPresenter: React.FC<TextBoxPresenterProps> = ({
 
   return (
     <div className={cn("grid w-full items-center gap-3", className)}>
-      {label && <Label htmlFor={name} className="font-bold">
-        {label}
-      </Label>}
+      {label && (
+        <Label htmlFor={name} className="font-bold">
+          {label}
+        </Label>
+      )}
       <div className="relative">
         {icon && (
-          <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xl text-muted-foreground">
-            {icon}
-          </span>
+          <>
+            {typeof icon === "string" ? (
+              <span className="material-symbols-outlined pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xl text-muted-foreground">
+                {icon}
+              </span>
+            ) : (
+              <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 flex items-center justify-center">
+                {icon}
+              </div>
+            )}
+          </>
         )}
         <Input
           id={name}
@@ -48,7 +58,7 @@ const TextBoxPresenter: React.FC<TextBoxPresenterProps> = ({
             "border border-border bg-card text-foreground shadow-sm focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none",
             error &&
               "border-destructive focus:border-destructive focus:ring-destructive/20",
-            icon && "h-12",
+            icon && "h-12 pl-10",
             inputClassName,
           )}
         />
