@@ -98,6 +98,18 @@ enum ReportStatus {
   @@map("report_status")
 }
 
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum TagCategory {
+  KNOWLEDGE
+  SKILL
+  TOOL
+}
+
 //////////////////////////////////////////////////
 // USER SYSTEM
 //////////////////////////////////////////////////
@@ -259,6 +271,52 @@ model Otp {
 // COURSE SYSTEM
 //////////////////////////////////////////////////
 
+// ================= SUBJECT =================
+model Subject {
+  id   String @id @default(cuid())
+
+  name String // "Toán"
+  slug String @unique // "toan"
+
+  courses Course[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("subject")
+}
+
+// ================= GRADE =================
+model Grade {
+  id   String @id @default(cuid())
+
+  name  String // "Lớp 11"
+  slug  String @unique // "lop-11"
+  order Int // để sort (10, 11, 12)
+
+  courses Course[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("grade")
+}
+
+// ================= TAG =================
+model Tag {
+  id   String @id @default(cuid())
+
+  name String // "Đạo hàm", "React"
+  slug String @unique
+
+  category TagCategory
+
+  courses CourseTag[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("tag")
+}
+
+// ================= COURSE =================
 model Course {
   id      String @id @default(cuid())
   tutorId String @map("tutor_id")
@@ -266,12 +324,21 @@ model Course {
   title       String
   description String?
   price       Float?
-  level       String?
+
+  subjectId String @map("subject_id")
+  gradeId   String @map("grade_id")
+
+  level CourseLevel
 
   status    CourseStatus
-  createdAt DateTime     @default(now()) @map("created_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  tutor Tutor @relation(fields: [tutorId], references: [id])
+  // RELATIONS
+  tutor   Tutor   @relation(fields: [tutorId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  grade   Grade   @relation(fields: [gradeId], references: [id])
+
+  tags CourseTag[]
 
   lessons     Lesson[]
   enrollments Enrollment[]
@@ -280,7 +347,23 @@ model Course {
   payments    Payment[]
   stats       CourseStats?
 
+  // INDEX (quan trọng)
+  @@index([subjectId])
+  @@index([gradeId])
+  @@index([level])
+
   @@map("course")
+}
+
+model CourseTag {
+  courseId String @map("course_id")
+  tagId    String @map("tag_id")
+
+  course Course @relation(fields: [courseId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([courseId, tagId])
+  @@map("course_tag")
 }
 
 model Lesson {
