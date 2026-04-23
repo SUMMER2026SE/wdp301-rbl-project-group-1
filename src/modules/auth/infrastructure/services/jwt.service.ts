@@ -11,13 +11,19 @@ export class JwtServiceImpl implements IJwtService {
   ) {}
 
   async sign(payload: Record<string, unknown>): Promise<string> {
-    return this.jwt.signAsync(payload);
+    const expiresIn = this.configService.get<string>('auth.accessTokenExpires');
+    return this.jwt.signAsync(payload, {
+      secret: this.configService.get<string>('auth.secretKey'),
+      expiresIn: expiresIn as unknown as undefined,
+    });
   }
 
   async verify<T extends object = Record<string, unknown>>(
     token: string,
   ): Promise<T> {
-    return this.jwt.verifyAsync<T>(token);
+    return this.jwt.verifyAsync<T>(token, {
+      secret: this.configService.get<string>('auth.secretKey'),
+    });
   }
 
   async signRefresh(payload: Record<string, unknown>): Promise<string> {
@@ -35,6 +41,24 @@ export class JwtServiceImpl implements IJwtService {
   ): Promise<T> {
     return this.jwt.verifyAsync<T>(token, {
       secret: this.configService.get<string>('auth.refreshSecretKey'),
+    });
+  }
+
+  async signReset(payload: Record<string, unknown>): Promise<string> {
+    const expiresIn = this.configService.get<string>(
+      'auth.defaultTokenExpires',
+    );
+    return this.jwt.signAsync(payload, {
+      secret: this.configService.get<string>('auth.resetSecretKey'),
+      expiresIn: expiresIn as unknown as undefined,
+    });
+  }
+
+  async verifyReset<T extends object = Record<string, unknown>>(
+    token: string,
+  ): Promise<T> {
+    return this.jwt.verifyAsync<T>(token, {
+      secret: this.configService.get<string>('auth.resetSecretKey'),
     });
   }
 }

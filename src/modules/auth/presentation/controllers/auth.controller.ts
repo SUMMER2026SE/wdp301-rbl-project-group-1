@@ -6,6 +6,7 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  UseGuards,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -25,23 +26,36 @@ import {
 } from 'src/shared/presentation/decorators/api-response.decorator';
 import { RateLimit } from 'src/shared/presentation/decorators/rate-limit.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
+import { ForgotPasswordCommand } from '../../application/commands/forgot-password/forgot-password.command';
+import { ForgotPasswordResult } from '../../application/commands/forgot-password/forgot-password.result';
 import { LoginCommand } from '../../application/commands/login/login.command';
 import { LogoutCommand } from '../../application/commands/logout/logout.command';
 import { RefreshTokenCommand } from '../../application/commands/refresh-token/refresh-token.command';
 import { RefreshTokenResult } from '../../application/commands/refresh-token/refresh-token.result';
 import { RegisterCommand } from '../../application/commands/register/register.command';
+import { ResetPasswordCommand } from '../../application/commands/reset-password/reset-password.command';
+import { ResetPasswordResult } from '../../application/commands/reset-password/reset-password.result';
+import { VerifyOtpCommand } from '../../application/commands/verify-otp/verify-otp.command';
+import { VerifyOtpResult } from '../../application/commands/verify-otp/verify-otp.result';
 import { GetMeQuery } from '../../application/queries/get-me/get-me.query';
 import { GetMeResult } from '../../application/queries/get-me/get-me.result';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { Public } from '../decorators/public.decorator';
+import { ResetTokenGuard } from '../guards/reset-token.guard';
 import {
   AuthTokenPairDto,
+  ForgotPasswordResultDto,
   LoginResponseDto,
   MeUserDto,
   RegisterResultDto,
+  ResetPasswordResultDto,
+  VerifyOtpResultDto,
 } from '../schemas/auth-response.dto';
+import { ForgotPasswordDto } from '../schemas/forgot-password.dto';
 import { LoginDto } from '../schemas/login.dto';
 import { RegisterDto } from '../schemas/register.dto';
+import { ResetPasswordDto } from '../schemas/reset-password.dto';
+import { VerifyOtpDto } from '../schemas/verify-otp.dto';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -194,6 +208,81 @@ export class AuthController {
     const result = await this.queryBus.execute<GetMeQuery, GetMeResult>(
       new GetMeQuery(user.userId),
     );
+
+    return BaseResponse.ok(result);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  @ApiOperation({
+    operationId: 'forgotPassword',
+    summary: 'Send an OTP for password reset',
+  })
+  @ApiOkResponseWrapped(ForgotPasswordResultDto, {
+    description: 'OTP sent to email successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'User with this email does not exist.',
+  })
+  async forgotPassword(
+    @Body() dto: ForgotPasswordDto,
+  ): Promise<BaseResponse<ForgotPasswordResult>> {
+    const result = await this.commandBus.execute<
+      ForgotPasswordCommand,
+      ForgotPasswordResult
+    >(new ForgotPasswordCommand(dto.email));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Public()
+  @Post('verify-otp')
+  @ApiOperation({
+    operationId: 'verifyOtp',
+    summary: 'Verify OTP code for password reset',
+  })
+  @ApiOkResponseWrapped(VerifyOtpResultDto, {
+    description: 'OTP verified successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid OTP or expired.',
+  })
+  async verifyOtp(
+    @Body() dto: VerifyOtpDto,
+  ): Promise<BaseResponse<VerifyOtpResult>> {
+    const result = await this.commandBus.execute<
+      VerifyOtpCommand,
+      VerifyOtpResult
+    >(new VerifyOtpCommand(dto.email, dto.code));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Public()
+  @Post('reset-password')
+  @UseGuards(ResetTokenGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'resetPassword',
+    summary: 'Reset user password using reset token in Authorization header',
+  })
+  @ApiOkResponseWrapped(ResetPasswordResultDto, {
+    description: 'Password has been successfully reset.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid reset token or user not found.',
+  })
+  async resetPassword(
+    @CurrentUser() user: { email: string },
+    @Body() dto: ResetPasswordDto,
+  ): Promise<BaseResponse<ResetPasswordResult>> {
+    const result = await this.commandBus.execute<
+      ResetPasswordCommand,
+      ResetPasswordResult
+    >(new ResetPasswordCommand(user.email, dto.newPassword));
 
     return BaseResponse.ok(result);
   }

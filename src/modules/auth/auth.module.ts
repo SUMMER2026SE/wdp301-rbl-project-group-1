@@ -5,10 +5,13 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { StringValue } from 'ms';
 
+import { ForgotPasswordCommandHandler } from './application/commands/forgot-password/forgot-password.handler';
 import { LoginCommandHandler } from './application/commands/login/login.handler';
 import { LogoutCommandHandler } from './application/commands/logout/logout.handler';
 import { RefreshTokenCommandHandler } from './application/commands/refresh-token/refresh-token.handler';
 import { RegisterCommandHandler } from './application/commands/register/register.handler';
+import { ResetPasswordCommandHandler } from './application/commands/reset-password/reset-password.handler';
+import { VerifyOtpCommandHandler } from './application/commands/verify-otp/verify-otp.handler';
 import { GetMeQueryHandler } from './application/queries/get-me/get-me.handler';
 import { IAuthRepository } from './domain/repositories/auth.repository.interface';
 import { PrismaAuthRepository } from './infrastructure/repositories/auth.repository.impl';
@@ -17,12 +20,13 @@ import { AuthController } from './presentation/controllers/auth.controller';
 import { IHashService } from './application/services/hash.service';
 import { IJwtService } from './application/services/jwt.service';
 import { IOtpService } from './application/services/otp.service';
+import { IOtpRepository } from './domain/repositories/otp.repository';
+import { PrismaOtpRepository } from './infrastructure/repositories/otp.repository.impl';
 import { BcryptService } from './infrastructure/services/hash.service';
 import { JwtServiceImpl } from './infrastructure/services/jwt.service';
 import { OtpService } from './infrastructure/services/otp.service';
-import { PrismaOtpRepository } from './infrastructure/repositories/otp.repository.impl';
-import { IOtpRepository } from './domain/repositories/otp.repository';
 import { JwtStrategy } from './presentation/strategies/jwt.strategy';
+import { ResetTokenStrategy } from './presentation/strategies/reset-token.strategy';
 
 import { UserModule } from '../user/user.module';
 
@@ -31,6 +35,9 @@ const CommandHandlers = [
   LoginCommandHandler,
   RefreshTokenCommandHandler,
   LogoutCommandHandler,
+  ForgotPasswordCommandHandler,
+  VerifyOtpCommandHandler,
+  ResetPasswordCommandHandler,
 ];
 
 const QueryHandlers = [GetMeQueryHandler];
@@ -61,6 +68,7 @@ const QueryHandlers = [GetMeQueryHandler];
     ...CommandHandlers,
     ...QueryHandlers,
     JwtStrategy,
+    ResetTokenStrategy,
     {
       provide: IHashService,
       useClass: BcryptService,

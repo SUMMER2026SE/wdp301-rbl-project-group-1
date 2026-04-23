@@ -7,6 +7,7 @@ export const envValidationSchema = z.object({
   REDIS_URL: z.string().url(),
   SECRET_KEY: z.string(),
   REFRESH_SECRET_KEY: z.string(),
+  RESET_SECRET_KEY: z.string(),
   ACCESS_TOKEN_EXPIRES: z.string().default('2m'),
   DEFAULT_TOKEN_EXPIRES: z.string().default('5m'),
   REFRESH_TOKEN_EXPIRES: z.string().default('30d'),

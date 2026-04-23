@@ -11,6 +11,7 @@ export default () => ({
   },
   auth: {
     secretKey: process.env.SECRET_KEY,
+    resetSecretKey: process.env.RESET_SECRET_KEY,
     refreshSecretKey: process.env.REFRESH_SECRET_KEY,
     accessTokenExpires: process.env.ACCESS_TOKEN_EXPIRES,
     defaultTokenExpires: process.env.DEFAULT_TOKEN_EXPIRES,

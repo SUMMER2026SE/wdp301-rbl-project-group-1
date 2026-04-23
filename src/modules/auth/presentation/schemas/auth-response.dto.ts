@@ -57,6 +57,44 @@ export const LoginUserSchema = z
 
 export class LoginUserDto extends createZodDto(LoginUserSchema) {}
 
+export const ForgotPasswordResultSchema = z
+  .object({
+    message: z
+      .string()
+      .meta({ example: 'An OTP has been sent to your email address.' }),
+    expiresAt: z
+      .string()
+      .datetime()
+      .meta({ example: '2023-01-01T00:00:00.000Z' }),
+  })
+  .meta({ id: 'ForgotPasswordResultDto' });
+
+export class ForgotPasswordResultDto extends createZodDto(
+  ForgotPasswordResultSchema,
+) {}
+
+export const VerifyOtpResultSchema = z
+  .object({
+    message: z.string().meta({ example: 'OTP verified successfully' }),
+    resetToken: z.string().meta({ example: 'eyJhbGciOiJIUzI1NiIs...' }),
+  })
+  .meta({ id: 'VerifyOtpResultDto' });
+
+export class VerifyOtpResultDto extends createZodDto(VerifyOtpResultSchema) {}
+
+export const ResetPasswordResultSchema = z
+  .object({
+    message: z
+      .string()
+      .meta({ example: 'Password has been successfully reset' }),
+    success: z.boolean().meta({ example: true }),
+  })
+  .meta({ id: 'ResetPasswordResultDto' });
+
+export class ResetPasswordResultDto extends createZodDto(
+  ResetPasswordResultSchema,
+) {}
+
 export const MeUserSchema = z
   .object({
     id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
