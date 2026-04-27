@@ -1,11 +1,12 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { CourseModule } from 'src/modules/course/course.module';
 import { HealthModule } from 'src/modules/health/health.module';
+import { NotificationModule } from 'src/modules/notification/notification.module';
 import { UserModule } from 'src/modules/user/user.module';
 import { RateLimitGuard } from 'src/shared/presentation/guards/rate-limit.guard';
 import { AuthModule } from './modules/auth/auth.module';
-import { NotificationModule } from 'src/modules/notification/notification.module';
 import { JwtAuthGuard } from './modules/auth/presentation/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/presentation/guards/roles.guard';
 import { AppConfigModule } from './shared/infrastructure/config/config.module';
@@ -21,6 +22,7 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
     AuthModule,
     UserModule,
     NotificationModule,
+    CourseModule,
   ],
   providers: [
     {

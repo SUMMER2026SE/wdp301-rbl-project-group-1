@@ -114,4 +114,8 @@ export class User extends AggregateRoot<string> {
   setParent(parent: Parent): void {
     this.props.parent = parent;
   }
+
+  upgradeToTutor(): void {
+    this.props.role = UserRole.TUTOR;
+  }
 }

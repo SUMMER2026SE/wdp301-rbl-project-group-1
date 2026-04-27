@@ -21,6 +21,8 @@ import { ChangeAvatarCommand } from '../../application/commands/change-avatar/ch
 import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';
 import { UpdateProfileCommand } from '../../application/commands/update-profile/update-profile.command';
 import { UpdateProfileResult } from '../../application/commands/update-profile/update-profile.result';
+import { UpgradeTutorCommand } from '../../application/commands/upgrade-tutor/upgrade-tutor.command';
+import { UpgradeTutorResult } from '../../application/commands/upgrade-tutor/upgrade-tutor.result';
 import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
 import {
   GetUsersResult,
@@ -29,6 +31,7 @@ import {
 import { ChangeAvatarResultDto } from '../schemas/change-avatar-response.dto';
 import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
 import { UpdateProfileDto } from '../schemas/update-profile.dto';
+import { UpgradeTutorResultDto } from '../schemas/upgrade-tutor-response.dto';
 import { UserResponseDto } from '../schemas/user-response.dto';
 @ApiTags('Users')
 @Controller('users')
@@ -100,6 +103,26 @@ export class UserController {
       ChangeAvatarCommand,
       ChangeAvatarResult
     >(new ChangeAvatarCommand(user.userId, file.buffer, file.mimetype));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Patch('me/upgrade-tutor')
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'upgradeTutor',
+    summary: 'Upgrade current user to tutor role',
+  })
+  @ApiOkResponseWrapped(UpgradeTutorResultDto, {
+    description: 'User successfully upgraded to tutor.',
+  })
+  async upgradeTutor(
+    @CurrentUser() user: { userId: string },
+  ): Promise<BaseResponse<UpgradeTutorResult>> {
+    const result = await this.commandBus.execute<
+      UpgradeTutorCommand,
+      UpgradeTutorResult
+    >(new UpgradeTutorCommand(user.userId));
 
     return BaseResponse.ok(result);
   }

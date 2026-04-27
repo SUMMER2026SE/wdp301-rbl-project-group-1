@@ -56,10 +56,32 @@ export class PrismaUserRepository implements IUserRepository {
     const savedUser = user.id
       ? await this.prisma.user.update({
           where: { id: user.id },
-          data,
+          data: {
+            ...data,
+            tutor:
+              data.role === PrismaUserRole.TUTOR
+                ? { connectOrCreate: { where: { id: user.id }, create: {} } }
+                : undefined,
+            student:
+              data.role === PrismaUserRole.STUDENT
+                ? { connectOrCreate: { where: { id: user.id }, create: {} } }
+                : undefined,
+            parent:
+              data.role === PrismaUserRole.PARENT
+                ? { connectOrCreate: { where: { id: user.id }, create: {} } }
+                : undefined,
+          } as Prisma.UserUpdateInput,
         })
       : await this.prisma.user.create({
-          data: data as Prisma.UserCreateInput,
+          data: {
+            ...data,
+            tutor:
+              data.role === PrismaUserRole.TUTOR ? { create: {} } : undefined,
+            student:
+              data.role === PrismaUserRole.STUDENT ? { create: {} } : undefined,
+            parent:
+              data.role === PrismaUserRole.PARENT ? { create: {} } : undefined,
+          } as Prisma.UserCreateInput,
         });
 
     return this.mapper.toDomain(savedUser);
