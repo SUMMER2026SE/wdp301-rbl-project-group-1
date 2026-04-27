@@ -1,9 +1,8 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Button } from '@/src/shared/components/ui/button';
-import { GraduationCap } from 'lucide-react';
-
+import { Button } from "@/src/shared/components/ui/button";
+import { GraduationCap, Menu } from "lucide-react";
+import Link from "next/link";
 
 export default function Header() {
   return (
@@ -20,7 +19,10 @@ export default function Header() {
 
         <div className="hidden items-center gap-8 md:flex">
           <nav className="flex items-center gap-6 lg:gap-9">
-            <a className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary" href="#tutors">
+            <a
+              className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              href="#tutors"
+            >
               Tìm gia sư
             </a>
             <Link
@@ -38,10 +40,17 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <Button asChild variant="outline" className="h-10 border-border px-4 text-sm font-bold text-muted-foreground hover:border-primary hover:text-primary">
+            <Button
+              asChild
+              variant="outline"
+              className="h-10 border-border px-4 text-sm font-bold text-muted-foreground hover:border-primary hover:text-primary"
+            >
               <Link href="/login">Đăng nhập</Link>
             </Button>
-            <Button asChild className="h-10 bg-primary px-4 text-sm font-bold text-primary-foreground hover:bg-primary/90">
+            <Button
+              asChild
+              className="h-10 bg-primary px-4 text-sm font-bold text-primary-foreground hover:bg-primary/90"
+            >
               <Link href="/register">Đăng ký</Link>
             </Button>
           </div>
@@ -52,7 +61,7 @@ export default function Header() {
           className="p-2 text-muted-foreground md:hidden"
           aria-label="Open menu"
         >
-          <span className="material-symbols-outlined">menu</span>
+          <Menu className="size-5" />
         </Button>
       </div>
     </header>

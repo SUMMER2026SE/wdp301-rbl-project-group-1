@@ -1,3 +1,4 @@
+import { GraduationCap } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -21,9 +22,6 @@ export default function Login() {
 
         <div className="relative z-10 max-w-lg p-12 text-primary-foreground">
           <div className="mb-6 flex items-center gap-3">
-            {/* <div className="flex size-10 items-center justify-center rounded-lg bg-primary-foreground/20 backdrop-blur-sm">
-              <span className="material-symbols-outlined text-3xl">school</span>
-            </div> */}
             <h2 className="text-2xl font-bold">Tutor Connect</h2>
           </div>
           <h1 className="mb-6 text-5xl font-black leading-tight">
@@ -39,7 +37,7 @@ export default function Login() {
       <section className="flex w-full items-center justify-center bg-background p-6 sm:p-12 lg:w-1/2">
         <div className="w-full max-w-md space-y-8">
           <div className="mb-8 flex items-center justify-center gap-2 text-primary lg:hidden">
-            <span className="material-symbols-outlined text-4xl">school</span>
+            <GraduationCap className="size-8" />
             <span className="text-2xl font-bold text-foreground">
               Tutor Connect
             </span>

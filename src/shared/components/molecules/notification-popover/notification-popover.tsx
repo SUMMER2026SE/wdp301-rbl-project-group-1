@@ -6,7 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/shared/components/ui/popover";
-import { Bell } from "lucide-react";
+import { Bell, CheckCircle, CheckCircle2, Info, Mail } from "lucide-react";
 import { useState } from "react";
 
 interface Notification {
@@ -86,24 +86,16 @@ export function NotificationPopover() {
                 <div className="flex items-start gap-3">
                   <div className="mt-1 shrink-0">
                     {notification.icon === "task_alt" && (
-                      <span className="material-symbols-outlined text-lg text-primary">
-                        task_alt
-                      </span>
+                      <CheckCircle2 className="size-5 text-primary" />
                     )}
                     {notification.icon === "mail" && (
-                      <span className="material-symbols-outlined text-lg text-primary">
-                        mail
-                      </span>
+                      <Mail className="size-5 text-primary" />
                     )}
                     {notification.icon === "info" && (
-                      <span className="material-symbols-outlined text-lg text-primary">
-                        info
-                      </span>
+                      <Info className="size-5 text-primary" />
                     )}
                     {notification.icon === "check_circle" && (
-                      <span className="material-symbols-outlined text-lg text-primary">
-                        check_circle
-                      </span>
+                      <CheckCircle className="size-5 text-primary" />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

@@ -46,6 +46,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --color-schedule-blue-light: var(--schedule-blue-light);
+  --color-schedule-blue-border: var(--schedule-blue-border);
+  --color-schedule-blue-text: var(--schedule-blue-text);
+  --color-schedule-purple-light: var(--schedule-purple-light);
+  --color-schedule-purple-border: var(--schedule-purple-border);
+  --color-schedule-purple-text: var(--schedule-purple-text);
+  --color-schedule-emerald-light: var(--schedule-emerald-light);
+  --color-schedule-emerald-border: var(--schedule-emerald-border);
+  --color-schedule-emerald-text: var(--schedule-emerald-text);
+  --color-schedule-orange-light: var(--schedule-orange-light);
+  --color-schedule-orange-border: var(--schedule-orange-border);
+  --color-schedule-orange-text: var(--schedule-orange-text);
 }
 
 :root {
@@ -81,6 +93,19 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  /* Schedule Colors */
+  --schedule-blue-light: oklch(0.93 0.08 259);
+  --schedule-blue-border: oklch(0.87 0.14 259);
+  --schedule-blue-text: oklch(0.45 0.15 259);
+  --schedule-purple-light: oklch(0.93 0.08 280);
+  --schedule-purple-border: oklch(0.87 0.14 280);
+  --schedule-purple-text: oklch(0.45 0.15 280);
+  --schedule-emerald-light: oklch(0.93 0.08 150);
+  --schedule-emerald-border: oklch(0.87 0.14 150);
+  --schedule-emerald-text: oklch(0.45 0.15 150);
+  --schedule-orange-light: oklch(0.93 0.08 40);
+  --schedule-orange-border: oklch(0.87 0.14 40);
+  --schedule-orange-text: oklch(0.45 0.15 40);
 }
 
 .dark {
@@ -115,6 +140,19 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  /* Schedule Colors Dark */
+  --schedule-blue-light: oklch(0.23 0.08 259);
+  --schedule-blue-border: oklch(0.35 0.12 259);
+  --schedule-blue-text: oklch(0.65 0.15 259);
+  --schedule-purple-light: oklch(0.23 0.08 280);
+  --schedule-purple-border: oklch(0.35 0.12 280);
+  --schedule-purple-text: oklch(0.65 0.15 280);
+  --schedule-emerald-light: oklch(0.23 0.08 150);
+  --schedule-emerald-border: oklch(0.35 0.12 150);
+  --schedule-emerald-text: oklch(0.65 0.15 150);
+  --schedule-orange-light: oklch(0.23 0.08 40);
+  --schedule-orange-border: oklch(0.35 0.12 40);
+  --schedule-orange-text: oklch(0.65 0.15 40);
 }
 
 @layer base {
