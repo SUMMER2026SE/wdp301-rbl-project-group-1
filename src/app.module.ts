@@ -4,6 +4,7 @@ import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { CourseModule } from 'src/modules/course/course.module';
 import { HealthModule } from 'src/modules/health/health.module';
 import { NotificationModule } from 'src/modules/notification/notification.module';
+import { TutorApplicationModule } from 'src/modules/tutor-application/tutor-application.module';
 import { UserModule } from 'src/modules/user/user.module';
 import { RateLimitGuard } from 'src/shared/presentation/guards/rate-limit.guard';
 import { AuthModule } from './modules/auth/auth.module';
@@ -23,6 +24,7 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
     UserModule,
     NotificationModule,
     CourseModule,
+    TutorApplicationModule,
   ],
   providers: [
     {

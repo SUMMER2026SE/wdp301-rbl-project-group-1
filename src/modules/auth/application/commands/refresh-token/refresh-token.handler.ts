@@ -55,6 +55,7 @@ export class RefreshTokenCommandHandler
 
     const tokenPayload: AuthTokenPayload = {
       sub: String(user.id),
+      email: user.email,
       role: user.role,
     };
 

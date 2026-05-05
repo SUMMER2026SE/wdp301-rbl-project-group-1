@@ -44,6 +44,7 @@ export class LoginCommandHandler
 
     const payload: AuthTokenPayload = {
       sub: String(user.id),
+      email: user.email,
       role: user.role,
     };
 
