@@ -78,7 +78,7 @@ export default function Tutors({ id = "tutors" }: { id?: string }) {
                                 <div className="relative h-48 w-full bg-muted">
                                     <Image src={tutor.image} alt={tutor.name} fill className="object-cover" />
                                     <div className="absolute right-3 top-3 flex items-center gap-1 rounded-md bg-background px-2 py-1 shadow-sm">
-                                        <Star className="size-3.5 fill-yellow-400 text-yellow-400" />
+                                        <Star className="size-3.5 fill-warning text-warning" />
                                         <span className="text-xs font-bold text-foreground">{tutor.rating.toFixed(1)}</span>
                                     </div>
                                 </div>
@@ -121,7 +121,7 @@ export default function Tutors({ id = "tutors" }: { id?: string }) {
                                         '"Trở thành gia sư trên Tutor Connect là quyết định tuyệt vời. Mình có thể linh hoạt thời gian và có đầy đủ công cụ giảng dạy hiệu quả."',
                                     name: 'Hoàng Nam',
                                     role: 'Gia sư Tiếng Anh',
-                                    color: 'bg-green-500/20 text-green-600',
+                                    color: 'bg-success-soft text-success',
                                     initials: 'H',
                                 },
                                 {
@@ -129,14 +129,14 @@ export default function Tutors({ id = "tutors" }: { id?: string }) {
                                         '"Con gái tôi đã đỗ vào trường đại học mơ ước. Gia sư không chỉ dạy kiến thức mà còn truyền cảm hứng rất tốt."',
                                     name: 'Chị Lan Anh',
                                     role: 'Phụ huynh học sinh',
-                                    color: 'bg-purple-500/20 text-purple-600',
+                                    color: 'bg-purple-soft text-purple',
                                     initials: 'L',
                                 },
                             ].map((story) => (
                                 <article key={story.name} className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-8 shadow-sm">
-                                    <div className="flex gap-1 text-yellow-500">
+                                    <div className="flex gap-1 text-warning">
                                         {Array.from({ length: 5 }).map((_, index) => (
-                                            <Star key={index} className="size-4 fill-yellow-500 text-yellow-500" />
+                                            <Star key={index} className="size-4 fill-warning text-warning" />
                                         ))}
                                     </div>
                                     <p className="flex-1 italic text-muted-foreground">{story.quote}</p>

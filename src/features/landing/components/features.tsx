@@ -38,49 +38,49 @@ const features: Feature[] = [
         title: 'Video tích hợp',
         description:
             'Cuộc gọi video được dẫn qua Google Meet trên trình duyệt của bạn.',
-        iconBg: 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400',
+        iconBg: 'bg-error-soft text-error',
     },
     {
         icon: FolderEdit,
         title: 'Chia sẻ tài liệu',
         description:
             'Chia sẻ bài tập, tệp PDF và ghi chú bảng trắng ngay lập tức với gia sư của bạn.',
-        iconBg: 'bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400',
+        iconBg: 'bg-warning-soft text-warning',
     },
     {
         icon: TrendingUp,
         title: 'Theo dõi tiến độ',
         description:
             'Xem báo cáo chi tiết về tiến độ học tập và cải thiện với các phân tích theo thời gian thực.',
-        iconBg: 'bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-400',
+        iconBg: 'bg-cyan-soft text-cyan',
     },
     {
         icon: Gamepad2,
         title: 'Quiz Game',
         description:
             'Quiz tương tác giúp củng cố kiến thức và làm cho việc học trở nên thú vị hơn bao giờ hết.',
-        iconBg: 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400',
+        iconBg: 'bg-purple-soft text-purple',
     },
     {
         icon: BellRing,
         title: 'Thông báo tức thì',
         description:
             'Nhận cảnh báo về lịch học, điểm số mới, nhận xét từ gia sư và thanh toán sắp đến hạn cho cả học sinh, gia sư và phụ huynh.',
-        iconBg: 'bg-pink-50 dark:bg-pink-900/20 text-pink-600 dark:text-pink-400',
+        iconBg: 'bg-pink-soft text-pink',
     },
     {
         icon: BarChart3,
         title: 'Báo cáo chi tiết',
         description:
             'Biểu đồ trực quan về sự tiến bộ, điểm danh, bài tập hoàn thành và đánh giá từng tuần.',
-        iconBg: 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400',
+        iconBg: 'bg-indigo-soft text-indigo',
     },
     {
         icon: MessageSquare,
         title: 'Trao đổi với gia sư',
         description:
             'Kênh nhắn tin trực tiếp để phụ huynh trao đổi với gia sư về tiến độ và phương pháp học.',
-        iconBg: 'bg-teal-50 dark:bg-teal-900/20 text-teal-600 dark:text-teal-400',
+        iconBg: 'bg-teal-soft text-teal',
     },
 ];
 
@@ -131,14 +131,13 @@ export default function Features({ id = "features" }: { id?: string }) {
                     </div>
                 </div>
 
-                <div className="rounded-3xl border border-green-500/20 bg-green-500/5 p-8 sm:p-12">
-                    <div className="mb-6 flex items-center gap-3 text-green-600 dark:text-green-400">
+                <div className="rounded-3xl border border-success/20 bg-success-soft/30 p-8 sm:p-12">
+                    <div className="mb-6 flex items-center gap-3 text-success">
                         <UserSearch size={32} />
                         <h3 className="text-2xl font-bold text-foreground">Dành cho Gia sư</h3>
                     </div>
-
-                    <div className="relative grid grid-cols-1 gap-8 md:grid-cols-3">
-                        <div className="absolute left-0 top-1/2 -z-10 hidden h-0.5 w-full -translate-y-1/2 bg-green-500/20 md:block" />
+<div className="relative grid grid-cols-1 gap-8 md:grid-cols-3">
+                        <div className="absolute left-0 top-1/2 -z-10 hidden h-0.5 w-full -translate-y-1/2 bg-success/20 md:block" />
                         {[
                             {
                                 title: 'Tạo hồ sơ',
@@ -154,7 +153,7 @@ export default function Features({ id = "features" }: { id?: string }) {
                             },
                         ].map((item, idx) => (
                             <div key={item.title} className="relative z-10 rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border-4 border-background bg-green-500 text-xl font-bold text-white">
+                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border-4 border-background bg-success text-xl font-bold text-success-foreground">
                                     {idx + 1}
                                 </div>
                                 <h4 className="mb-2 text-lg font-bold text-foreground">{item.title}</h4>
@@ -164,14 +163,14 @@ export default function Features({ id = "features" }: { id?: string }) {
                     </div>
                 </div>
 
-                <div className="rounded-3xl border border-purple-500/20 bg-purple-500/5 p-8 sm:p-12">
-                    <div className="mb-6 flex items-center gap-3 text-purple-600 dark:text-purple-400">
+                <div className="rounded-3xl border border-purple/20 bg-purple-soft/30 p-8 sm:p-12">
+                    <div className="mb-6 flex items-center gap-3 text-purple">
                         <Users size={32} />
                         <h3 className="text-2xl font-bold text-foreground">Dành cho Phụ huynh</h3>
                     </div>
 
                     <div className="relative grid grid-cols-1 gap-8 md:grid-cols-3">
-                        <div className="absolute left-0 top-1/2 -z-10 hidden h-0.5 w-full -translate-y-1/2 bg-purple-500/20 md:block" />
+                        <div className="absolute left-0 top-1/2 -z-10 hidden h-0.5 w-full -translate-y-1/2 bg-purple/20 md:block" />
                         {[
                             {
                                 title: 'Đăng ký con em',
@@ -187,7 +186,7 @@ export default function Features({ id = "features" }: { id?: string }) {
                             },
                         ].map((item, idx) => (
                             <div key={item.title} className="relative z-10 rounded-2xl border border-border bg-card p-6 text-center shadow-sm">
-                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border-4 border-background bg-purple-500 text-xl font-bold text-white">
+                                <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full border-4 border-background bg-purple text-xl font-bold text-purple-foreground">
                                     {idx + 1}
                                 </div>
                                 <h4 className="mb-2 text-lg font-bold text-foreground">{item.title}</h4>
@@ -239,7 +238,7 @@ export default function Features({ id = "features" }: { id?: string }) {
                             </h3>
                             <ul className="space-y-4">
                                 <li className="flex items-start gap-3">
-                                    <CheckCircle2 size={18} className="mt-0.5 text-green-500" />
+                                    <CheckCircle2 size={18} className="mt-0.5 text-success" />
                                     <div>
                                         <strong className="text-foreground">Trả theo buổi học:</strong>
                                         <p className="mt-1 text-sm text-muted-foreground">
@@ -248,7 +247,7 @@ export default function Features({ id = "features" }: { id?: string }) {
                                     </div>
                                 </li>
                                 <li className="flex items-start gap-3">
-                                    <CheckCircle2 size={18} className="mt-0.5 text-green-500" />
+                                    <CheckCircle2 size={18} className="mt-0.5 text-success" />
                                     <div>
                                         <strong className="text-foreground">Mua theo gói:</strong>
                                         <p className="mt-1 text-sm text-muted-foreground">
@@ -261,15 +260,15 @@ export default function Features({ id = "features" }: { id?: string }) {
 
                         <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
                             <h3 className="mb-6 flex items-center gap-2 text-xl font-bold text-foreground">
-                                <Wallet className="text-amber-500" />
+                                <Wallet className="text-warning" />
                                 Hoa hồng Gia sư
                             </h3>
-                            <div className="mb-6 rounded-xl border border-amber-500/20 bg-amber-500/5 p-6">
+                            <div className="mb-6 rounded-xl border border-warning/20 bg-warning-soft/30 p-6">
                                 <div className="mb-2 flex items-end gap-2">
-                                    <span className="text-4xl font-black text-amber-600 dark:text-amber-400">10-15%</span>
-                                    <span className="pb-1 font-medium text-amber-500">/buổi học</span>
+                                    <span className="text-4xl font-black text-warning">10-15%</span>
+                                    <span className="pb-1 font-medium text-warning/80">/buổi học</span>
                                 </div>
-                                <p className="text-sm text-amber-800 dark:text-amber-300">
+                                <p className="text-sm text-warning/90">
                                     Mức phí nền tảng cạnh tranh nhất thị trường.
                                 </p>
                             </div>

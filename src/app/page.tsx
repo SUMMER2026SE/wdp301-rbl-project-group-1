@@ -1,17 +1,12 @@
-'use client';
-
-import dynamic from 'next/dynamic';
-
-import { ScrollToTopButton } from '@/src/shared/components/ui/scroll-to-top-button';
-import WithSmoothScroll from '@/src/shared/hocs/with-smooth-scroll';
-
-const Header = dynamic(() => import('@/src/features/landing/components/header'), { ssr: true });
-const HeroSection = dynamic(() => import('@/src/features/landing/components/hero'));
-const StatsSection = dynamic(() => import('@/src/features/landing/components/stats'));
-const TutorsSection = dynamic(() => import('@/src/features/landing/components/tutor'));
-const FeaturesSection = dynamic(() => import('@/src/features/landing/components/features'));
-const CTASection = dynamic(() => import('@/src/features/landing/components/cta'));
-const FooterSection = dynamic(() => import('@/src/features/landing/components/footer'));
+import HeroSection from "@/src/features/landing/components/hero";
+import StatsSection from "@/src/features/landing/components/stats";
+import TutorsSection from "@/src/features/landing/components/tutor";
+import FeaturesSection from "@/src/features/landing/components/features";
+import CTASection from "@/src/features/landing/components/cta";
+import FooterSection from "@/src/features/landing/components/footer";
+import Header from "@/src/features/landing/components/header";
+import WithSmoothScroll from "@/src/shared/hocs/with-smooth-scroll";
+import { ScrollToTopButton } from "../shared/components/ui/scroll-to-top-button";
 
 export default function Home() {
   return (

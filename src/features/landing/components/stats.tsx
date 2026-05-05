@@ -17,13 +17,13 @@ const stats: StatItem[] = [
         icon: Smile,
         number: '20,000+',
         label: 'Học viên tin tưởng',
-        color: 'bg-green-500/10 text-green-600 dark:text-green-400',
+        color: 'bg-success-soft text-success',
     },
     {
         icon: BookCheck,
         number: '4.9/5',
         label: 'Đánh giá trung bình',
-        color: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+        color: 'bg-purple-soft text-purple',
     },
 ];
 

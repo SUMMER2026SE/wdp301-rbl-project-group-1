@@ -35,7 +35,7 @@ export default function TutorLayout({
           />
           <div className="ml-auto hidden shrink-0 items-center gap-6 md:flex">
             <div className="relative min-w-40">
-                <SearchBox />
+              <SearchBox />
             </div>
             <NotificationPopover />
             <div className="flex items-center gap-4 border-l border-border pl-6">

@@ -1,41 +1,51 @@
-import Link from "next/link";
+import { STUDENT_NAV_LINKS } from '@/src/app/(private)/student/constants/constants';
+import { NotificationPopover } from '@/src/shared/components/molecules/notification-popover/notification-popover';
+import SearchBox from '@/src/shared/components/molecules/search-box/search-box';
+import { UserPopover } from '@/src/shared/components/molecules/user-popover/user-popover';
+import NavigationBar from '@/src/shared/components/organisms/navigation-bar/navigation-bar';
+import { Input } from '@/src/shared/components/ui/input';
+import { GraduationCap, Search } from 'lucide-react';
+import Link from 'next/link';
 
-import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
-import SearchBox from "@/src/shared/components/molecules/search-box/search-box";
-import { UserPopover } from "@/src/shared/components/molecules/user-popover/user-popover";
-import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
-import { STUDENT_NAV_LINKS } from "./constants/constants";
-
-export default function StudentLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const navLinks = STUDENT_NAV_LINKS;
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground">
-      <header className="sticky top-0 z-50 border-b border-border bg-background px-4 py-3 shadow-sm sm:px-10">
+    <div className="min-h-screen flex flex-col bg-background dark:bg-background">
+      <header className="sticky top-0 z-50 border-b border-border bg-card px-4 py-3 shadow-sm dark:bg-card sm:px-10">
         <div className="flex items-center gap-4">
           <NavigationBar
             menu={navLinks}
             brand={
               <Link href="/student/home" className="flex items-center gap-4">
-                <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
+                <div className="flex size-8 items-center justify-center text-primary dark:text-primary">
+                  <GraduationCap className="size-8" />
+                </div>
+                <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground dark:text-foreground">
                   Edura
                 </h2>
               </Link>
             }
           />
+
+          {/* Search, Notifications, User profile - Right side */}
           <div className="ml-auto hidden shrink-0 items-center gap-6 md:flex">
             <div className="relative min-w-40">
               <SearchBox />
+              <Input
+                placeholder="Tìm kiếm..."
+                className="h-10 border-border bg-muted pl-10 focus-visible:ring-primary dark:border-border dark:bg-muted"
+              />
             </div>
+
+            {/* Notifications */}
             <NotificationPopover />
-            <div className="flex items-center gap-4 border-l border-border pl-6">
+
+            {/* User profile */}
+            <div className="flex items-center gap-4 border-l border-border pl-6 dark:border-border">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-foreground">Minh Hoàng</p>
-                <p className="text-xs text-muted-foreground">Học sinh lớp 12</p>
+                <p className="text-sm font-bold text-foreground dark:text-foreground">Minh Hoàng</p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">Học sinh lớp 12</p>
               </div>
               <UserPopover />
             </div>

@@ -43,7 +43,7 @@ export function ProfileSidebar() {
           </div>
           <div className="flex justify-between items-center">
             <span className="text-xs text-muted-foreground">Trạng thái:</span>
-            <Badge className="bg-green-100 text-green-700 hover:bg-green-100 dark:bg-green-900 dark:text-green-300">
+            <Badge className="bg-success-soft text-success hover:bg-success-soft border-none">
               Đang hoạt động
             </Badge>
           </div>
@@ -53,16 +53,16 @@ export function ProfileSidebar() {
       {/* Achievements Card */}
       <Card className="p-6 bg-card text-card-foreground border border-border shadow-sm">
         <h4 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
-          <Award className="w-5 h-5 text-amber-500" />
+          <Award className="w-5 h-5 text-warning" />
           Thành tích học tập
         </h4>
 
-        <div className="mb-5 flex items-center justify-between rounded-lg bg-blue-50/70 dark:bg-blue-950 p-4 border border-blue-200 dark:border-blue-900">
+        <div className="mb-5 flex items-center justify-between rounded-lg bg-info-soft p-4 border border-info/10">
           <div>
-            <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wider">
+            <p className="text-xs font-medium text-info uppercase tracking-wider">
               Tổng giờ học
             </p>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+            <p className="text-2xl font-bold text-foreground mt-1">
               124
               <span className="text-sm font-normal text-muted-foreground ml-1">
                 giờ
@@ -81,7 +81,7 @@ export function ProfileSidebar() {
           <div className="grid grid-cols-3 gap-3">
             <div className="flex flex-col items-center gap-1 group">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900 text-amber-600 dark:text-amber-400 group-hover:bg-amber-200 dark:group-hover:bg-amber-800 transition-colors cursor-help"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-warning-soft text-warning group-hover:opacity-80 transition-colors cursor-help"
                 title="Chăm chỉ: Hoàn thành 50 buổi học"
               >
                 <Flame className="w-6 h-6" />
@@ -93,7 +93,7 @@ export function ProfileSidebar() {
 
             <div className="flex flex-col items-center gap-1 group">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors cursor-help"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-soft text-primary group-hover:opacity-80 transition-colors cursor-help"
                 title="Học bá: Đạt điểm A trong 5 bài kiểm tra"
               >
                 <Crown className="w-6 h-6" />
@@ -105,7 +105,7 @@ export function ProfileSidebar() {
 
             <div className="flex flex-col items-center gap-1 group">
               <div
-                className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400 group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800 transition-colors cursor-help"
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-success-soft text-success group-hover:opacity-80 transition-colors cursor-help"
                 title="Đúng giờ: Không đến muộn trong 30 buổi"
               >
                 <Timer className="w-6 h-6" />
