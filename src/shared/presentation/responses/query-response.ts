@@ -1,4 +1,4 @@
-import { QueryResult } from '../../application/common/query';
+import { QueryResult } from '../../domain/common/query';
 
 export interface QueryApiResponse<T> {
   success: boolean;

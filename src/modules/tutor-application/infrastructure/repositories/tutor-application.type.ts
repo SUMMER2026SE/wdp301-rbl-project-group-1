@@ -1,3 +1,4 @@
+import { Prisma } from '../../../../../generated/prisma/client';
 import { TutorApplicationStatus } from '../../domain/enums/tutor-application';
 
 export type PrismaTutorApplicationRecord = {
@@ -30,4 +31,11 @@ export type TutorApplicationDelegate = {
   create(args: {
     data: TutorApplicationWriteData;
   }): Promise<PrismaTutorApplicationRecord>;
+  findMany(args: {
+    where?: Prisma.TutorApplicationWhereInput;
+    skip?: number;
+    take?: number;
+    orderBy?: Prisma.TutorApplicationOrderByWithRelationInput;
+  }): Promise<PrismaTutorApplicationRecord[]>;
+  count(args: { where?: Prisma.TutorApplicationWhereInput }): Promise<number>;
 };

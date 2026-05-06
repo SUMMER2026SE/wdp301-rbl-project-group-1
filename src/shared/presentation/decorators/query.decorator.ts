@@ -7,7 +7,7 @@ import {
   QueryParams,
   QueryRequest,
   QueryValue,
-} from '../../application/common/query';
+} from '../../domain/common/query';
 
 const getFirstQueryValue = (value: QueryValue, fallback: string): string => {
   if (Array.isArray(value)) {

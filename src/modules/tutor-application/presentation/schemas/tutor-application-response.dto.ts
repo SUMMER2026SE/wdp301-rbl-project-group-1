@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 import { CreateTutorApplicationResult } from '../../application/command/create-tutor-application/create-tutor-application.result';
+import { TutorApplication } from '../../domain/entities/tutor-application.entity';
 
 export const CreateTutorApplicationResponseSchema = z
   .object({
@@ -29,6 +30,40 @@ export class CreateTutorApplicationResponseDto extends createZodDto(
     dto.id = result.id;
     dto.status = result.status;
     dto.createdAt = result.createdAt.toISOString();
+    return dto;
+  }
+}
+
+export const TutorApplicationResponseSchema = z
+  .object({
+    id: z.string(),
+    email: z.string().email(),
+    bio: z.string().nullable().optional(),
+    specialization: z.string(),
+    experience: z.number().nullable().optional(),
+    education: z.string().nullable().optional(),
+    pricePerHour: z.number().nullable().optional(),
+    status: z.enum(['PENDING', 'APPROVED', 'REJECTED']),
+    createdAt: z.string().datetime(),
+    updatedAt: z.string().datetime(),
+  })
+  .meta({ id: 'TutorApplicationResponseDto' });
+
+export class TutorApplicationResponseDto extends createZodDto(
+  TutorApplicationResponseSchema,
+) {
+  static fromEntity(entity: TutorApplication): TutorApplicationResponseDto {
+    const dto = new TutorApplicationResponseDto();
+    dto.id = entity.id;
+    dto.email = entity.email;
+    dto.bio = entity.bio;
+    dto.specialization = entity.specialization;
+    dto.experience = entity.experience;
+    dto.education = entity.education;
+    dto.pricePerHour = entity.pricePerHour;
+    dto.status = entity.status;
+    dto.createdAt = entity.createdAt.toISOString();
+    dto.updatedAt = entity.updatedAt.toISOString();
     return dto;
   }
 }

@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '../../../../../generated/prisma/client';
+import {
+  QueryResult,
+  createQueryResult,
+} from '../../../../shared/domain/common/query';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { TutorApplication } from '../../domain/entities/tutor-application.entity';
-import { TutorApplicationRepository } from '../../domain/repositories/tutor-application.repository';
+import {
+  FindTutorApplicationsParams,
+  TutorApplicationRepository,
+} from '../../domain/repositories/tutor-application.repository';
 import { TutorApplicationMapper } from '../mapper/tutor-application.mapper';
 import { TutorApplicationDelegate } from './tutor-application.type';
 
@@ -37,5 +45,48 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
     }
 
     return this.mapper.toDomain(application);
+  }
+
+  async findAll(
+    params: FindTutorApplicationsParams,
+  ): Promise<QueryResult<TutorApplication>> {
+    const where: Prisma.TutorApplicationWhereInput = {};
+
+    if (params.search) {
+      where.OR = [
+        { email: { contains: params.search, mode: 'insensitive' } },
+        { specialization: { contains: params.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (params.status) {
+      where.status = params.status as Prisma.EnumTutorApplicationStatusFilter;
+    } else if (params.filters && params.filters.status) {
+      where.status = params.filters
+        .status as Prisma.EnumTutorApplicationStatusFilter;
+    }
+
+    let orderBy: Prisma.TutorApplicationOrderByWithRelationInput = {};
+    if (params.sortBy) {
+      orderBy = {
+        [params.sortBy]: params.sortOrder || 'desc',
+      };
+    } else {
+      orderBy = { createdAt: 'desc' };
+    }
+
+    const [total, records] = await Promise.all([
+      this.tutorApplicationDelegate.count({ where }),
+      this.tutorApplicationDelegate.findMany({
+        where,
+        skip: params.skip,
+        take: params.limit,
+        orderBy,
+      }),
+    ]);
+
+    const applications = records.map((record) => this.mapper.toDomain(record));
+
+    return createQueryResult(applications, total, params);
   }
 }

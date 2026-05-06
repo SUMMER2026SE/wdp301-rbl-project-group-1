@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { QueryResult } from '../../application/common/query';
+import { QueryResult } from '../../domain/common/query';
 import { BaseResponse } from '../responses/base-response';
 import { QueryApiResponse, QueryResponse } from '../responses/query-response';
 

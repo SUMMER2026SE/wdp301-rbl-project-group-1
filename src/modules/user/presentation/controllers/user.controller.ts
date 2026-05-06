@@ -6,7 +6,7 @@ import { ApiImageUpload } from 'src/shared/presentation/decorators/api-image-upl
 import {
   QueryParams,
   QueryResult,
-} from '../../../../shared/application/common/query';
+} from '../../../../shared/domain/common/query';
 import {
   ApiOkResponseQueryWrapped,
   ApiOkResponseWrapped,
@@ -39,7 +39,7 @@ export class UserController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
-  ) {}
+  ) { }
 
   @Get()
   @ApiBearerAuth()

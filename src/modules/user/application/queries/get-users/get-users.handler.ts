@@ -6,7 +6,7 @@ import {
 import {
   createQueryResult,
   QueryResult,
-} from '../../../../../shared/application/common/query';
+} from '../../../../../shared/domain/common/query';
 import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
 import { GetUsersQuery } from './get-users.query';

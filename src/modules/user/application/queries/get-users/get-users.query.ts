@@ -1,5 +1,5 @@
-import { QueryParams } from '../../../../../shared/application/common/query';
+import { QueryParams } from '../../../../../shared/domain/common/query';
 
 export class GetUsersQuery {
-  constructor(public readonly query: QueryParams) {}
+  constructor(public readonly query: QueryParams) { }
 }
