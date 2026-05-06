@@ -1,4 +1,3 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { createZodDto } from 'nestjs-zod';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 
@@ -15,34 +14,31 @@ export class CreateCourseResultDto extends createZodDto(
   CreateCourseResultSchema,
 ) {}
 
-export class CourseDto {
-  @ApiProperty()
-  id: string;
+export const CourseResponseSchema = z
+  .object({
+    id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+    tutorId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+    title: z.string().meta({ example: 'Toán 11 - Nâng cao' }),
+    description: z
+      .string()
+      .nullable()
+      .meta({ example: 'Khóa học toán 11 nâng cao...' }),
+    price: z.number().nullable().meta({ example: 500000 }),
+    subjectId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+    subjectName: z.string().nullable().meta({ example: 'Toán' }),
+    gradeId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+    gradeName: z.string().nullable().meta({ example: 'Lớp 11' }),
+    level: z
+      .enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED'])
+      .meta({ example: 'INTERMEDIATE' }),
+    status: z
+      .enum(['DRAFT', 'PUBLISHED', 'ONGOING', 'CLOSED'])
+      .meta({ example: 'PUBLISHED' }),
+    createdAt: z
+      .string()
+      .datetime()
+      .meta({ example: '2025-01-01T00:00:00.000Z' }),
+  })
+  .meta({ id: 'CourseResponseDto' });
 
-  @ApiProperty()
-  tutorId: string;
-
-  @ApiProperty()
-  title: string;
-
-  @ApiPropertyOptional()
-  description: string | null;
-
-  @ApiPropertyOptional()
-  price: number | null;
-
-  @ApiProperty()
-  subjectId: string;
-
-  @ApiProperty()
-  gradeId: string;
-
-  @ApiProperty()
-  level: string;
-
-  @ApiProperty()
-  status: string;
-
-  @ApiProperty()
-  createdAt: Date;
-}
+export class CourseResponseDto extends createZodDto(CourseResponseSchema) {}

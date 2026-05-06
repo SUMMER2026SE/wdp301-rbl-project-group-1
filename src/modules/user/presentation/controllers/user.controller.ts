@@ -39,7 +39,7 @@ export class UserController {
   constructor(
     private readonly queryBus: QueryBus,
     private readonly commandBus: CommandBus,
-  ) { }
+  ) {}
 
   @Get()
   @ApiBearerAuth()

@@ -1,24 +1,34 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../../../shared/domain/enums/enums';
+import { QueryResult } from '../../../../shared/domain/common/query';
 import {
   ApiCreatedResponseWrapped,
-  ApiOkResponseWrapped,
+  ApiOkResponseQueryWrapped,
 } from '../../../../shared/presentation/decorators/api-response.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
+import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
 import { CreateCourseResult } from '../../application/commands/create-course/create-course.result';
 import { GetCoursesQuery } from '../../application/queries/get-courses/get-courses.query';
-import { GetCoursesResult } from '../../application/queries/get-courses/get-courses.result';
+import { CoursePaginatedParams } from '../../domain/repositories/course.repository.interface';
 import {
-  CourseDto,
+  CourseResultData,
+  GetCoursesResult,
+} from '../../application/queries/get-courses/get-courses.result';
+import {
+  CourseResponseDto,
   CreateCourseResultDto,
 } from '../schemas/course-response.dto';
 import { CreateCourseDto } from '../schemas/create-course.dto';
+import {
+  GetCoursesQueryDto,
+  GetCoursesQueryParams,
+} from '../schemas/get-courses-query.dto';
 
 @ApiTags('Course')
 @Controller('courses')
@@ -58,17 +68,38 @@ export class CourseController {
 
   @Get()
   @Public()
-  @ApiOperation({ operationId: 'getAllCourses', summary: 'Get all courses' })
-  @ApiOkResponseWrapped(CourseDto, {
-    description: 'Returns all courses',
-    isArray: true,
+  @ApiOperation({
+    operationId: 'getAllCourses',
+    summary: 'Get all courses',
+    description:
+      'Returns a paginated list of courses. Supports search by title and filters by gradeId, subjectId.',
   })
-  async getCourses() {
-    const query = new GetCoursesQuery();
+  @ApiOkResponseQueryWrapped(CourseResponseDto, {
+    description: 'List of courses returned successfully.',
+  })
+  async getCourses(
+    @Query() dto: GetCoursesQueryDto,
+  ): Promise<GetCoursesResult> {
+    const query: GetCoursesQueryParams = dto;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const params: CoursePaginatedParams = {
+      page,
+      limit,
+      skip: (page - 1) * limit,
+      search: query.search,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+      gradeId: query.gradeId,
+      subjectId: query.subjectId,
+    };
+
     const result = await this.queryBus.execute<
       GetCoursesQuery,
-      GetCoursesResult
-    >(query);
-    return BaseResponse.ok(result.courses);
+      QueryResult<CourseResultData>
+    >(new GetCoursesQuery(params));
+
+    return QueryResponse.query(result);
   }
 }

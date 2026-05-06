@@ -1,42 +1,56 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import {
+  createQueryResult,
+  QueryResult,
+} from '../../../../../shared/domain/common/query';
 import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
 import { ICourseRepository } from '../../../domain/repositories/course.repository.interface';
-import { CourseDto } from '../../../presentation/schemas/course-response.dto';
 import { GetCoursesQuery } from './get-courses.query';
-import { GetCoursesResult } from './get-courses.result';
+import { CourseResultData } from './get-courses.result';
 
 @QueryHandler(GetCoursesQuery)
 export class GetCoursesQueryHandler
   implements
     IQueryHandler<GetCoursesQuery>,
-    IQuery<GetCoursesQuery, GetCoursesResult>
+    IQuery<GetCoursesQuery, QueryResult<CourseResultData>>
 {
   constructor(
     @Inject(ICourseRepository)
     private readonly courseRepository: ICourseRepository,
   ) {}
 
-  async execute() // _: GetCoursesQuery
-  : Promise<GetCoursesResult> {
-    const courses = await this.courseRepository.findAll();
+  async execute(
+    query: GetCoursesQuery,
+  ): Promise<QueryResult<CourseResultData>> {
+    const { params } = query;
 
-    const dtos = courses.map(
-      (c) =>
-        ({
-          id: c.id,
-          tutorId: c.tutorId,
-          title: c.title,
-          description: c.description,
-          price: c.price,
-          subjectId: c.subjectId,
-          gradeId: c.gradeId,
-          level: c.level.getValue(),
-          status: c.status,
-          createdAt: c.createdAt,
-        }) as CourseDto,
+    const result = await this.courseRepository.findAll({
+      page: params.page,
+      limit: params.limit,
+      skip: params.skip,
+      search: params.search,
+      sortBy: params.sortBy,
+      sortOrder: params.sortOrder,
+      gradeId: params.gradeId,
+      subjectId: params.subjectId,
+    });
+
+    const data: CourseResultData[] = result.data.map(
+      ({ course: c, subject, grade }) => ({
+        id: c.id,
+        tutorId: c.tutorId,
+        title: c.title,
+        description: c.description ?? null,
+        price: c.price ?? null,
+        subject,
+        grade,
+        level: c.level.getValue(),
+        status: c.status,
+        createdAt: c.createdAt,
+      }),
     );
 
-    return new GetCoursesResult(dtos);
+    return createQueryResult(data, result.total, params);
   }
 }
