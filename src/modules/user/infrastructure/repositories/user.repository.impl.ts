@@ -53,6 +53,17 @@ export class PrismaUserRepository implements IUserRepository {
   async save(user: User): Promise<User> {
     const data = this.mapper.toPersistence(user);
 
+    const tutorData = user.tutor ? {
+      bio: user.tutor.bio,
+      specialization: user.tutor.specialization,
+      experience: user.tutor.experience,
+      education: user.tutor.education,
+      pricePerHour: user.tutor.pricePerHour,
+      rating: user.tutor.rating,
+      reviewCount: user.tutor.reviewCount,
+      studentCount: user.tutor.studentCount,
+    } : {};
+
     const savedUser = user.id
       ? await this.prisma.user.update({
           where: { id: user.id },
@@ -60,7 +71,7 @@ export class PrismaUserRepository implements IUserRepository {
             ...data,
             tutor:
               data.role === PrismaUserRole.TUTOR
-                ? { connectOrCreate: { where: { id: user.id }, create: {} } }
+                ? { upsert: { create: tutorData, update: tutorData } }
                 : undefined,
             student:
               data.role === PrismaUserRole.STUDENT
@@ -76,7 +87,7 @@ export class PrismaUserRepository implements IUserRepository {
           data: {
             ...data,
             tutor:
-              data.role === PrismaUserRole.TUTOR ? { create: {} } : undefined,
+              data.role === PrismaUserRole.TUTOR ? { create: tutorData } : undefined,
             student:
               data.role === PrismaUserRole.STUDENT ? { create: {} } : undefined,
             parent:

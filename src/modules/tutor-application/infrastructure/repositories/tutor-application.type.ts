@@ -26,10 +26,14 @@ export type TutorApplicationWriteData = Omit<
 
 export type TutorApplicationDelegate = {
   findUnique(args: {
-    where: { email?: string; userId?: string };
+    where: { id?: string; email?: string; userId?: string };
   }): Promise<PrismaTutorApplicationRecord | null>;
   create(args: {
     data: TutorApplicationWriteData;
+  }): Promise<PrismaTutorApplicationRecord>;
+  update(args: {
+    where: { id: string };
+    data: Partial<TutorApplicationWriteData>;
   }): Promise<PrismaTutorApplicationRecord>;
   findMany(args: {
     where?: Prisma.TutorApplicationWhereInput;

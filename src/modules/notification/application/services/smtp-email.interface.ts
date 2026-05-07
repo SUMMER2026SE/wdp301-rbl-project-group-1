@@ -5,6 +5,6 @@ export interface IEmailService {
 export type SendEmailPayload = {
   to: string;
   subject: string;
-  html?: string;
-  text?: string;
+  template?: string;
+  context?: Record<string, any>;
 };

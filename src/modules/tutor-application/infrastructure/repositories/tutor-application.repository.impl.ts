@@ -47,6 +47,29 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
     return this.mapper.toDomain(application);
   }
 
+  async findById(id: string): Promise<TutorApplication | null> {
+    const application = await this.tutorApplicationDelegate.findUnique({
+      where: { id },
+    });
+
+    if (!application) {
+      return null;
+    }
+
+    return this.mapper.toDomain(application);
+  }
+
+  async update(application: TutorApplication): Promise<TutorApplication> {
+    const data = this.mapper.toPersistence(application);
+
+    const updated = await this.tutorApplicationDelegate.update({
+      where: { id: application.id },
+      data,
+    });
+
+    return this.mapper.toDomain(updated);
+  }
+
   async findAll(
     params: FindTutorApplicationsParams,
   ): Promise<QueryResult<TutorApplication>> {

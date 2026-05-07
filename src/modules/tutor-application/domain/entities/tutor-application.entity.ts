@@ -65,4 +65,28 @@ export class TutorApplication extends AggregateRoot<string> {
   get updatedAt(): Date {
     return this.props.updatedAt;
   }
+
+  approve(): void {
+    if (this.props.status !== 'PENDING') {
+      throw new Error(
+        `Cannot approve application with status '${this.props.status}'`,
+      );
+    }
+    this.props.status = 'APPROVED';
+    this.props.updatedAt = new Date();
+  }
+
+  reject(): void {
+    if (this.props.status !== 'PENDING') {
+      throw new Error(
+        `Cannot reject application with status '${this.props.status}'`,
+      );
+    }
+    this.props.status = 'REJECTED';
+    this.props.updatedAt = new Date();
+  }
+
+  linkUser(userId: string): void {
+    this.props.userId = userId;
+  }
 }

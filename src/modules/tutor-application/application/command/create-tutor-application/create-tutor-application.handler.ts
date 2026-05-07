@@ -3,7 +3,7 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { TutorApplication } from '../../../domain/entities/tutor-application.entity';
 import { TutorApplicationRepository } from '../../../domain/repositories/tutor-application.repository';
-import { CreateTutorApplicationCommand } from './create-tutor-application.query';
+import { CreateTutorApplicationCommand } from './create-tutor-application.command';
 import { CreateTutorApplicationResult } from './create-tutor-application.result';
 
 @CommandHandler(CreateTutorApplicationCommand)

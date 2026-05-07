@@ -1,4 +1,3 @@
-export const otpTemplate = (otp: string) => `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -68,7 +67,7 @@ export const otpTemplate = (otp: string) => `
       <p>Hello,</p>
       <p>Your verification code is:</p>
 
-      <div class="otp-box">${otp}</div>
+      <div class="otp-box">{{otp}}</div>
 
       <p class="note">
         This code will expire in <b>5 minutes</b>.<br/>
@@ -82,4 +81,3 @@ export const otpTemplate = (otp: string) => `
   </div>
 </body>
 </html>
-`;

@@ -90,5 +90,6 @@ const QueryHandlers = [GetMeQueryHandler];
       useClass: OtpService,
     },
   ],
+  exports: [IHashService],
 })
 export class AuthModule {}

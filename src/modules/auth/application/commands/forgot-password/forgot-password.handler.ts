@@ -33,18 +33,12 @@ export class ForgotPasswordCommandHandler
       user.id,
     );
 
-    const emailHtml = `
-      <h1>Password Reset Request</h1>
-      <p>Hello,</p>
-      <p>Your OTP for password reset is: <strong>${code}</strong></p>
-      <p>This code will expire in a few minutes.</p>
-    `;
-
     await this.commandBus.execute(
       new SendEmailCommand(
         command.email,
         'Edura - Password Reset Request',
-        emailHtml,
+        'otp',
+        { otp: code },
       ),
     );
 

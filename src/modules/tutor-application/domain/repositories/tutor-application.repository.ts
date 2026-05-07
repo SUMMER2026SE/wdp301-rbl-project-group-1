@@ -18,6 +18,10 @@ export abstract class TutorApplicationRepository {
 
   abstract findByEmail(email: string): Promise<TutorApplication | null>;
 
+  abstract findById(id: string): Promise<TutorApplication | null>;
+
+  abstract update(application: TutorApplication): Promise<TutorApplication>;
+
   abstract findAll(
     params: FindTutorApplicationsParams,
   ): Promise<QueryResult<TutorApplication>>;

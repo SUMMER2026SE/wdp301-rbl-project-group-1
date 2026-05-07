@@ -1,16 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Transporter } from 'nodemailer';
+import { ConfigService } from '@nestjs/config';
+import hbs from 'nodemailer-express-handlebars';
 import {
   IEmailService,
   SendEmailPayload,
 } from '../../application/services/smtp-email.interface';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class SmtpEmailService implements IEmailService {
   constructor(
     @Inject('MAIL_TRANSPORTER')
-    private readonly transporter: Transporter,
+    private readonly transporter: hbs.HbsTransporter,
     private readonly configService: ConfigService,
   ) {}
 
@@ -19,8 +19,8 @@ export class SmtpEmailService implements IEmailService {
       from: this.configService.get<string>('EMAIL_USER'),
       to: payload.to,
       subject: payload.subject,
-      html: payload.html,
-      text: payload.text,
+      template: payload.template,
+      context: payload.context,
     });
   }
 }
