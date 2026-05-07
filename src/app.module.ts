@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
+import { AcademicCatalogModule } from 'src/modules/academic-catalog/academic-catalog.module';
 import { CourseModule } from 'src/modules/course/course.module';
 import { HealthModule } from 'src/modules/health/health.module';
 import { NotificationModule } from 'src/modules/notification/notification.module';
@@ -23,6 +24,7 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
     AuthModule,
     UserModule,
     NotificationModule,
+    AcademicCatalogModule,
     CourseModule,
     TutorApplicationModule,
   ],

@@ -16,12 +16,17 @@ export class GetSubjectsQueryHandler
     private readonly subjectRepository: ISubjectRepository,
   ) {}
 
-  async execute() // _: GetSubjectsQuery
-  : Promise<GetSubjectsResult> {
+  async execute(): Promise<GetSubjectsResult> {
     const subjects = await this.subjectRepository.findAll();
 
     const dtos = subjects.map(
-      (s) => new SubjectDto(s.id, s.name, s.slug, s.createdAt),
+      (subject) =>
+        new SubjectDto(
+          subject.id,
+          subject.name,
+          subject.slug,
+          subject.createdAt,
+        ),
     );
 
     return new GetSubjectsResult(dtos);

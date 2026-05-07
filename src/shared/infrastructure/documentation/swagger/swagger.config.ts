@@ -9,4 +9,6 @@ export const swaggerConfig = new DocumentBuilder()
   .addTag('Users', 'User management endpoints')
   .addTag('Health', 'Health check endpoints')
   .addTag('Course', 'Course management endpoints')
+  .addTag('Grades', 'Grade management endpoints')
+  .addTag('Subjects', 'Subject management endpoints')
   .build();

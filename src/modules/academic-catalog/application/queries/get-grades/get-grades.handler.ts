@@ -16,12 +16,18 @@ export class GetGradesQueryHandler
     private readonly gradeRepository: IGradeRepository,
   ) {}
 
-  async execute() // _: GetGradesQuery
-  : Promise<GetGradesResult> {
+  async execute(): Promise<GetGradesResult> {
     const grades = await this.gradeRepository.findAll();
 
     const dtos = grades.map(
-      (g) => new GradeDto(g.id, g.name, g.slug, g.order, g.createdAt),
+      (grade) =>
+        new GradeDto(
+          grade.id,
+          grade.name,
+          grade.slug,
+          grade.order,
+          grade.createdAt,
+        ),
     );
 
     return new GetGradesResult(dtos);
