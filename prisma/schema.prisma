@@ -59,13 +59,13 @@ enum EnrollmentStatus {
   @@map("enrollment_status")
 }
 
-enum ScheduleStatus {
+enum LessonStatus {
   SCHEDULED
   ONGOING
   COMPLETED
   CANCELLED
 
-  @@map("schedule_status")
+  @@map("lesson_status")
 }
 
 enum AttendanceStatus {
@@ -326,7 +326,6 @@ model Student {
 
   enrollments       Enrollment[]
   reviews           CourseReview[]
-  schedules         ScheduleStudent[]
   lessonAttendances LessonAttendance[]
   payments          Payment[]
   attempts          Attempt[]
@@ -548,7 +547,6 @@ model Course {
   lessons          Lesson[]
   enrollments      Enrollment[]
   reviews          CourseReview[]
-  schedules        Schedule[]
   payments         Payment[]
   stats            CourseStats?
   resources        CourseResource[]
@@ -581,8 +579,13 @@ model Lesson {
 
   title      String
   content    String?
-  videoUrl   String? @map("video_url")
-  orderIndex Int     @map("order_index")
+  meetingUrl String?      @map("meeting_url")
+  videoUrl   String?      @map("video_url")
+  startTime  DateTime     @map("start_time")
+  endTime    DateTime     @map("end_time")
+  orderIndex Int          @map("order_index")
+  status     LessonStatus @default(SCHEDULED)
+  createdAt  DateTime     @default(now()) @map("created_at")
 
   course      Course             @relation(fields: [courseId], references: [id])
   attendances LessonAttendance[]
@@ -846,41 +849,6 @@ model GradebookRecord {
 
   @@unique([studentId, assessmentId])
   @@map("gradebook_record")
-}
-
-//////////////////////////////////////////////////
-// SCHEDULE
-//////////////////////////////////////////////////
-
-model Schedule {
-  id       String @id @default(cuid())
-  courseId String @map("course_id")
-
-  title      String
-  startTime  DateTime @map("start_time")
-  endTime    DateTime @map("end_time")
-  meetingUrl String?  @map("meeting_url")
-
-  status    ScheduleStatus
-  createdAt DateTime       @default(now()) @map("created_at")
-
-  course   Course            @relation(fields: [courseId], references: [id])
-  students ScheduleStudent[]
-
-  @@map("schedule")
-}
-
-model ScheduleStudent {
-  scheduleId String @map("schedule_id")
-  studentId  String @map("student_id")
-
-  attendanceStatus AttendanceStatus @map("attendance_status")
-
-  schedule Schedule @relation(fields: [scheduleId], references: [id])
-  student  Student  @relation(fields: [studentId], references: [id])
-
-  @@id([scheduleId, studentId])
-  @@map("schedule_student")
 }
 
 //////////////////////////////////////////////////
