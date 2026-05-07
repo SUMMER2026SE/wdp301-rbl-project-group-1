@@ -61,4 +61,8 @@ export class Course extends AggregateRoot<string> {
   get createdAt(): Date {
     return this.props.createdAt;
   }
+
+  changeStatus(status: CourseStatus): void {
+    this.props.status = status;
+  }
 }

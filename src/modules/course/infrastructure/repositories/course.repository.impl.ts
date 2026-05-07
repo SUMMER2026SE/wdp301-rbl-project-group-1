@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import {
   createQueryResult,
   QueryResult,
 } from '../../../../shared/domain/common/query';
+import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Course } from '../../domain/entities/course.entity';
 import {
   CoursePaginatedParams,
@@ -52,6 +52,10 @@ export class PrismaCourseRepository implements ICourseRepository {
       where.subjectId = params.subjectId;
     }
 
+    if (params.status) {
+      where.status = params.status;
+    }
+
     const orderBy = params.sortBy
       ? { [params.sortBy]: params.sortOrder ?? 'asc' }
       : { createdAt: 'desc' as const };
@@ -74,5 +78,14 @@ export class PrismaCourseRepository implements ICourseRepository {
     }));
 
     return createQueryResult(courses, total, params);
+  }
+
+  async update(course: Course): Promise<Course> {
+    const data = this.mapper.toPersistence(course);
+    const updatedCourse = await this.courseDelegate.update({
+      where: { id: course.id },
+      data,
+    });
+    return this.mapper.toDomain(updatedCourse);
   }
 }

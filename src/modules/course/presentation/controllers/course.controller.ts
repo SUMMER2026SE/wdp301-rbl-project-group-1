@@ -1,8 +1,16 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { UserRole } from '../../../../shared/domain/enums/enums';
 import { QueryResult } from '../../../../shared/domain/common/query';
+import { UserRole } from '../../../../shared/domain/enums/enums';
 import {
   ApiCreatedResponseWrapped,
   ApiOkResponseQueryWrapped,
@@ -12,14 +20,17 @@ import { QueryResponse } from '../../../../shared/presentation/responses/query-r
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
+import { ChangeCourseStatusCommand } from '../../application/commands/change-course-status/change-course-status.command';
+import { ChangeCourseStatusResult } from '../../application/commands/change-course-status/change-course-status.result';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
 import { CreateCourseResult } from '../../application/commands/create-course/create-course.result';
 import { GetCoursesQuery } from '../../application/queries/get-courses/get-courses.query';
-import { CoursePaginatedParams } from '../../domain/repositories/course.repository.interface';
 import {
   CourseResultData,
   GetCoursesResult,
 } from '../../application/queries/get-courses/get-courses.result';
+import { CoursePaginatedParams } from '../../domain/repositories/course.repository.interface';
+import { ChangeCourseStatusDto } from '../schemas/change-course-status.dto';
 import {
   CourseResponseDto,
   CreateCourseResultDto,
@@ -101,5 +112,27 @@ export class CourseController {
     >(new GetCoursesQuery(params));
 
     return QueryResponse.query(result);
+  }
+
+  @Patch(':courseId')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'changeCourseStatus',
+    summary: 'Change course status',
+  })
+  @ApiCreatedResponseWrapped(CreateCourseResultDto, {
+    description: 'Course successfully updated.',
+  })
+  async changeCourseStatus(
+    @CurrentUser() user: { userId: string },
+    @Param('courseId') courseId: string,
+    @Body() dto: ChangeCourseStatusDto,
+  ): Promise<BaseResponse<ChangeCourseStatusResult>> {
+    const result = await this.commandBus.execute<
+      ChangeCourseStatusCommand,
+      ChangeCourseStatusResult
+    >(new ChangeCourseStatusCommand(user.userId, courseId, dto.status));
+    return BaseResponse.ok(result);
   }
 }

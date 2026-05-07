@@ -1,10 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
 import {
   createQueryResult,
   QueryResult,
 } from '../../../../../shared/domain/common/query';
-import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
 import { ICourseRepository } from '../../../domain/repositories/course.repository.interface';
 import { GetCoursesQuery } from './get-courses.query';
 import { CourseResultData } from './get-courses.result';
@@ -34,6 +34,7 @@ export class GetCoursesQueryHandler
       sortOrder: params.sortOrder,
       gradeId: params.gradeId,
       subjectId: params.subjectId,
+      status: params.status,
     });
 
     const data: CourseResultData[] = result.data.map(
