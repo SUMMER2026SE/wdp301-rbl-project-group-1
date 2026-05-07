@@ -1,7 +1,8 @@
 import { Inject } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandBus, CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { EntityNotFoundException } from '../../../../../shared/domain/exceptions/domain-exception';
+import { SendEmailCommand } from '../../../../notification/application/commands/send-email/send-email.command';
 import { ICourseRepository } from '../../../domain/repositories/course.repository.interface';
 import { ChangeCourseStatusCommand } from './change-course-status.command';
 import { ChangeCourseStatusResult } from './change-course-status.result';
@@ -15,6 +16,7 @@ export class ChangeCourseStatusCommandHandler
   constructor(
     @Inject(ICourseRepository)
     private readonly courseRepository: ICourseRepository,
+    private readonly commandBus: CommandBus,
   ) {}
 
   async execute(
@@ -32,6 +34,18 @@ export class ChangeCourseStatusCommandHandler
 
     course.changeStatus(command.status);
     const updatedCourse = await this.courseRepository.update(course);
+
+    await this.commandBus.execute(
+      new SendEmailCommand(
+        command.tutorEmail,
+        'Course Status Updated',
+        'course-status-updated',
+        {
+          courseTitle: updatedCourse.title,
+          status: updatedCourse.status,
+        },
+      ),
+    );
 
     return new ChangeCourseStatusResult(updatedCourse.id);
   }

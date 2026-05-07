@@ -125,14 +125,21 @@ export class CourseController {
     description: 'Course successfully updated.',
   })
   async changeCourseStatus(
-    @CurrentUser() user: { userId: string },
+    @CurrentUser() user: { userId: string; email: string },
     @Param('courseId') courseId: string,
     @Body() dto: ChangeCourseStatusDto,
   ): Promise<BaseResponse<ChangeCourseStatusResult>> {
     const result = await this.commandBus.execute<
       ChangeCourseStatusCommand,
       ChangeCourseStatusResult
-    >(new ChangeCourseStatusCommand(user.userId, courseId, dto.status));
+    >(
+      new ChangeCourseStatusCommand(
+        user.userId,
+        user.email,
+        courseId,
+        dto.status,
+      ),
+    );
     return BaseResponse.ok(result);
   }
 }
