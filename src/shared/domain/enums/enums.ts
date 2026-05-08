@@ -31,7 +31,7 @@ export enum EnrollmentStatus {
   CANCELLED = 'CANCELLED',
 }
 
-export enum ScheduleStatus {
+export enum LessonStatus {
   SCHEDULED = 'SCHEDULED',
   ONGOING = 'ONGOING',
   COMPLETED = 'COMPLETED',

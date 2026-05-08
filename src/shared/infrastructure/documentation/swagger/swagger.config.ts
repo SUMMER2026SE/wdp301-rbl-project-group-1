@@ -11,4 +11,5 @@ export const swaggerConfig = new DocumentBuilder()
   .addTag('Course', 'Course management endpoints')
   .addTag('Grades', 'Grade management endpoints')
   .addTag('Subjects', 'Subject management endpoints')
+  .addTag('Lesson', 'Lesson management endpoints')
   .build();
