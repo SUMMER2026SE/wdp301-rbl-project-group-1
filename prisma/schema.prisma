@@ -1,0 +1,680 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+//////////////////////////////////////////////////
+// ENUMS
+//////////////////////////////////////////////////
+
+enum UserRole {
+  ADMIN
+  TUTOR
+  STUDENT
+  PARENT
+
+  @@map("user_role")
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+
+  @@map("gender")
+}
+
+enum OtpType {
+  RESET_PASSWORD
+  TWO_FACTOR
+  VERIFY_EMAIL
+}
+
+enum CourseStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  CLOSED
+
+  @@map("course_status")
+}
+
+enum EnrollmentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+
+  @@map("enrollment_status")
+}
+
+enum ScheduleStatus {
+  SCHEDULED
+  ONGOING
+  COMPLETED
+  CANCELLED
+
+  @@map("schedule_status")
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+
+  @@map("attendance_status")
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+
+  @@map("payment_status")
+}
+
+enum NotificationType {
+  SYSTEM
+  COURSE
+  FORUM
+
+  @@map("notification_type")
+}
+
+enum ReportStatus {
+  PENDING
+  RESOLVED
+  REJECTED
+
+  @@map("report_status")
+}
+
+enum CourseLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum TagCategory {
+  KNOWLEDGE
+  SKILL
+  TOOL
+}
+
+//////////////////////////////////////////////////
+// USER SYSTEM
+//////////////////////////////////////////////////
+
+model User {
+  id       String   @id @default(cuid())
+  email    String   @unique
+  password String
+  role     UserRole
+
+  isActive    Boolean @default(true) @map("is_active")
+  isVerified  Boolean @default(false) @map("is_verified")
+  isFlag      Boolean @default(false) @map("is_flag")
+  reportCount Int     @default(0) @map("report_count")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile   Profile?
+
+  refreshTokens RefreshToken[]
+
+  tutor   Tutor?
+  student Student?
+  parent  Parent?
+
+  posts                    Post[]
+  comments                 Comment[]
+  messages                 Message[]
+  notifications            NotificationTarget[]
+  reports                  Report[]                  @relation("Reporter")
+  postLikes                PostLike[]
+  conversationParticipants ConversationParticipant[]
+  activityLogs             ActivityLog[]
+
+  @@map("user")
+}
+
+model Profile {
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+
+  nickname    String
+  avatarUrl   String?  @map("avatar_url")
+  phone       String   @map("phone")
+  dateOfBirth DateTime @map("date_of_birth")
+  gender      Gender?  @map("gender")
+  address     String?  @map("address")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profile")
+}
+
+model Tutor {
+  id   String  @id @map("id")
+  user User @relation(fields: [id], references: [id])
+
+  bio            String?
+  specialization String?
+  experience     Int?
+  education      String?
+  pricePerHour   Float?  @map("price_per_hour")
+  rating         Float   @default(0)
+  reviewCount    Int     @default(0) @map("review_count")
+  studentCount   Int     @default(0) @map("student_count")
+
+  courses Course[]
+  stats   TutorStats?
+
+  @@map("tutor")
+}
+
+model Student {
+  id   String  @id
+  user User @relation(fields: [id], references: [id])
+
+  grade        String?
+  school       String?
+  learningGoal String? @map("learning_goal")
+
+  enrollments Enrollment[]
+  reviews     CourseReview[]
+  schedules   ScheduleStudent[]
+  payments    Payment[]
+
+  parents ParentStudent[]
+
+  @@map("student")
+}
+
+model Parent {
+  id   String  @id
+  user User @relation(fields: [id], references: [id])
+
+  phone   String?
+  address String?
+
+  children ParentStudent[]
+
+  @@map("parent")
+}
+
+model ParentStudent {
+  parentId  String @map("parent_id")
+  studentId String @map("student_id")
+
+  parent  Parent  @relation(fields: [parentId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@id([parentId, studentId])
+  @@map("parent_student")
+}
+
+//////////////////////////////////////////////////
+// AUTH
+//////////////////////////////////////////////////
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  revoked   Boolean  @default(false)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_token")
+}
+
+model Otp {
+  id     String @id @default(cuid())
+
+  email  String
+  userId String? @map("user_id") // optional nếu user đã tồn tại
+
+  codeHash String  @map("code_hash") // hash OTP (không lưu plain text)
+  type     OtpType
+
+  expiresAt DateTime @map("expires_at")
+  isUsed    Boolean  @default(false) @map("is_used")
+
+  attempts    Int @default(0)
+  maxAttempts Int @default(5)  @map("max_attempts")
+
+  lastSentAt DateTime? @map("last_sent_at")
+  ipAddress  String?   @map("ip_address")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt      @map("updated_at")
+
+  @@index([email, type])
+  @@index([userId])
+  @@index([expiresAt])
+  @@map("otp")
+}
+
+//////////////////////////////////////////////////
+// COURSE SYSTEM
+//////////////////////////////////////////////////
+
+// ================= SUBJECT =================
+model Subject {
+  id   String @id @default(cuid())
+
+  name String // "Toán"
+  slug String @unique // "toan"
+
+  courses Course[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("subject")
+}
+
+// ================= GRADE =================
+model Grade {
+  id   String @id @default(cuid())
+
+  name  String // "Lớp 11"
+  slug  String @unique // "lop-11"
+  order Int // để sort (10, 11, 12)
+
+  courses Course[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("grade")
+}
+
+// ================= TAG =================
+model Tag {
+  id   String @id @default(cuid())
+
+  name String // "Đạo hàm", "React"
+  slug String @unique
+
+  category TagCategory
+
+  courses CourseTag[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("tag")
+}
+
+// ================= COURSE =================
+model Course {
+  id      String @id @default(cuid())
+  tutorId String @map("tutor_id")
+
+  title       String
+  description String?
+  price       Float?
+
+  subjectId String @map("subject_id")
+  gradeId   String @map("grade_id")
+
+  level CourseLevel
+
+  status    CourseStatus
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // RELATIONS
+  tutor   Tutor   @relation(fields: [tutorId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+  grade   Grade   @relation(fields: [gradeId], references: [id])
+
+  tags CourseTag[]
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+  reviews     CourseReview[]
+  schedules   Schedule[]
+  payments    Payment[]
+  stats       CourseStats?
+
+  // INDEX (quan trọng)
+  @@index([subjectId])
+  @@index([gradeId])
+  @@index([level])
+
+  @@map("course")
+}
+
+model CourseTag {
+  courseId String @map("course_id")
+  tagId    String @map("tag_id")
+
+  course Course @relation(fields: [courseId], references: [id])
+  tag    Tag    @relation(fields: [tagId], references: [id])
+
+  @@id([courseId, tagId])
+  @@map("course_tag")
+}
+
+model Lesson {
+  id       String @id @default(cuid())
+  courseId String @map("course_id")
+
+  title      String
+  content    String?
+  videoUrl   String? @map("video_url")
+  orderIndex Int     @map("order_index")
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@map("lesson")
+}
+
+model Enrollment {
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  courseId  String @map("course_id")
+
+  status     EnrollmentStatus
+  enrolledAt DateTime         @default(now()) @map("enrolled_at")
+
+  student Student @relation(fields: [studentId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id])
+
+  @@unique([studentId, courseId])
+  @@map("enrollment")
+}
+
+model CourseReview {
+  id        String @id @default(cuid())
+  courseId  String @map("course_id")
+  studentId String @map("student_id")
+
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  course  Course  @relation(fields: [courseId], references: [id])
+  student Student @relation(fields: [studentId], references: [id])
+
+  @@map("course_review")
+}
+
+//////////////////////////////////////////////////
+// SCHEDULE
+//////////////////////////////////////////////////
+
+model Schedule {
+  id       String @id @default(cuid())
+  courseId String @map("course_id")
+
+  title      String
+  startTime  DateTime @map("start_time")
+  endTime    DateTime @map("end_time")
+  meetingUrl String?  @map("meeting_url")
+
+  status    ScheduleStatus
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  course   Course            @relation(fields: [courseId], references: [id])
+  students ScheduleStudent[]
+
+  @@map("schedule")
+}
+
+model ScheduleStudent {
+  scheduleId String @map("schedule_id")
+  studentId  String @map("student_id")
+
+  attendanceStatus AttendanceStatus @map("attendance_status")
+
+  schedule Schedule @relation(fields: [scheduleId], references: [id])
+  student  Student  @relation(fields: [studentId], references: [id])
+
+  @@id([scheduleId, studentId])
+  @@map("schedule_student")
+}
+
+//////////////////////////////////////////////////
+// FORUM
+//////////////////////////////////////////////////
+
+model Post {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  title     String
+  content   String?
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime? @map("updated_at")
+
+  user       User           @relation(fields: [userId], references: [id])
+  comments   Comment[]
+  likes      PostLike[]
+  categories PostCategory[]
+
+  @@map("post")
+}
+
+model Comment {
+  id     String @id @default(cuid())
+  postId String @map("post_id")
+  userId String @map("user_id")
+
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  post Post @relation(fields: [postId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("comment")
+}
+
+model PostLike {
+  userId String @map("user_id")
+  postId String @map("post_id")
+
+  user User @relation(fields: [userId], references: [id])
+  post Post @relation(fields: [postId], references: [id])
+
+  @@id([userId, postId])
+  @@map("post_like")
+}
+
+model Category {
+  id   String @id @default(cuid())
+  name String
+
+  posts PostCategory[]
+
+  @@map("category")
+}
+
+model PostCategory {
+  postId     String @map("post_id")
+  categoryId String @map("category_id")
+
+  post     Post     @relation(fields: [postId], references: [id])
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@id([postId, categoryId])
+  @@map("post_category")
+}
+
+//////////////////////////////////////////////////
+// NOTIFICATION
+//////////////////////////////////////////////////
+
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  content   String?
+  type      NotificationType
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  targets NotificationTarget[]
+
+  @@map("notification")
+}
+
+model NotificationTarget {
+  notificationId String @map("notification_id")
+  userId         String @map("user_id")
+
+  isRead Boolean @default(false) @map("is_read")
+
+  notification Notification @relation(fields: [notificationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@id([notificationId, userId])
+  @@map("notification_target")
+}
+
+//////////////////////////////////////////////////
+// PAYMENT
+//////////////////////////////////////////////////
+
+model Payment {
+  id        String @id @default(cuid())
+  studentId String @map("student_id")
+  courseId  String @map("course_id")
+
+  amount        Float
+  status        PaymentStatus
+  paymentMethod String?       @map("payment_method")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  student Student @relation(fields: [studentId], references: [id])
+  course  Course  @relation(fields: [courseId], references: [id])
+
+  @@map("payment")
+}
+
+//////////////////////////////////////////////////
+// CHAT
+//////////////////////////////////////////////////
+
+model Conversation {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now()) @map("created_at")
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversation")
+}
+
+model ConversationParticipant {
+  conversationId String @map("conversation_id")
+  userId         String @map("user_id")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  user         User         @relation(fields: [userId], references: [id])
+
+  @@id([conversationId, userId])
+  @@map("conversation_participant")
+}
+
+model Message {
+  id             String @id @default(cuid())
+  conversationId String @map("conversation_id")
+  senderId       String @map("sender_id")
+
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+  sender       User         @relation(fields: [senderId], references: [id])
+
+  @@map("message")
+}
+
+//////////////////////////////////////////////////
+// ANALYTICS
+//////////////////////////////////////////////////
+
+model SystemStats {
+  id   String   @id @default(cuid())
+  date DateTime @unique
+
+  totalUsers         Int   @map("total_users")
+  totalTutors        Int   @map("total_tutors")
+  totalStudents      Int   @map("total_students")
+  totalCourses       Int   @map("total_courses")
+  totalActiveCourses Int   @map("total_active_courses")
+  totalEnrollments   Int   @map("total_enrollments")
+  totalRevenue       Float @map("total_revenue")
+  totalPosts         Int   @map("total_posts")
+  totalComments      Int   @map("total_comments")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("system_stats")
+}
+
+model TutorStats {
+  tutorId String @id @map("tutor_id")
+
+  totalStudents Int   @map("total_students")
+  totalCourses  Int   @map("total_courses")
+  totalEarnings Float @map("total_earnings")
+  avgRating     Float @map("avg_rating")
+
+  tutor Tutor @relation(fields: [tutorId], references: [id])
+
+  @@map("tutor_stats")
+}
+
+model CourseStats {
+  courseId String @id @map("course_id")
+
+  totalStudents Int   @map("total_students")
+  totalRevenue  Float @map("total_revenue")
+  avgRating     Float @map("avg_rating")
+
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@map("course_stats")
+}
+
+model ActivityLog {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  action     String
+  entityType String @map("entity_type")
+  entityId   Int    @map("entity_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("activity_log")
+}
+
+model Report {
+  id         String @id @default(cuid())
+  reporterId String @map("reporter_id")
+
+  targetType String       @map("target_type")
+  targetId   Int          @map("target_id")
+  reason     String?
+  status     ReportStatus
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  reporter User @relation("Reporter", fields: [reporterId], references: [id])
+
+  @@map("report")
+}
