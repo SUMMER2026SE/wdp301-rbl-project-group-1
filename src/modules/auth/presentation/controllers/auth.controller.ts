@@ -28,6 +28,8 @@ import { RateLimit } from 'src/shared/presentation/decorators/rate-limit.decorat
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { ForgotPasswordCommand } from '../../application/commands/forgot-password/forgot-password.command';
 import { ForgotPasswordResult } from '../../application/commands/forgot-password/forgot-password.result';
+import { LoginGoogleCommand } from '../../application/commands/login-google/login-google.command';
+import { LoginGoogleResult } from '../../application/commands/login-google/login-google.result';
 import { LoginCommand } from '../../application/commands/login/login.command';
 import { LogoutCommand } from '../../application/commands/logout/logout.command';
 import { RefreshTokenCommand } from '../../application/commands/refresh-token/refresh-token.command';
@@ -52,6 +54,7 @@ import {
   VerifyOtpResultDto,
 } from '../schemas/auth-response.dto';
 import { ForgotPasswordDto } from '../schemas/forgot-password.dto';
+import { LoginGoogleDto } from '../schemas/login-google.dto';
 import { LoginDto } from '../schemas/login.dto';
 import { RegisterDto } from '../schemas/register.dto';
 import { ResetPasswordDto } from '../schemas/reset-password.dto';
@@ -116,6 +119,39 @@ export class AuthController {
     const result = await this.commandBus.execute<LoginCommand, LoginResult>(
       new LoginCommand(dto.email, dto.password),
     );
+
+    this.setRefreshTokenCookie(res, result.refreshToken);
+
+    return BaseResponse.ok({
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
+      user: result.user,
+    });
+  }
+
+  @Public()
+  @Post('login-google')
+  @RateLimit(5, 60)
+  @ApiOperation({
+    operationId: 'loginGoogle',
+    summary:
+      'Login with Google ID token and receive access token + refresh token cookie',
+  })
+  @ApiCreatedResponseWrapped(LoginResponseDto, {
+    description: 'User successfully logged in with Google.',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized / Invalid Google token.',
+  })
+  async loginGoogle(
+    @Body() dto: LoginGoogleDto,
+    @Res({ passthrough: true }) res: FastifyReply,
+  ): Promise<BaseResponse<LoginGoogleResult>> {
+    const result = await this.commandBus.execute<
+      LoginGoogleCommand,
+      LoginGoogleResult
+    >(new LoginGoogleCommand(dto.idToken));
 
     this.setRefreshTokenCookie(res, result.refreshToken);
 

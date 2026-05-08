@@ -6,6 +6,7 @@ import { PassportModule } from '@nestjs/passport';
 import { StringValue } from 'ms';
 
 import { ForgotPasswordCommandHandler } from './application/commands/forgot-password/forgot-password.handler';
+import { LoginGoogleCommandHandler } from './application/commands/login-google/login-google.handler';
 import { LoginCommandHandler } from './application/commands/login/login.handler';
 import { LogoutCommandHandler } from './application/commands/logout/logout.handler';
 import { RefreshTokenCommandHandler } from './application/commands/refresh-token/refresh-token.handler';
@@ -22,6 +23,7 @@ import { IJwtService } from './application/services/jwt.service';
 import { IOtpService } from './application/services/otp.service';
 import { IOtpRepository } from './domain/repositories/otp.repository';
 import { PrismaOtpRepository } from './infrastructure/repositories/otp.repository.impl';
+import { GoogleOAuthService } from './infrastructure/services/google-auth.service';
 import { BcryptService } from './infrastructure/services/hash.service';
 import { JwtServiceImpl } from './infrastructure/services/jwt.service';
 import { OtpService } from './infrastructure/services/otp.service';
@@ -33,6 +35,7 @@ import { UserModule } from '../user/user.module';
 const CommandHandlers = [
   RegisterCommandHandler,
   LoginCommandHandler,
+  LoginGoogleCommandHandler,
   RefreshTokenCommandHandler,
   LogoutCommandHandler,
   ForgotPasswordCommandHandler,
@@ -89,6 +92,7 @@ const QueryHandlers = [GetMeQueryHandler];
       provide: IOtpService,
       useClass: OtpService,
     },
+    GoogleOAuthService,
   ],
   exports: [IHashService],
 })

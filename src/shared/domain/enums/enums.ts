@@ -61,3 +61,8 @@ export enum ReportStatus {
   RESOLVED = 'RESOLVED',
   REJECTED = 'REJECTED',
 }
+
+export enum AuthProvider {
+  LOCAL = 'LOCAL',
+  GOOGLE = 'GOOGLE',
+}

@@ -184,6 +184,13 @@ enum GradingPolicy {
   @@map("grading_policy")
 }
 
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+
+  @@map("auth_provider")
+}
+
 //////////////////////////////////////////////////
 // USER SYSTEM
 //////////////////////////////////////////////////
@@ -202,6 +209,7 @@ model User {
   createdAt DateTime @default(now()) @map("created_at")
 
   profile Profile?
+  identities UserIdentity[]
 
   refreshTokens RefreshToken[]
 
@@ -222,6 +230,27 @@ model User {
   interactions             Interaction[]
 
   @@map("user")
+}
+
+model UserIdentity {
+  id String @id @default(cuid())
+
+  userId          String       @map("user_id")
+  provider        AuthProvider
+  providerUserId  String       @map("provider_user_id")
+  email           String?
+  emailVerified   Boolean      @default(false) @map("email_verified")
+  avatarUrl       String?      @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@unique([userId, provider])
+  @@index([provider, email])
+  @@map("user_identity")
 }
 
 model Profile {
