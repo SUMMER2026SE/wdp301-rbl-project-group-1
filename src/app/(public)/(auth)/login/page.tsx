@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import LoginForm from "@/src/features/auth/components/login-form";
+import GoogleLoginButton from "@/src/features/auth/components/google-login-button";
 import { Button } from "@/src/shared/components/ui/button";
 
 export default function Login() {
@@ -61,16 +62,17 @@ export default function Login() {
               </div>
               <div className="relative flex justify-center text-sm">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Hoặc đăng nhập với
+                  Hoặc
                 </span>
               </div>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              <Button variant="outline" className="h-11">
-                Google
-              </Button>
-              <Button variant="outline" className="h-11">
-                Facebook
+            <div className="mt-6 flex gap-3">
+              <GoogleLoginButton />
+              <Button 
+                variant="outline" 
+                className="h-10 rounded-sm"
+              >
+                Đăng nhập bằng Facebook
               </Button>
             </div>
           </div>
