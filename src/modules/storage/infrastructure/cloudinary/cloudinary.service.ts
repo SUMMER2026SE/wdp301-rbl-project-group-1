@@ -3,10 +3,13 @@ import { ConfigService } from '@nestjs/config';
 import { UploadApiResponse, v2 } from 'cloudinary';
 import { Readable, Writable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { IImageStorage } from '../../domain/interfaces/image-storage.service.interface';
 
-/** Service handling business logic for  cloudinary. */
+/** Service handling business logic for storage via Cloudinary. */
 @Injectable()
-export class CloudinaryService implements OnModuleInit, OnModuleDestroy {
+export class CloudinaryService
+  implements IImageStorage, OnModuleInit, OnModuleDestroy
+{
   constructor(private readonly config: ConfigService) {
     v2.config({
       cloud_name: this.config.get<string>('CLOUDINARY_CLOUD_NAME'),
@@ -21,14 +24,14 @@ export class CloudinaryService implements OnModuleInit, OnModuleDestroy {
   async onModuleDestroy() {}
 
   /**
-   * Executes the upload trailer operation.
+   * Executes the upload stream operation.
    *
-   * @param trailerStream - The trailerStream parameter
+   * @param stream - The stream parameter
    * @param publicId - The publicId parameter
    * @returns Result of type Promise<string>
    */
   async upload(
-    trailerStream: Readable,
+    stream: Readable,
     publicId: string,
     image?: boolean,
   ): Promise<string> {
@@ -55,7 +58,7 @@ export class CloudinaryService implements OnModuleInit, OnModuleDestroy {
         },
       ) as Writable;
 
-      pipeline(trailerStream, uploadStream).catch((error: unknown) => {
+      pipeline(stream, uploadStream).catch((error: unknown) => {
         reject(error instanceof Error ? error : new Error(String(error)));
       });
     });

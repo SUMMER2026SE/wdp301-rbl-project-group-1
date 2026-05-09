@@ -7,6 +7,8 @@ export interface LoginUserResult {
   nickname: string;
   isActive: boolean;
   isVerified: boolean;
+  isFlag: boolean;
+  reportCount: number;
   createdAt: Date;
 }
 

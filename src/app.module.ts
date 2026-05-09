@@ -15,12 +15,14 @@ import { RolesGuard } from './modules/auth/presentation/guards/roles.guard';
 import { AppConfigModule } from './shared/infrastructure/config/config.module';
 import { DatabaseModule } from './shared/infrastructure/database/database.module';
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
+import { StorageModule } from './modules/storage/storage.module';
 
 @Module({
   imports: [
     AppConfigModule,
     DatabaseModule,
     LoggerModule,
+    StorageModule,
     HealthModule,
     AuthModule,
     UserModule,

@@ -23,6 +23,12 @@ export default () => ({
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   },
+  supabase: {
+    url: process.env.SUPABASE_URL,
+    key: process.env.SUPABASE_KEY,
+    bucket: process.env.SUPABASE_BUCKET,
+    serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  },
   email: {
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT ?? '587', 10),

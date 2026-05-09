@@ -2,7 +2,7 @@ import { Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Readable } from 'node:stream';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
-import { CloudinaryService } from '../../../../../shared/infrastructure/database/cloudinary/cloudinary.service';
+import { IImageStorage } from '../../../../storage/domain/interfaces/image-storage.service.interface';
 import { IProfileRepository } from '../../../domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { ChangeAvatarCommand } from './change-avatar.command';
@@ -18,7 +18,8 @@ export class ChangeAvatarHandler
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
     @Inject(IProfileRepository)
     private readonly profileRepository: IProfileRepository,
-    private readonly cloudinaryService: CloudinaryService,
+    @Inject(IImageStorage)
+    private readonly imageStorage: IImageStorage,
   ) {}
 
   async execute(command: ChangeAvatarCommand): Promise<ChangeAvatarResult> {
@@ -37,7 +38,7 @@ export class ChangeAvatarHandler
     const stream = Readable.from(command.fileBuffer);
 
     // Cloudinary expects true for the image parameter when uploading an image
-    const secureUrl = await this.cloudinaryService.upload(
+    const secureUrl = await this.imageStorage.upload(
       stream,
       `avatars/${command.userId}-${Date.now()}`,
       true,

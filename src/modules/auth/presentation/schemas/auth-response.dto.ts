@@ -49,6 +49,8 @@ export const LoginUserSchema = z
     nickname: z.string().meta({ example: 'JohnDoe' }),
     isActive: z.boolean().meta({ example: true }),
     isVerified: z.boolean().meta({ example: true }),
+    isFlag: z.boolean().meta({ example: false }),
+    reportCount: z.number().int().meta({ example: 0 }),
     createdAt: z.string().datetime().meta({
       example: '2025-01-01T00:00:00.000Z',
     }),

@@ -145,6 +145,8 @@ export class LoginGoogleCommandHandler
         nickname: profile?.nickname ?? '',
         isActive: user.isActive,
         isVerified: user.isVerified,
+        isFlag: user.isFlag,
+        reportCount: user.reportCount,
         createdAt: user.createdAt,
       },
     };

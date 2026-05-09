@@ -2,7 +2,7 @@ import { Body, Controller, Get, Patch, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { ApiImageUpload } from 'src/shared/presentation/decorators/api-image-upload.decorator';
+import { ApiImageUpload } from '../../../../modules/storage/presentation/decorators/api-image-upload.decorator';
 import {
   QueryParams,
   QueryResult,
@@ -12,10 +12,10 @@ import {
   ApiOkResponseWrapped,
 } from '../../../../shared/presentation/decorators/api-response.decorator';
 import { Query as QueryParamsDecorator } from '../../../../shared/presentation/decorators/query.decorator';
-import { UploadedImage } from '../../../../shared/presentation/decorators/uploaded-image.decorator';
+import { UploadedImage } from '../../../../modules/storage/presentation/decorators/uploaded-image.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
-import { UploadedImageDto } from '../../../../shared/presentation/schemas/upload-image.dto';
+import { UploadedImageDto } from '../../../../modules/storage/presentation/schemas/upload-image.dto';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { ChangeAvatarCommand } from '../../application/commands/change-avatar/change-avatar.command';
 import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';

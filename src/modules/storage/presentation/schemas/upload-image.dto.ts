@@ -1,5 +1,5 @@
 import { createZodDto } from 'nestjs-zod';
-import { z } from '../../infrastructure/documentation/zod/zod';
+import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 
 export const UploadedImageSchema = z
   .object({
