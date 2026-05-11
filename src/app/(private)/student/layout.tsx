@@ -1,13 +1,16 @@
-import { STUDENT_NAV_LINKS } from '@/src/app/(private)/student/constants/constants';
-import { NotificationPopover } from '@/src/shared/components/molecules/notification-popover/notification-popover';
-import SearchBox from '@/src/shared/components/molecules/search-box/search-box';
-import { UserPopover } from '@/src/shared/components/molecules/user-popover/user-popover';
-import NavigationBar from '@/src/shared/components/organisms/navigation-bar/navigation-bar';
-import { Input } from '@/src/shared/components/ui/input';
-import { GraduationCap, Search } from 'lucide-react';
-import Link from 'next/link';
+import { STUDENT_NAV_LINKS } from "@/src/app/(private)/student/constants/constants";
+import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
+import SearchBox from "@/src/shared/components/molecules/search-box/search-box";
+import { UserPopover } from "@/src/shared/components/molecules/user-popover/user-popover";
+import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
+import { GraduationCap } from "lucide-react";
+import Link from "next/link";
 
-export default function StudentLayout({ children }: { children: React.ReactNode }) {
+export default function StudentLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const navLinks = STUDENT_NAV_LINKS;
 
   return (
@@ -32,10 +35,6 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
           <div className="ml-auto hidden shrink-0 items-center gap-6 md:flex">
             <div className="relative min-w-40">
               <SearchBox />
-              <Input
-                placeholder="Tìm kiếm..."
-                className="h-10 border-border bg-muted pl-10 focus-visible:ring-primary dark:border-border dark:bg-muted"
-              />
             </div>
 
             {/* Notifications */}
@@ -44,8 +43,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             {/* User profile */}
             <div className="flex items-center gap-4 border-l border-border pl-6 dark:border-border">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-foreground dark:text-foreground">Minh Hoàng</p>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">Học sinh lớp 12</p>
+                <p className="text-sm font-bold text-foreground dark:text-foreground">
+                  Minh Hoàng
+                </p>
+                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
+                  Học sinh lớp 12
+                </p>
               </div>
               <UserPopover />
             </div>
