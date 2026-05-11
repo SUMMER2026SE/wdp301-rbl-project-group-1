@@ -1,4 +1,5 @@
 import fastifyCookie from '@fastify/cookie';
+import fastifyMultipart from '@fastify/multipart';
 import { NestFactory } from '@nestjs/core';
 import {
   FastifyAdapter,
@@ -30,6 +31,13 @@ async function bootstrap() {
   // @ts-expect-error Type mismatch between NestFastify and @fastify/cookie plugin typings.
   await app.register(fastifyCookie, {
     secret: cookieSecret,
+  });
+
+  // @ts-expect-error Type mismatch between NestFastify and @fastify/multipart plugin typings.
+  await app.register(fastifyMultipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024, // 5MB limit
+    },
   });
 
   app.setGlobalPrefix('api');
