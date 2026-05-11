@@ -1,4 +1,4 @@
-import TutorRegistrationContainer from "@/src/features/tutor-registration/components/tutor-registration-container";
+import TutorRegistrationContainer from "@/src/features/tutor-application/components/tutor-registration-container";
 
 export const metadata = {
   title: "Đăng ký Gia sư - Edura",

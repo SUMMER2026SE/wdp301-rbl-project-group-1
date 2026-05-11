@@ -3,6 +3,19 @@
 import { useFormContext } from "react-hook-form";
 import { Button } from "@/src/shared/components/ui/button";
 import type { TutorRegistrationData } from "../schemas/tutorRegistrationSchemas";
+import {
+  useGetAllGradesQuery,
+  useGetAllSubjectsQuery,
+} from "@/src/features/academic-catalog/academicCatalogApi";
+import { FileText } from "lucide-react";
+
+function formatFileSize(bytes: number) {
+  if (!bytes) return "0 Bytes";
+  const k = 1024;
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
 
 interface TutorReviewFormProps {
   onPrevious: () => void;
@@ -21,6 +34,16 @@ export function TutorReviewForm({
   const agreedToTerms = watch("agreedToTerms");
 
   const formData = watch();
+
+  const { data: subjectsData } = useGetAllSubjectsQuery();
+  const { data: gradesData } = useGetAllGradesQuery();
+
+  const resolvedSubjects = (formData.subjectIds ?? []).map(
+    (id) => subjectsData?.data.find((s) => s.id === id)?.name ?? id,
+  );
+  const resolvedGrades = (formData.gradeIds ?? []).map(
+    (id) => gradesData?.data.find((g) => g.id === id)?.name ?? id,
+  );
 
   return (
     <div className="bg-card text-card-foreground rounded-2xl shadow-sm border border-border p-6 sm:p-10">
@@ -55,7 +78,21 @@ export function TutorReviewForm({
               <p className="text-xs text-muted-foreground mb-1">
                 Môn học giảng dạy
               </p>
-              <p className="font-medium text-foreground">{formData.subject}</p>
+              <p className="font-medium text-foreground">
+                {resolvedSubjects.length > 0
+                  ? resolvedSubjects.join(", ")
+                  : "Chưa chọn"}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">
+                Cấp lớp giảng dạy
+              </p>
+              <p className="font-medium text-foreground">
+                {resolvedGrades.length > 0
+                  ? resolvedGrades.join(", ")
+                  : "Chưa chọn"}
+              </p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">
@@ -83,11 +120,56 @@ export function TutorReviewForm({
             </div>
             Bằng cấp & Chứng chỉ
           </h3>
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium text-foreground">
-                Hồ sơ đã được đính kèm.
-              </span>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-muted-foreground">Bằng cấp cao nhất</p>
+              {formData.degreeFiles ? (
+                <div className="flex items-center gap-3 bg-muted/50 p-3 rounded-lg border border-border w-fit min-w-[280px] max-w-full">
+                  <div className="w-10 h-10 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{formData.degreeFiles.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatFileSize(formData.degreeFiles.size)}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground font-medium italic opacity-50">Chưa tải lên</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-muted-foreground">Chứng chỉ chuyên môn</p>
+              {formData.certificateFiles ? (
+                <div className="flex items-center gap-3 bg-muted/50 p-3 rounded-lg border border-border w-fit min-w-[280px] max-w-full">
+                  <div className="w-10 h-10 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{formData.certificateFiles.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatFileSize(formData.certificateFiles.size)}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground font-medium italic opacity-50">Chưa tải lên</p>
+              )}
+            </div>
+
+            <div className="flex flex-col gap-1">
+              <p className="text-xs text-muted-foreground">Giấy tờ định danh</p>
+              {formData.identityFiles ? (
+                <div className="flex items-center gap-3 bg-muted/50 p-3 rounded-lg border border-border w-fit min-w-[280px] max-w-full">
+                  <div className="w-10 h-10 rounded bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{formData.identityFiles.name}</p>
+                    <p className="text-xs text-muted-foreground">{formatFileSize(formData.identityFiles.size)}</p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-foreground font-medium italic opacity-50">Chưa tải lên</p>
+              )}
             </div>
           </div>
         </div>

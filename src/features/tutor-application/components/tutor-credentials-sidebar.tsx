@@ -1,4 +1,4 @@
-import { CREDENTIALS_NOTES } from "@/src/features/tutor-registration/constants/constants";
+import { CREDENTIALS_NOTES } from "@/src/features/tutor-application/constants/constants";
 import { Button } from "@/src/shared/components/ui/button";
 
 export function TutorCredentialsSidebar() {

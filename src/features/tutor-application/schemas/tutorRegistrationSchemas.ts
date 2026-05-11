@@ -4,7 +4,8 @@ export const tutorBasicInfoSchema = z.object({
  fullName: z.string().min(1, "Họ và tên không được để trống"),
  phone: z.string().min(10, "Số điện thoại không hợp lệ"),
  bio: z.string().max(500, "Bio không quá 500 ký tự").optional(),
- subject: z.string().min(1, "Vui lòng chọn môn học"),
+ subjectIds: z.array(z.string()).min(1, "Vui lòng chọn ít nhất 1 môn học"),
+ gradeIds: z.array(z.string()).min(1, "Vui lòng chọn ít nhất 1 cấp lớp"),
  hourlyRate: z.number().min(0, "Học phí phải lớn hơn 0"),
  photoFiles: z.any().optional(),
 });

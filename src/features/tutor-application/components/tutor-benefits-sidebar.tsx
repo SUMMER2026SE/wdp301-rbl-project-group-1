@@ -1,4 +1,4 @@
-import { TUTOR_BENEFITS } from "@/src/features/tutor-registration/constants/constants";
+import { TUTOR_BENEFITS } from "@/src/features/tutor-application/constants/constants";
 import { Button } from "@/src/shared/components/ui/button";
 
 export function TutorBenefitsSidebar() {

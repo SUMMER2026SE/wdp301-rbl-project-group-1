@@ -3,17 +3,16 @@
 import { Button } from "@/src/shared/components/ui/button";
 import { Input } from "@/src/shared/components/ui/input";
 import { Label } from "@/src/shared/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/src/shared/components/ui/select";
 import { Textarea } from "@/src/shared/components/ui/textarea";
+import CheckboxField from "@/src/shared/components/atoms/checkbox-field/checkbox-field";
+import {
+  useGetAllGradesQuery,
+  useGetAllSubjectsQuery,
+} from "@/src/features/academic-catalog/academicCatalogApi";
 import { useState } from "react";
-import { useFormContext } from "react-hook-form";
+import { useFormContext, Controller } from "react-hook-form";
 import type { TutorRegistrationData } from "../schemas/tutorRegistrationSchemas";
+import { AvatarUpload } from "@/src/shared/components/molecules/avatar-upload/avatar-upload";
 
 interface TutorBasicInfoFormProps {
   onNext: () => void;
@@ -25,17 +24,35 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
     watch,
     setValue,
     trigger,
+    control,
     formState: { errors },
   } = useFormContext<TutorRegistrationData>();
+
   const bioValue = watch("bio") || "";
   const [charCount, setCharCount] = useState(bioValue.length);
+
+  const { data: subjectsData, isLoading: subjectsLoading } =
+    useGetAllSubjectsQuery();
+  const { data: gradesData, isLoading: gradesLoading } = useGetAllGradesQuery();
+
+  const subjectOptions =
+    subjectsData?.data.map((s) => ({ value: s.id, label: s.name })) ?? [];
+  const gradeOptions =
+    gradesData?.data
+      .slice()
+      .sort((a, b) => a.order - b.order)
+      .map((g) => ({ value: g.id, label: g.name })) ?? [];
+
+  const selectedSubjectIds = watch("subjectIds") ?? [];
+  const selectedGradeIds = watch("gradeIds") ?? [];
 
   const handleNext = async () => {
     const isValid = await trigger([
       "fullName",
       "phone",
       "bio",
-      "subject",
+      "subjectIds",
+      "gradeIds",
       "hourlyRate",
     ]);
     if (isValid) {
@@ -62,29 +79,18 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
       </p>
 
       <div className="space-y-8">
+        {/* Avatar */}
         <div className="flex flex-col sm:flex-row gap-6 items-start">
-          <div className="w-32 h-32 rounded-full bg-muted border-2 border-dashed border-input flex flex-col items-center justify-center text-muted-foreground shrink-0 cursor-pointer hover:bg-muted/80 transition-colors">
-            <svg
-              className="w-10 h-10 mb-1"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+          <Controller
+            control={control}
+            name="photoFiles"
+            render={({ field }) => (
+              <AvatarUpload
+                value={field.value}
+                onChange={field.onChange}
               />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-            </svg>
-            <span className="text-xs font-medium">Tải ảnh lên</span>
-          </div>
+            )}
+          />
           <div className="flex-1">
             <h3 className="text-sm font-bold text-foreground mb-2">
               Ảnh chân dung chuyên nghiệp
@@ -97,9 +103,15 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
             <div className="text-xs text-muted-foreground">
               Định dạng hỗ trợ: JPG, PNG, tối đa 5MB.
             </div>
+            {errors.photoFiles && (
+              <p className="text-xs text-destructive mt-1">
+                {(errors.photoFiles as { message?: string }).message}
+              </p>
+            )}
           </div>
         </div>
 
+        {/* Full name + Phone */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <Label
@@ -143,6 +155,7 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           </div>
         </div>
 
+        {/* Bio */}
         <div>
           <Label
             htmlFor="bio"
@@ -168,37 +181,77 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
+        {/* Subjects checkboxes */}
         <div>
-          <Label
-            htmlFor="subject"
-            className="text-sm font-bold text-foreground mb-2"
-          >
+          <Label className="text-sm font-bold text-foreground mb-3 block">
             Môn học giảng dạy
           </Label>
-          <Select
-            value={watch("subject")}
-            onValueChange={(val) =>
-              setValue("subject", val, { shouldValidate: true })
-            }
-          >
-            <SelectTrigger className="h-12 rounded-xl">
-              <SelectValue placeholder="-- Chọn môn học --" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="toan">Toán học</SelectItem>
-              <SelectItem value="ly">Vật lý</SelectItem>
-              <SelectItem value="hoa">Hóa học</SelectItem>
-              <SelectItem value="anh">Tiếng Anh</SelectItem>
-              <SelectItem value="tin">Tin học</SelectItem>
-            </SelectContent>
-          </Select>
-          {errors.subject && (
-            <p className="text-xs text-destructive mt-1">
-              {errors.subject.message}
+          {subjectsLoading ? (
+            <p className="text-sm text-muted-foreground">Đang tải...</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+              {subjectOptions.map((opt) => (
+                <CheckboxField
+                  key={opt.value}
+                  id={`subject-${opt.value}`}
+                  name={`subject-${opt.value}`}
+                  label={opt.label}
+                  defaultValue={selectedSubjectIds.includes(opt.value)}
+                  onChange={() => {
+                    const isChecked = selectedSubjectIds.includes(opt.value);
+                    const next = isChecked
+                      ? selectedSubjectIds.filter((id) => id !== opt.value)
+                      : [...selectedSubjectIds, opt.value];
+                    setValue("subjectIds", next, { shouldValidate: true });
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          {errors.subjectIds && (
+            <p className="text-xs text-destructive mt-2">
+              {(errors.subjectIds as { message?: string }).message ??
+                "Vui lòng chọn ít nhất 1 môn học"}
             </p>
           )}
         </div>
 
+        {/* Grades checkboxes */}
+        <div>
+          <Label className="text-sm font-bold text-foreground mb-3 block">
+            Cấp lớp giảng dạy
+          </Label>
+          {gradesLoading ? (
+            <p className="text-sm text-muted-foreground">Đang tải...</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
+              {gradeOptions.map((opt) => (
+                <CheckboxField
+                  key={opt.value}
+                  id={`grade-${opt.value}`}
+                  name={`grade-${opt.value}`}
+                  label={opt.label}
+                  defaultValue={selectedGradeIds.includes(opt.value)}
+                  onChange={() => {
+                    const isChecked = selectedGradeIds.includes(opt.value);
+                    const next = isChecked
+                      ? selectedGradeIds.filter((id) => id !== opt.value)
+                      : [...selectedGradeIds, opt.value];
+                    setValue("gradeIds", next, { shouldValidate: true });
+                  }}
+                />
+              ))}
+            </div>
+          )}
+          {errors.gradeIds && (
+            <p className="text-xs text-destructive mt-2">
+              {(errors.gradeIds as { message?: string }).message ??
+                "Vui lòng chọn ít nhất 1 cấp lớp"}
+            </p>
+          )}
+        </div>
+
+        {/* Hourly rate */}
         <div>
           <Label
             htmlFor="hourlyRate"
@@ -225,6 +278,7 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
+        {/* Next button */}
         <div className="pt-6 border-t border-border flex justify-end">
           <Button
             type="button"
