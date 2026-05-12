@@ -127,6 +127,10 @@ export type CreateTutorApplicationDto = {
   subjectIds: string[];
   /** List of grade IDs the tutor can teach */
   gradeIds: string[];
+  /** Tutor avatar URL */
+  avatarUrl?: string;
+  /** List of file paths stored in Supabase */
+  files?: string[];
 };
 export type TutorApplicationResponseDto = {
   id: string;
@@ -150,6 +154,8 @@ export type TutorApplicationResponseDto = {
     order: number;
     createdAt: string;
   }[];
+  avatarUrl?: string | null;
+  files?: string[];
   createdAt: string;
   updatedAt: string;
 };

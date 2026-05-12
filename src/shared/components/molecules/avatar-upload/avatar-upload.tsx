@@ -1,9 +1,9 @@
-import Image from "next/image";
-import { Camera } from "lucide-react";
 import { Input } from "@/src/shared/components/ui/input";
-import { cn } from "@/src/shared/lib/utils";
-import { useFileUpload } from "@/src/shared/hooks/use-file-upload";
 import { IMAGE_FILE_TYPES, MAX_FILE_SIZE } from "@/src/shared/constants/file";
+import { useFileUpload } from "@/src/shared/hooks/use-file-upload";
+import { cn } from "@/src/shared/lib/utils";
+import { Camera } from "lucide-react";
+import Image from "next/image";
 import type { AvatarUploadProps } from "./type";
 
 export function AvatarUpload({
@@ -26,8 +26,10 @@ export function AvatarUpload({
     <div
       className={cn(
         "relative w-32 h-32 rounded-full border-2 border-dashed flex flex-col items-center justify-center text-muted-foreground shrink-0 cursor-pointer transition-colors overflow-hidden group",
-        dragActive ? "border-primary bg-primary/5" : "border-input bg-muted hover:bg-muted/80",
-        className
+        dragActive
+          ? "border-primary bg-primary/5"
+          : "border-input bg-muted hover:bg-muted/80",
+        className,
       )}
       onDragEnter={handleDrag}
       onDragLeave={handleDrag}
@@ -44,14 +46,9 @@ export function AvatarUpload({
       />
       {previewUrl ? (
         <>
-          <Image
-            src={previewUrl}
-            alt="Avatar"
-            fill
-            className="object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Camera className="w-8 h-8 text-white" />
+          <Image src={previewUrl} alt="Avatar" fill className="object-cover" />
+          <div className="absolute inset-0 bg-foreground/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Camera className="w-8 h-8 text-background" />
           </div>
         </>
       ) : (

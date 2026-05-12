@@ -49,6 +49,7 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
   const handleNext = async () => {
     const isValid = await trigger([
       "fullName",
+      "email",
       "phone",
       "bio",
       "subjectIds",
@@ -79,7 +80,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
       </p>
 
       <div className="space-y-8">
-        {/* Avatar */}
         <div className="flex flex-col sm:flex-row gap-6 items-start">
           <Controller
             control={control}
@@ -111,7 +111,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           </div>
         </div>
 
-        {/* Full name + Phone */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <Label
@@ -130,6 +129,26 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
             {errors.fullName && (
               <p className="text-xs text-destructive mt-1">
                 {errors.fullName.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label
+              htmlFor="email"
+              className="text-sm font-bold text-foreground mb-2"
+            >
+              Email liên hệ
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="nguyenvana@example.com"
+              className="h-12 rounded-xl"
+              {...register("email")}
+            />
+            {errors.email && (
+              <p className="text-xs text-destructive mt-1">
+                {errors.email.message}
               </p>
             )}
           </div>
@@ -155,7 +174,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           </div>
         </div>
 
-        {/* Bio */}
         <div>
           <Label
             htmlFor="bio"
@@ -181,7 +199,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
-        {/* Subjects checkboxes */}
         <div>
           <Label className="text-sm font-bold text-foreground mb-3 block">
             Môn học giảng dạy
@@ -216,7 +233,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
-        {/* Grades checkboxes */}
         <div>
           <Label className="text-sm font-bold text-foreground mb-3 block">
             Cấp lớp giảng dạy
@@ -251,7 +267,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
-        {/* Hourly rate */}
         <div>
           <Label
             htmlFor="hourlyRate"
@@ -278,7 +293,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
-        {/* Next button */}
         <div className="pt-6 border-t border-border flex justify-end">
           <Button
             type="button"

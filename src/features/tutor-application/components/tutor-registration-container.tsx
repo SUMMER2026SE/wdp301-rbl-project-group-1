@@ -10,12 +10,28 @@ import {
   type TutorRegistrationData,
 } from "../schemas/tutorRegistrationSchemas";
 
+import {
+  useStorageControllerPresignMutation,
+  useStorageControllerUploadImageMutation,
+} from "@/src/features/storage/storageApi";
+import { useCreateTutorApplicationMutation } from "../tutorApplicationApi";
 import { TutorBasicInfoForm } from "./tutor-basic-info-form";
 import { TutorBenefitsSidebar } from "./tutor-benefits-sidebar";
 import { TutorCredentialsForm } from "./tutor-credentials-form";
 import { TutorCredentialsSidebar } from "./tutor-credentials-sidebar";
 import { TutorExperienceForm } from "./tutor-experience-form";
 import { TutorReviewForm } from "./tutor-review-form";
+
+interface UploadImageResponse {
+  data?: { secure_url: string };
+  secure_url?: string;
+}
+
+interface PresignResponse {
+  data?: { signedUrl: string; path: string };
+  signedUrl?: string;
+  path?: string;
+}
 
 export default function TutorRegistrationContainer() {
   const router = useRouter();
@@ -24,6 +40,7 @@ export default function TutorRegistrationContainer() {
     resolver: zodResolver(tutorRegistrationSchema),
     defaultValues: {
       fullName: "",
+      email: "",
       phone: "",
       bio: "",
       subjectIds: [],
@@ -41,11 +58,67 @@ export default function TutorRegistrationContainer() {
     mode: "onTouched",
   });
 
+  const [createApplication] = useCreateTutorApplicationMutation();
+  const [uploadImage] = useStorageControllerUploadImageMutation();
+  const [presignUrl] = useStorageControllerPresignMutation();
+
   const onSubmit = async (data: TutorRegistrationData) => {
     try {
-      // Fake API request
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      console.log("Submitted Tutor Data:", data);
+      let avatarUrl: string | undefined = undefined;
+      const files: string[] = [];
+
+      if (data.photoFiles) {
+        const formData = new FormData();
+        formData.append("file", data.photoFiles as Blob);
+        const res = (await uploadImage({
+          body: formData as unknown as { file?: Blob },
+        }).unwrap()) as UploadImageResponse;
+        avatarUrl = res?.data?.secure_url || res?.secure_url;
+      }
+
+      const uploadDocument = async (file: File) => {
+        const res = (await presignUrl({
+          presignDto: { filename: file.name, folder: "tutor-applications" },
+        }).unwrap()) as PresignResponse;
+        const presignData = res?.data || res;
+
+        if (presignData?.signedUrl) {
+          await fetch(presignData.signedUrl, {
+            method: "PUT",
+            body: file,
+            headers: {
+              "Content-Type": file.type || "application/octet-stream",
+            },
+          });
+        }
+        return presignData?.path || "";
+      };
+
+      if (data.degreeFiles) {
+        files.push(await uploadDocument(data.degreeFiles as File));
+      }
+      if (data.certificateFiles) {
+        files.push(await uploadDocument(data.certificateFiles as File));
+      }
+      if (data.identityFiles) {
+        files.push(await uploadDocument(data.identityFiles as File));
+      }
+
+      await createApplication({
+        createTutorApplicationDto: {
+          email: data.email,
+          specialization: data.fullName, 
+          bio: data.bio || undefined,
+          experience: data.experience ? 1 : undefined, 
+          education: (data.degreeFiles as File)?.name || undefined,
+          pricePerHour: data.hourlyRate || undefined,
+          subjectIds: data.subjectIds,
+          gradeIds: data.gradeIds,
+          avatarUrl,
+          files,
+        },
+      }).unwrap();
+
       alert(
         "Hồ sơ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24-48 giờ.",
       );

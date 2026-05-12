@@ -8,14 +8,7 @@ import {
   useGetAllSubjectsQuery,
 } from "@/src/features/academic-catalog/academicCatalogApi";
 import { FileText } from "lucide-react";
-
-function formatFileSize(bytes: number) {
-  if (!bytes) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
-}
+import { formatFileSize } from "@/src/shared/utils/file";
 
 interface TutorReviewFormProps {
   onPrevious: () => void;
@@ -67,6 +60,10 @@ export function TutorReviewForm({
             <div>
               <p className="text-xs text-muted-foreground mb-1">Họ và Tên</p>
               <p className="font-medium text-foreground">{formData.fullName}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground mb-1">Email</p>
+              <p className="font-medium text-foreground">{formData.email || "Chưa nhập"}</p>
             </div>
             <div>
               <p className="text-xs text-muted-foreground mb-1">

@@ -11,6 +11,16 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.presignDto,
       }),
     }),
+    storageControllerUploadImage: build.mutation<
+      StorageControllerUploadImageApiResponse,
+      StorageControllerUploadImageApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/storage/images/upload`,
+        method: "POST",
+        body: queryArg.body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -19,10 +29,19 @@ export type StorageControllerPresignApiResponse = unknown;
 export type StorageControllerPresignApiArg = {
   presignDto: PresignDto;
 };
+export type StorageControllerUploadImageApiResponse = unknown;
+export type StorageControllerUploadImageApiArg = {
+  body: {
+    file?: Blob;
+  };
+};
 export type PresignDto = {
   /** Original file name */
   filename: string;
   /** Target folder in storage */
   folder: string;
 };
-export const { useStorageControllerPresignMutation } = injectedRtkApi;
+export const {
+  useStorageControllerPresignMutation,
+  useStorageControllerUploadImageMutation,
+} = injectedRtkApi;

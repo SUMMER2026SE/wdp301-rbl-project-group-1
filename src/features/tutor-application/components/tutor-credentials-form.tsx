@@ -1,5 +1,3 @@
-"use client";
-
 import { useFormContext, Controller } from "react-hook-form";
 import { Button } from "@/src/shared/components/ui/button";
 import { FileUpload } from "@/src/shared/components/molecules/file-upload/file-upload";
