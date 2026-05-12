@@ -68,10 +68,14 @@ export class TutorApplicationController {
       new CreateTutorApplicationCommand(
         dto.email,
         dto.specialization,
+        dto.subjectIds,
+        dto.gradeIds,
         dto.bio,
         dto.experience,
         dto.education,
         dto.pricePerHour,
+        dto.avatarUrl,
+        dto.files,
       ),
     );
 

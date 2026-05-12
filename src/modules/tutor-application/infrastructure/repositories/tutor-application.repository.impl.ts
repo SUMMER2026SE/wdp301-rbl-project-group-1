@@ -29,7 +29,20 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
     const data = this.mapper.toPersistence(application);
 
     const savedApplication = await this.tutorApplicationDelegate.create({
-      data,
+      data: {
+        ...data,
+        subjects: {
+          create:
+            application.subjectIds?.map((id) => ({ subjectId: id })) || [],
+        },
+        grades: {
+          create: application.gradeIds?.map((id) => ({ gradeId: id })) || [],
+        },
+      },
+      include: {
+        subjects: { include: { subject: true } },
+        grades: { include: { grade: true } },
+      },
     });
 
     return this.mapper.toDomain(savedApplication);
@@ -38,6 +51,10 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
   async findByEmail(email: string): Promise<TutorApplication | null> {
     const application = await this.tutorApplicationDelegate.findUnique({
       where: { email },
+      include: {
+        subjects: { include: { subject: true } },
+        grades: { include: { grade: true } },
+      },
     });
 
     if (!application) {
@@ -50,6 +67,10 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
   async findById(id: string): Promise<TutorApplication | null> {
     const application = await this.tutorApplicationDelegate.findUnique({
       where: { id },
+      include: {
+        subjects: { include: { subject: true } },
+        grades: { include: { grade: true } },
+      },
     });
 
     if (!application) {
@@ -65,6 +86,10 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
     const updated = await this.tutorApplicationDelegate.update({
       where: { id: application.id },
       data,
+      include: {
+        subjects: { include: { subject: true } },
+        grades: { include: { grade: true } },
+      },
     });
 
     return this.mapper.toDomain(updated);
@@ -105,6 +130,10 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
         skip: params.skip,
         take: params.limit,
         orderBy,
+        include: {
+          subjects: { include: { subject: true } },
+          grades: { include: { grade: true } },
+        },
       }),
     ]);
 

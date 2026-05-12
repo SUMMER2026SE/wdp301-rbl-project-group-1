@@ -27,6 +27,32 @@ export const CreateTutorApplicationSchema = z
       example: 250000,
       description: 'Expected tutoring price per hour',
     }),
+    subjectIds: z
+      .array(z.string())
+      .min(1)
+      .meta({
+        example: ['cuid-subject-1', 'cuid-subject-2'],
+        description: 'List of subject IDs the tutor can teach',
+      }),
+    gradeIds: z
+      .array(z.string())
+      .min(1)
+      .meta({
+        example: ['cuid-grade-1', 'cuid-grade-2'],
+        description: 'List of grade IDs the tutor can teach',
+      }),
+    avatarUrl: z.string().url().optional().meta({
+      example:
+        'https://res.cloudinary.com/edura/image/upload/v1234567890/avatar.jpg',
+      description: 'Tutor avatar URL',
+    }),
+    files: z
+      .array(z.string())
+      .optional()
+      .meta({
+        example: ['app-files/certificates/cert.pdf'],
+        description: 'List of file paths stored in Supabase',
+      }),
   })
   .meta({ id: 'CreateTutorApplicationDto' });
 
