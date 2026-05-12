@@ -208,7 +208,7 @@ model User {
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  profile    Profile?
+  profile Profile?
   identities UserIdentity[]
 
   refreshTokens RefreshToken[]
@@ -235,12 +235,12 @@ model User {
 model UserIdentity {
   id String @id @default(cuid())
 
-  userId         String       @map("user_id")
-  provider       AuthProvider
-  providerUserId String       @map("provider_user_id")
-  email          String?
-  emailVerified  Boolean      @default(false) @map("email_verified")
-  avatarUrl      String?      @map("avatar_url")
+  userId          String       @map("user_id")
+  provider        AuthProvider
+  providerUserId  String       @map("provider_user_id")
+  email           String?
+  emailVerified   Boolean      @default(false) @map("email_verified")
+  avatarUrl       String?      @map("avatar_url")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -312,9 +312,7 @@ model TutorApplication {
   specialization String
   experience     Int?
   education      String?
-  pricePerHour   Float?   @map("price_per_hour")
-  avatarUrl      String?  @map("avatar_url")
-  files          String[] @default([])
+  pricePerHour   Float?  @map("price_per_hour")
 
   status TutorApplicationStatus @default(PENDING)
 
@@ -323,34 +321,9 @@ model TutorApplication {
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  subjects TutorApplicationSubject[]
-  grades   TutorApplicationGrade[]
-
   @@index([status])
   @@index([createdAt])
   @@map("tutor_application")
-}
-
-model TutorApplicationSubject {
-  tutorApplicationId String @map("tutor_application_id")
-  subjectId          String @map("subject_id")
-
-  tutorApplication TutorApplication @relation(fields: [tutorApplicationId], references: [id], onDelete: Cascade)
-  subject          Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([tutorApplicationId, subjectId])
-  @@map("tutor_application_subject")
-}
-
-model TutorApplicationGrade {
-  tutorApplicationId String @map("tutor_application_id")
-  gradeId            String @map("grade_id")
-
-  tutorApplication TutorApplication @relation(fields: [tutorApplicationId], references: [id], onDelete: Cascade)
-  grade            Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-
-  @@id([tutorApplicationId, gradeId])
-  @@map("tutor_application_grade")
 }
 
 model CourseApplication {
@@ -539,7 +512,6 @@ model Subject {
 
   courses              Course[]
   userSubjectInterests UserSubjectInterest[]
-  tutorApplications    TutorApplicationSubject[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -554,8 +526,7 @@ model Grade {
   slug  String @unique // "lop-11"
   order Int // để sort (10, 11, 12)
 
-  courses           Course[]
-  tutorApplications TutorApplicationGrade[]
+  courses Course[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -664,9 +635,9 @@ model LessonAttendance {
   markedAt  DateTime @default(now()) @map("marked_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  lessonId String? @map("lesson_id")
-  lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  student  Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  lessonId  String? @map("lesson_id")
+  lesson  Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
 
   @@unique([lessonId, studentId])
   @@index([studentId])

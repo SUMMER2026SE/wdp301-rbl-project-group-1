@@ -1,35 +1,14 @@
 import { AggregateRoot } from '../../../../shared/domain/entities/aggregate-root';
 import { TutorApplicationStatus } from '../enums/tutor-application';
 
-export interface SubjectInfo {
-  id: string;
-  name: string;
-  slug: string;
-  createdAt: Date;
-}
-
-export interface GradeInfo {
-  id: string;
-  name: string;
-  slug: string;
-  order: number;
-  createdAt: Date;
-}
-
 export interface TutorApplicationProps {
   email: string;
   userId?: string | null;
   bio?: string;
   specialization: string;
-  subjectIds?: string[];
-  gradeIds?: string[];
-  subjects?: SubjectInfo[];
-  grades?: GradeInfo[];
   experience?: number;
   education?: string;
   pricePerHour?: number;
-  avatarUrl?: string;
-  files?: string[];
   status: TutorApplicationStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -63,22 +42,6 @@ export class TutorApplication extends AggregateRoot<string> {
     return this.props.specialization;
   }
 
-  get subjectIds(): string[] | undefined {
-    return this.props.subjectIds;
-  }
-
-  get gradeIds(): string[] | undefined {
-    return this.props.gradeIds;
-  }
-
-  get subjects(): SubjectInfo[] | undefined {
-    return this.props.subjects;
-  }
-
-  get grades(): GradeInfo[] | undefined {
-    return this.props.grades;
-  }
-
   get experience(): number | undefined {
     return this.props.experience;
   }
@@ -89,14 +52,6 @@ export class TutorApplication extends AggregateRoot<string> {
 
   get pricePerHour(): number | undefined {
     return this.props.pricePerHour;
-  }
-
-  get avatarUrl(): string | undefined {
-    return this.props.avatarUrl;
-  }
-
-  get files(): string[] | undefined {
-    return this.props.files;
   }
 
   get status(): TutorApplicationStatus {

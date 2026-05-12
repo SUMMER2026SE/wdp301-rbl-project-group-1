@@ -5,21 +5,6 @@ import { CreateTutorApplicationResult } from '../../application/command/create-t
 import { RejectTutorApplicationResult } from '../../application/command/reject-tutor-application/reject-tutor-application.result';
 import { TutorApplication } from '../../domain/entities/tutor-application.entity';
 
-const SubjectInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  slug: z.string(),
-  createdAt: z.string().datetime(),
-});
-
-const GradeInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  slug: z.string(),
-  order: z.number().int(),
-  createdAt: z.string().datetime(),
-});
-
 export const CreateTutorApplicationResponseSchema = z
   .object({
     id: z.string().meta({
@@ -61,10 +46,6 @@ export const TutorApplicationResponseSchema = z
     education: z.string().nullable().optional(),
     pricePerHour: z.number().nullable().optional(),
     status: z.enum(['PENDING', 'APPROVED', 'REJECTED']),
-    subjects: z.array(SubjectInfoSchema).optional(),
-    grades: z.array(GradeInfoSchema).optional(),
-    avatarUrl: z.string().url().nullable().optional(),
-    files: z.array(z.string()).optional(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   })
@@ -82,21 +63,6 @@ export class TutorApplicationResponseDto extends createZodDto(
     dto.experience = entity.experience;
     dto.education = entity.education;
     dto.pricePerHour = entity.pricePerHour;
-    dto.subjects = entity.subjects?.map((s) => ({
-      id: s.id,
-      name: s.name,
-      slug: s.slug,
-      createdAt: s.createdAt.toISOString(),
-    }));
-    dto.grades = entity.grades?.map((g) => ({
-      id: g.id,
-      name: g.name,
-      slug: g.slug,
-      order: g.order,
-      createdAt: g.createdAt.toISOString(),
-    }));
-    dto.avatarUrl = entity.avatarUrl;
-    dto.files = entity.files;
     dto.status = entity.status;
     dto.createdAt = entity.createdAt.toISOString();
     dto.updatedAt = entity.updatedAt.toISOString();
