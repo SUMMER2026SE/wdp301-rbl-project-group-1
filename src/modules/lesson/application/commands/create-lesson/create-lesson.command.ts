@@ -2,6 +2,7 @@ import { LessonStatus } from '../../../../../shared/domain/enums/enums';
 
 export class CreateLessonCommand {
   constructor(
+    public readonly tutorId: string,
     public readonly courseId: string,
     public readonly title: string,
     public readonly startTime: Date,

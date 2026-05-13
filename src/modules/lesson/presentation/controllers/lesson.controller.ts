@@ -28,6 +28,7 @@ export class LessonController {
     @Body() dto: CreateLessonDto,
   ): Promise<BaseResponse<CreateLessonResult>> {
     const cmd = new CreateLessonCommand(
+      user.userId,
       dto.courseId,
       dto.title,
       new Date(dto.startTime),
