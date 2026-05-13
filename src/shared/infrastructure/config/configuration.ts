@@ -41,4 +41,9 @@ export default () => ({
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
+  payos: {
+    clientId: process.env.PAYOS_CLIENT_ID,
+    apiKey: process.env.PAYOS_API_KEY,
+    checksumKey: process.env.PAYOS_CHECKSUM_KEY,
+  },
 });

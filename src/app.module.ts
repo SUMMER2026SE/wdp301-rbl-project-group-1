@@ -16,6 +16,7 @@ import { AppConfigModule } from './shared/infrastructure/config/config.module';
 import { DatabaseModule } from './shared/infrastructure/database/database.module';
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { StorageModule } from './modules/storage/storage.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { StorageModule } from './modules/storage/storage.module';
     CourseModule,
     LessonModule,
     TutorApplicationModule,
+    PaymentModule,
   ],
   providers: [
     {

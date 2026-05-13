@@ -66,3 +66,7 @@ export enum AuthProvider {
   LOCAL = 'LOCAL',
   GOOGLE = 'GOOGLE',
 }
+
+export enum PaymentReferenceType {
+  COURSE_ENROLLMENT = 'COURSE_ENROLLMENT',
+}

@@ -84,6 +84,12 @@ enum PaymentStatus {
   @@map("payment_status")
 }
 
+enum PaymentReferenceType {
+  COURSE_ENROLLMENT
+
+  @@map("payment_reference_type")
+}
+
 enum NotificationType {
   SYSTEM
   COURSE
@@ -383,7 +389,6 @@ model Student {
   enrollments       Enrollment[]
   reviews           CourseReview[]
   lessonAttendances LessonAttendance[]
-  payments          Payment[]
   attempts          Attempt[]
   gradebookRecords  GradebookRecord[]
 
@@ -605,7 +610,6 @@ model Course {
   lessons          Lesson[]
   enrollments      Enrollment[]
   reviews          CourseReview[]
-  payments         Payment[]
   stats            CourseStats?
   resources        CourseResource[]
   assessments      Assessment[]
@@ -1010,17 +1014,22 @@ model NotificationTarget {
 
 model Payment {
   id        String @id @default(cuid())
-  studentId String @map("student_id")
-  courseId  String @map("course_id")
+  
+  payerUserId String @map("payer_user_id")
+
+  referenceType PaymentReferenceType @map("reference_type")
+  referenceId   String               @map("reference_id")
 
   amount        Float
   status        PaymentStatus
   paymentMethod String?       @map("payment_method")
 
-  createdAt DateTime @default(now()) @map("created_at")
+  orderCode     Int     @unique @default(autoincrement()) @map("order_code")
+  checkoutUrl   String? @map("checkout_url")
+  transactionId String? @map("transaction_id")
 
-  student Student @relation(fields: [studentId], references: [id])
-  course  Course  @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("payment")
 }
