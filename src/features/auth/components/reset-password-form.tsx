@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   ArrowLeft,
   Eye,
@@ -12,7 +13,9 @@ import {
   Circle,
 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { toast } from 'sonner';
 
+import { useResetPasswordMutation } from '@/src/features/auth/authApi';
 import {
   resetPasswordFormSchema,
   type ResetPasswordFormData,
@@ -38,9 +41,15 @@ const PASSWORD_RULES: PasswordRule[] = [
 ];
 
 export default function ResetPasswordForm() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetToken = searchParams.get('token') ?? '';
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState('');
+
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
 
   const ruleResults = useMemo(
     () => PASSWORD_RULES.map((rule) => rule.test(password)),
@@ -48,14 +57,37 @@ export default function ResetPasswordForm() {
   );
 
   const handleSubmit = async (data: ResetPasswordFormData) => {
+    if (!resetToken) {
+      toast.error('Phiên xác thực không hợp lệ. Vui lòng thực hiện lại.');
+      router.push('/forgot-password');
+      return;
+    }
+
     try {
-      // TODO: call reset password API
-      console.log('Reset password:', data.new_password);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await resetPassword({
+        resetPasswordDto: { newPassword: data.new_password },
+        resetToken,
+      }).unwrap();
+
+      toast.success('Đặt lại mật khẩu thành công! Vui lòng đăng nhập.');
+      router.push('/login');
     } catch {
-      // handled by form
+      toast.error('Đặt lại mật khẩu thất bại. Vui lòng thử lại.');
     }
   };
+
+  if (!resetToken) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Phiên xác thực không hợp lệ hoặc đã hết hạn.</p>
+          <Link href="/forgot-password" className="text-primary font-semibold hover:underline">
+            Quay lại quên mật khẩu
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen w-full bg-background">
@@ -203,7 +235,7 @@ export default function ResetPasswordForm() {
             </div>
 
             {/* Submit */}
-            <SubmitButton>Cập nhật mật khẩu</SubmitButton>
+            <SubmitButton isLoading={isLoading}>Cập nhật mật khẩu</SubmitButton>
           </InputForm>
         </div>
       </section>

@@ -56,6 +56,9 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/auth/reset-password`,
         method: "POST",
         body: queryArg.resetPasswordDto,
+        headers: {
+          authorization: `Bearer ${queryArg.resetToken}`,
+        },
       }),
     }),
   }),
@@ -134,6 +137,7 @@ export type ResetPasswordApiResponse =
   };
 export type ResetPasswordApiArg = {
   resetPasswordDto: ResetPasswordDto;
+  resetToken: string;
 };
 export type RegisterResultDto = {
   /** Created user id */
