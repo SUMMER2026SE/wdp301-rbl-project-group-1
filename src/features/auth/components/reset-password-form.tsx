@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -11,7 +11,12 @@ import {
   Check,
   Circle,
 } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
 
+import {
+  resetPasswordFormSchema,
+  type ResetPasswordFormData,
+} from '@/src/features/auth/schemas/authSchemas';
 import { Button } from '@/src/shared/components/ui/button';
 import SubmitButton from '@/src/shared/components/atoms/submit-button/submit-button';
 import InputForm from '@/src/shared/components/organisms/input-form/input-form';
@@ -32,40 +37,25 @@ const PASSWORD_RULES: PasswordRule[] = [
   },
 ];
 
-type ResetPasswordFormValues = {
-  new_password: string;
-  confirm_password: string;
-};
-
 export default function ResetPasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const ruleResults = useMemo(
     () => PASSWORD_RULES.map((rule) => rule.test(password)),
     [password],
   );
 
-  const allRulesPassed = ruleResults.every(Boolean);
-  const passwordsMatch = password.length > 0 && password === confirmPassword;
-  const canSubmit = allRulesPassed && passwordsMatch && !isSubmitting;
-
-  const handleSubmit = useCallback(
-    async (_data: ResetPasswordFormValues) => {
-      if (!canSubmit) return;
-      setIsSubmitting(true);
-      try {
-        // TODO: call reset password API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } finally {
-        setIsSubmitting(false);
-      }
-    },
-    [canSubmit],
-  );
+  const handleSubmit = async (data: ResetPasswordFormData) => {
+    try {
+      // TODO: call reset password API
+      console.log('Reset password:', data.new_password);
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+    } catch {
+      // handled by form
+    }
+  };
 
   return (
     <main className="flex min-h-screen w-full bg-background">
@@ -122,7 +112,8 @@ export default function ResetPasswordForm() {
           </div>
 
           {/* Form */}
-          <InputForm<ResetPasswordFormValues>
+          <InputForm<ResetPasswordFormData>
+            resolver={zodResolver(resetPasswordFormSchema)}
             defaultValues={{ new_password: '', confirm_password: '' }}
             onSubmit={handleSubmit}
             className="space-y-6"
@@ -163,7 +154,6 @@ export default function ResetPasswordForm() {
                 type={showConfirm ? 'text' : 'password'}
                 placeholder="Nhập lại mật khẩu mới"
                 inputClassName="h-11 pr-10"
-                onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <Button
                 type="button"

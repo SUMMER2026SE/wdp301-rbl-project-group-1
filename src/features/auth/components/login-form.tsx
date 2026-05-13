@@ -87,7 +87,7 @@ export default function LoginForm() {
           />
           Ghi nhớ đăng nhập
         </label>
-        <Link href="#" className="font-medium text-primary">
+        <Link href="/forgot-password" className="font-medium text-primary hover:underline">
           Quên mật khẩu?
         </Link>
       </div>
@@ -96,3 +96,4 @@ export default function LoginForm() {
     </InputForm>
   );
 }
+

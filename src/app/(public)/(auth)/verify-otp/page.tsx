@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import VerifyOtpForm from "@/src/features/auth/components/verify-otp-form";
 
 export const metadata = {
@@ -6,5 +7,9 @@ export const metadata = {
 };
 
 export default function VerifyOtpPage() {
-  return <VerifyOtpForm />;
+  return (
+    <Suspense>
+      <VerifyOtpForm />
+    </Suspense>
+  );
 }

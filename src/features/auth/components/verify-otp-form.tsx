@@ -3,8 +3,20 @@
 import { useState, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ArrowLeft, MailCheck } from 'lucide-react';
+import { toast } from 'sonner';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Controller } from 'react-hook-form';
 
+import {
+  useVerifyOtpMutation,
+  useForgotPasswordMutation,
+} from '@/src/features/auth/authApi';
+import {
+  verifyOtpFormSchema,
+  type VerifyOtpFormData,
+} from '@/src/features/auth/schemas/authSchemas';
 import {
   InputOTP,
   InputOTPGroup,
@@ -17,14 +29,15 @@ import InputForm from '@/src/shared/components/organisms/input-form/input-form';
 
 const RESEND_COOLDOWN = 60;
 
-type OtpFormValues = {
-  otp: string;
-};
-
 export default function VerifyOtpForm() {
-  const [otp, setOtp] = useState('');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const email = searchParams.get('email') ?? '';
+
   const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
+  const [forgotPassword, { isLoading: isResending }] = useForgotPasswordMutation();
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -34,27 +47,52 @@ export default function VerifyOtpForm() {
     return () => clearInterval(timer);
   }, [countdown]);
 
-  const handleResend = useCallback(() => {
-    if (countdown > 0) return;
-    setCountdown(RESEND_COOLDOWN);
-    // TODO: call resend API
-  }, [countdown]);
+  const handleResend = useCallback(async () => {
+    if (countdown > 0 || !email || isResending) return;
+
+    try {
+      await forgotPassword({ forgotPasswordDto: { email } }).unwrap();
+      setCountdown(RESEND_COOLDOWN);
+      toast.success('Mã OTP mới đã được gửi đến email của bạn.');
+    } catch {
+      toast.error('Gửi lại mã thất bại. Vui lòng thử lại.');
+    }
+  }, [countdown, email, isResending, forgotPassword]);
 
   const handleSubmit = useCallback(
-    async (_data: OtpFormValues) => {
-      if (otp.length !== 6) return;
-      setIsSubmitting(true);
+    async (data: VerifyOtpFormData) => {
+      if (!email) return;
+
       try {
-        // TODO: call verify OTP API
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      } finally {
-        setIsSubmitting(false);
+        const response = await verifyOtp({
+          verifyOtpDto: { email, code: data.otp },
+        }).unwrap();
+
+        toast.success('Xác thực OTP thành công!');
+        router.push(
+          `/reset-password?token=${encodeURIComponent(response.data.resetToken)}`,
+        );
+      } catch {
+        toast.error('Mã OTP không hợp lệ hoặc đã hết hạn.');
       }
     },
-    [otp],
+    [email, verifyOtp, router],
   );
 
   const formattedCountdown = `${String(Math.floor(countdown / 60)).padStart(2, '0')}:${String(countdown % 60).padStart(2, '0')}`;
+
+  if (!email) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center space-y-4">
+          <p className="text-muted-foreground">Không tìm thấy email để xác thực.</p>
+          <Link href="/register" className="text-primary font-semibold hover:underline">
+            Quay lại đăng ký
+          </Link>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen w-full bg-background">
@@ -106,37 +144,44 @@ export default function VerifyOtpForm() {
               Xác minh mã OTP
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi đến email của bạn.
+              Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi đến{' '}
+              <span className="font-semibold text-foreground">{email}</span>.
             </p>
           </div>
 
           {/* OTP Form */}
-          <InputForm<OtpFormValues>
+          <InputForm<VerifyOtpFormData>
+            resolver={zodResolver(verifyOtpFormSchema)}
             defaultValues={{ otp: '' }}
             onSubmit={handleSubmit}
             className="space-y-8"
           >
-            <InputOTP
-              maxLength={6}
-              value={otp}
-              onChange={setOtp}
-              containerClassName="justify-center gap-2"
-            >
-              <InputOTPGroup>
-                <InputOTPSlot index={0} className="size-12 text-lg" />
-                <InputOTPSlot index={1} className="size-12 text-lg" />
-                <InputOTPSlot index={2} className="size-12 text-lg" />
-              </InputOTPGroup>
-              <InputOTPSeparator />
-              <InputOTPGroup>
-                <InputOTPSlot index={3} className="size-12 text-lg" />
-                <InputOTPSlot index={4} className="size-12 text-lg" />
-                <InputOTPSlot index={5} className="size-12 text-lg" />
-              </InputOTPGroup>
-            </InputOTP>
+            <Controller<VerifyOtpFormData, 'otp'>
+              name="otp"
+              render={({ field }) => (
+                <InputOTP
+                  maxLength={6}
+                  value={field.value}
+                  onChange={field.onChange}
+                  containerClassName="justify-center gap-2"
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} className="size-12 text-lg" />
+                    <InputOTPSlot index={1} className="size-12 text-lg" />
+                    <InputOTPSlot index={2} className="size-12 text-lg" />
+                  </InputOTPGroup>
+                  <InputOTPSeparator />
+                  <InputOTPGroup>
+                    <InputOTPSlot index={3} className="size-12 text-lg" />
+                    <InputOTPSlot index={4} className="size-12 text-lg" />
+                    <InputOTPSlot index={5} className="size-12 text-lg" />
+                  </InputOTPGroup>
+                </InputOTP>
+              )}
+            />
 
             <div className="flex flex-col gap-4">
-              <SubmitButton>Xác nhận</SubmitButton>
+              <SubmitButton isLoading={isVerifying}>Xác nhận</SubmitButton>
 
               <p className="text-center text-sm text-muted-foreground">
                 Chưa nhận được mã?{' '}
@@ -144,7 +189,7 @@ export default function VerifyOtpForm() {
                   type="button"
                   variant="link"
                   onClick={handleResend}
-                  disabled={countdown > 0}
+                  disabled={countdown > 0 || isResending}
                   className="font-semibold text-primary transition-colors hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {countdown > 0
