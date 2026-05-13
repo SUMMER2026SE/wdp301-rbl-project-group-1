@@ -1,10 +1,5 @@
 export { FilterSidebar } from "./filter-sidebar";
 export { SearchBar } from "./search-bar";
-export { TutorAvailabilityCard } from "./tutor-availability";
-export { TutorBio } from "./tutor-bio";
 export { TutorCard } from "./tutor-card";
-export { TutorCertifications } from "./tutor-certifications";
-export { TutorExperience } from "./tutor-experience";
 export { TutorGrid } from "./tutor-grid";
 export { TutorListContainer } from "./tutor-list-container";
-export { TutorReviews } from "./tutor-reviews";
