@@ -234,6 +234,7 @@ model User {
   activityLogs             ActivityLog[]
   subjectInterests         UserSubjectInterest[]
   interactions             Interaction[]
+  resources                Resource[]
 
   @@map("user")
 }
@@ -713,18 +714,22 @@ model CourseReview {
 //////////////////////////////////////////////////
 
 model Resource {
-  id   String       @id @default(cuid())
-  name String
-  url  String
-  type ResourceType
-  size Int? // Size in bytes
+  id     String       @id @default(cuid())
+  userId String       @map("user_id")
+  name   String
+  url    String
+  type   ResourceType
+  size   Int? // Size in bytes
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   courseResources CourseResource[]
   lessonResources LessonResource[]
 
+  @@index([userId])
   @@map("resource")
 }
 

@@ -17,6 +17,7 @@ import { DatabaseModule } from './shared/infrastructure/database/database.module
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { ResourceModule } from './modules/resource/resource.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     LessonModule,
     TutorApplicationModule,
     PaymentModule,
+    ResourceModule,
   ],
   providers: [
     {

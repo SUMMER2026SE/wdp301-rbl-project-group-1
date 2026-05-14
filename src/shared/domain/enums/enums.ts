@@ -70,3 +70,10 @@ export enum AuthProvider {
 export enum PaymentReferenceType {
   COURSE_ENROLLMENT = 'COURSE_ENROLLMENT',
 }
+
+export enum ResourceType {
+  FILE = 'FILE',
+  VIDEO = 'VIDEO',
+  LINK = 'LINK',
+  DOCUMENT = 'DOCUMENT',
+}
