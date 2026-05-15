@@ -36,4 +36,5 @@ export interface ILessonRepository {
     params: LessonPaginatedParams,
   ): Promise<QueryResult<Lesson>>;
   findByIdWithDetails(id: string): Promise<LessonWithDetails | null>;
+  update(lesson: Lesson): Promise<Lesson>;
 }

@@ -65,4 +65,15 @@ export class Lesson extends AggregateRoot<string> {
   get createdAt(): Date {
     return this.props.createdAt;
   }
+
+  update(fields: Partial<Omit<LessonProps, 'courseId' | 'createdAt'>>): void {
+    if (fields.title !== undefined) this.props.title = fields.title;
+    if (fields.content !== undefined) this.props.content = fields.content;
+    if (fields.meetingUrl !== undefined) this.props.meetingUrl = fields.meetingUrl;
+    if (fields.videoUrl !== undefined) this.props.videoUrl = fields.videoUrl;
+    if (fields.startTime !== undefined) this.props.startTime = fields.startTime;
+    if (fields.endTime !== undefined) this.props.endTime = fields.endTime;
+    if (fields.orderIndex !== undefined) this.props.orderIndex = fields.orderIndex;
+    if (fields.status !== undefined) this.props.status = fields.status;
+  }
 }

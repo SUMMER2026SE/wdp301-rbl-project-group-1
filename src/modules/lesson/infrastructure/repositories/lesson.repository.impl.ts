@@ -99,4 +99,13 @@ export class PrismaLessonRepository implements ILessonRepository {
       },
     };
   }
+
+  async update(lesson: Lesson): Promise<Lesson> {
+    const data = this.mapper.toPersistence(lesson);
+    const updated = await this.lessonDelegate.update({
+      where: { id: lesson.id },
+      data,
+    });
+    return this.mapper.toDomain(updated);
+  }
 }

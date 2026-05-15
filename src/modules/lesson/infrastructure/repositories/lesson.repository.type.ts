@@ -63,4 +63,8 @@ export type LessonDelegate = {
   }): Promise<PrismaLessonRecord[]>;
   count(args: { where: Record<string, unknown> }): Promise<number>;
   create(args: { data: LessonWriteData }): Promise<PrismaLessonRecord>;
+  update(args: {
+    where: { id: string };
+    data: Partial<LessonWriteData>;
+  }): Promise<PrismaLessonRecord>;
 };

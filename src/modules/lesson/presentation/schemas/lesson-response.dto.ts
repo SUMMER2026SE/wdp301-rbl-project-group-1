@@ -13,6 +13,18 @@ export class CreateLessonResultDto extends createZodDto(
   CreateLessonResultSchema,
 ) {}
 
+export const UpdateLessonResultSchema = z
+  .object({
+    id: z
+      .string()
+      .meta({ description: 'ID of updated lesson', example: 'clhg12345' }),
+  })
+  .meta({ id: 'UpdateLessonResultDto' });
+
+export class UpdateLessonResultDto extends createZodDto(
+  UpdateLessonResultSchema,
+) {}
+
 export const LessonResponseSchema = z
   .object({
     id: z.string().meta({ example: 'clhg12345' }),

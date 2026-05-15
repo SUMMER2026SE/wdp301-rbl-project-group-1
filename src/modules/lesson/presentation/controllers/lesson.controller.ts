@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryResult } from '../../../../shared/domain/common/query';
@@ -15,6 +15,8 @@ import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateLessonCommand } from '../../application/commands/create-lesson/create-lesson.command';
 import { CreateLessonResult } from '../../application/commands/create-lesson/create-lesson.result';
+import { UpdateLessonCommand } from '../../application/commands/update-lesson/update-lesson.command';
+import { UpdateLessonResult } from '../../application/commands/update-lesson/update-lesson.result';
 import { GetLessonByIdQuery } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.query';
 import { GetLessonByIdResult } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.result';
 import { GetLessonDetailsQuery } from '../../application/queries/get-lesson-details/get-lesson-details.query';
@@ -31,7 +33,9 @@ import {
   CreateLessonResultDto,
   LessonDetailsResponseDto,
   LessonResponseDto,
+  UpdateLessonResultDto,
 } from '../schemas/lesson-response.dto';
+import { UpdateLessonDto } from '../schemas/update-lesson.dto';
 
 @ApiTags('Lesson')
 @Controller('lessons')
@@ -121,6 +125,43 @@ export class LessonController {
       GetLessonDetailsQuery,
       GetLessonDetailsResult
     >(new GetLessonDetailsQuery(id));
+    return BaseResponse.ok(result);
+  }
+
+  @Patch(':id')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'updateLesson',
+    summary: 'Partially update a lesson',
+  })
+  @ApiOkResponseWrapped(UpdateLessonResultDto, {
+    description: 'Lesson updated successfully.',
+  })
+  async updateLesson(
+    @Param('id') id: string,
+    @Body() dto: UpdateLessonDto,
+  ) {
+    const cmd = new UpdateLessonCommand(
+      id,
+      dto.title,
+      dto.content,
+      dto.meetingUrl,
+      dto.videoUrl,
+      dto.startTime ? new Date(dto.startTime) : undefined,
+      dto.endTime !== undefined
+        ? dto.endTime
+          ? new Date(dto.endTime)
+          : null
+        : undefined,
+      dto.orderIndex,
+      dto.status,
+    );
+
+    const result = await this.commandBus.execute<
+      UpdateLessonCommand,
+      UpdateLessonResult
+    >(cmd);
     return BaseResponse.ok(result);
   }
 
