@@ -48,4 +48,6 @@ export const ResourceResponseSchema = z
   })
   .meta({ id: 'ResourceResponseDto' });
 
-export class ResourceResponseDto extends createZodDto(ResourceResponseSchema) {}
+export class ResourceResponseDto extends createZodDto(
+  ResourceResponseSchema,
+) {}

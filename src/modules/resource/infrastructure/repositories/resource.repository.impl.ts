@@ -1,7 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  createQueryResult,
+  QueryResult,
+} from '../../../../shared/domain/common/query';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Resource } from '../../domain/entities/resource.entity';
-import { IResourceRepository } from '../../domain/repositories/resource.repository.interface';
+import {
+  IResourceRepository,
+  ResourcePaginatedParams,
+} from '../../domain/repositories/resource.repository.interface';
 import { ResourceMapper } from '../mapper/resource.mapper';
 import {
   CourseResourceDelegate,
@@ -67,6 +74,33 @@ export class PrismaResourceRepository implements IResourceRepository {
     return rows
       .filter((r) => r.resource)
       .map((r) => this.mapper.toDomain(r.resource!));
+  }
+
+  async findByUserId(
+    params: ResourcePaginatedParams,
+  ): Promise<QueryResult<Resource>> {
+    const where: Record<string, unknown> = { userId: params.userId };
+
+    if (params.search) {
+      where.name = { contains: params.search, mode: 'insensitive' };
+    }
+
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder ?? 'asc' }
+      : { createdAt: 'desc' as const };
+
+    const [total, records] = await Promise.all([
+      this.resourceDelegate.count({ where }),
+      this.resourceDelegate.findMany({
+        where,
+        orderBy,
+        skip: params.skip,
+        take: params.limit,
+      }),
+    ]);
+
+    const resources = records.map((r) => this.mapper.toDomain(r));
+    return createQueryResult(resources, total, params);
   }
 
   async assignToCourse(resourceId: string, courseId: string): Promise<void> {

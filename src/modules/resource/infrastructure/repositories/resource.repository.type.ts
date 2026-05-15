@@ -25,7 +25,11 @@ export type ResourceDelegate = {
   }): Promise<PrismaResourceRecord | null>;
   findMany(args?: {
     where?: Record<string, unknown>;
+    orderBy?: Record<string, 'asc' | 'desc'>;
+    skip?: number;
+    take?: number;
   }): Promise<PrismaResourceRecord[]>;
+  count(args: { where: Record<string, unknown> }): Promise<number>;
   create(args: { data: ResourceWriteData }): Promise<PrismaResourceRecord>;
 };
 
