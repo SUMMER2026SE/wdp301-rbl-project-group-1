@@ -11,11 +11,14 @@ import {
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
+import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateLessonCommand } from '../../application/commands/create-lesson/create-lesson.command';
 import { CreateLessonResult } from '../../application/commands/create-lesson/create-lesson.result';
 import { GetLessonByIdQuery } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.query';
 import { GetLessonByIdResult } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.result';
+import { GetLessonDetailsQuery } from '../../application/queries/get-lesson-details/get-lesson-details.query';
+import { GetLessonDetailsResult } from '../../application/queries/get-lesson-details/get-lesson-details.result';
 import { GetLessonsByCourseQuery } from '../../application/queries/get-lessons-by-course/get-lessons-by-course.query';
 import { LessonByCourseResultData } from '../../application/queries/get-lessons-by-course/get-lessons-by-course.result';
 import { LessonPaginatedParams } from '../../domain/repositories/lesson.repository.interface';
@@ -24,7 +27,11 @@ import {
   GetLessonsByCourseQueryDto,
   GetLessonsByCourseQueryParams,
 } from '../schemas/get-lessons-by-course-query.dto';
-import { CreateLessonResultDto, LessonResponseDto } from '../schemas/lesson-response.dto';
+import {
+  CreateLessonResultDto,
+  LessonDetailsResponseDto,
+  LessonResponseDto,
+} from '../schemas/lesson-response.dto';
 
 @ApiTags('Lesson')
 @Controller('lessons')
@@ -66,7 +73,6 @@ export class LessonController {
   }
 
   @Get('course/:courseId')
-  // @Roles(UserRole.TUTOR)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getLessonsByCourse',
@@ -101,8 +107,24 @@ export class LessonController {
     return QueryResponse.query(result);
   }
 
+  @Get(':id/details')
+  @Public()
+  @ApiOperation({
+    operationId: 'getLessonDetails',
+    summary: 'Get lesson details with course and tutor info',
+  })
+  @ApiOkResponseWrapped(LessonDetailsResponseDto, {
+    description: 'Lesson details returned successfully.',
+  })
+  async getLessonDetails(@Param('id') id: string) {
+    const result = await this.queryBus.execute<
+      GetLessonDetailsQuery,
+      GetLessonDetailsResult
+    >(new GetLessonDetailsQuery(id));
+    return BaseResponse.ok(result);
+  }
+
   @Get(':id')
-  // @Roles(UserRole.TUTOR)
   @ApiBearerAuth()
   @ApiOperation({ operationId: 'getLessonById', summary: 'Get a lesson by ID' })
   @ApiOkResponseWrapped(LessonResponseDto, {

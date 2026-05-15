@@ -8,6 +8,7 @@ import { Lesson } from '../../domain/entities/lesson.entity';
 import {
   ILessonRepository,
   LessonPaginatedParams,
+  LessonWithDetails,
 } from '../../domain/repositories/lesson.repository.interface';
 import { LessonMapper } from '../mapper/lesson.mapper';
 import { LessonDelegate } from './lesson.repository.type';
@@ -60,5 +61,42 @@ export class PrismaLessonRepository implements ILessonRepository {
     const lessons = records.map((r) => this.mapper.toDomain(r));
     return createQueryResult(lessons, total, params);
   }
-}
 
+  async findByIdWithDetails(id: string): Promise<LessonWithDetails | null> {
+    const record = await this.lessonDelegate.findUnique({
+      where: { id },
+      include: {
+        course: {
+          include: {
+            subject: true,
+            grade: true,
+            tutor: { include: { user: { include: { profile: true } } } },
+          },
+        },
+      },
+    });
+    if (!record) return null;
+
+    const { course } = record;
+    const { tutor } = course;
+
+    return {
+      lesson: this.mapper.toDomain(record),
+      course: {
+        id: course.id,
+        title: course.title,
+        description: course.description,
+        subjectName: course.subject?.name ?? null,
+        gradeName: course.grade?.name ?? null,
+        level: course.level,
+        status: course.status,
+      },
+      tutor: {
+        id: tutor.user.id,
+        email: tutor.user.email,
+        nickname: tutor.user.profile?.nickname ?? null,
+        avatarUrl: tutor.user.profile?.avatarUrl ?? null,
+      },
+    };
+  }
+}
