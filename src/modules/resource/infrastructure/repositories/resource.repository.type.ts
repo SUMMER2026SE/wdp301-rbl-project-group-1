@@ -25,3 +25,15 @@ export type ResourceDelegate = {
   }): Promise<PrismaResourceRecord | null>;
   create(args: { data: ResourceWriteData }): Promise<PrismaResourceRecord>;
 };
+
+export type CourseResourceDelegate = {
+  create(args: {
+    data: { courseId: string; resourceId: string };
+  }): Promise<{ courseId: string; resourceId: string }>;
+};
+
+export type LessonResourceDelegate = {
+  create(args: {
+    data: { lessonId: string; resourceId: string };
+  }): Promise<{ lessonId: string; resourceId: string }>;
+};

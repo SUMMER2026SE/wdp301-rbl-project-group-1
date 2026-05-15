@@ -13,3 +13,16 @@ export const CreateResourceResultSchema = z
 export class CreateResourceResultDto extends createZodDto(
   CreateResourceResultSchema,
 ) {}
+
+export const AssignResourceResultSchema = z
+  .object({
+    resourceIds: z.array(z.string()).meta({
+      description: 'The IDs of the assigned resources',
+      example: ['clhg12345000008l4f1h5g6i7'],
+    }),
+  })
+  .meta({ id: 'AssignResourceResultDto' });
+
+export class AssignResourceResultDto extends createZodDto(
+  AssignResourceResultSchema,
+) {}

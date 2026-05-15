@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
-import { Public } from 'src/modules/auth/presentation/decorators/public.decorator';
+import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import {
   ApiCreatedResponseWrapped,
   ApiOkResponseWrapped,

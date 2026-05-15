@@ -1,9 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Resource } from '../../domain/entities/resource.entity';
 import { IResourceRepository } from '../../domain/repositories/resource.repository.interface';
 import { ResourceMapper } from '../mapper/resource.mapper';
-import { ResourceDelegate } from './resource.repository.type';
+import {
+  CourseResourceDelegate,
+  LessonResourceDelegate,
+  ResourceDelegate,
+} from './resource.repository.type';
 
 @Injectable()
 export class PrismaResourceRepository implements IResourceRepository {
@@ -13,6 +17,14 @@ export class PrismaResourceRepository implements IResourceRepository {
 
   private get resourceDelegate(): ResourceDelegate {
     return this.prisma.resource as unknown as ResourceDelegate;
+  }
+
+  private get courseResourceDelegate(): CourseResourceDelegate {
+    return this.prisma.courseResource as unknown as CourseResourceDelegate;
+  }
+
+  private get lessonResourceDelegate(): LessonResourceDelegate {
+    return this.prisma.lessonResource as unknown as LessonResourceDelegate;
   }
 
   async create(resource: Resource): Promise<Resource> {
@@ -27,5 +39,39 @@ export class PrismaResourceRepository implements IResourceRepository {
     });
     if (!record) return null;
     return this.mapper.toDomain(record);
+  }
+
+  async assignToCourse(resourceId: string, courseId: string): Promise<void> {
+    try {
+      await this.courseResourceDelegate.create({
+        data: { courseId, resourceId },
+      });
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        (error as Record<string, unknown>).code === 'P2003'
+      ) {
+        throw new NotFoundException(`Course with id ${courseId} not found`);
+      }
+      throw error;
+    }
+  }
+
+  async assignToLesson(resourceId: string, lessonId: string): Promise<void> {
+    try {
+      await this.lessonResourceDelegate.create({
+        data: { lessonId, resourceId },
+      });
+    } catch (error: unknown) {
+      if (
+        error instanceof Error &&
+        'code' in error &&
+        (error as Record<string, unknown>).code === 'P2003'
+      ) {
+        throw new NotFoundException(`Lesson with id ${lessonId} not found`);
+      }
+      throw error;
+    }
   }
 }
