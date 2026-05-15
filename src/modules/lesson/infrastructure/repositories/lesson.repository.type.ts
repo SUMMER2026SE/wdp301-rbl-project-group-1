@@ -23,6 +23,12 @@ export type LessonDelegate = {
   findUnique(args: {
     where: { id: string };
   }): Promise<PrismaLessonRecord | null>;
-  findMany(): Promise<PrismaLessonRecord[]>;
+  findMany(args: {
+    where: Record<string, unknown>;
+    orderBy?: Record<string, 'asc' | 'desc'>;
+    skip?: number;
+    take?: number;
+  }): Promise<PrismaLessonRecord[]>;
+  count(args: { where: Record<string, unknown> }): Promise<number>;
   create(args: { data: LessonWriteData }): Promise<PrismaLessonRecord>;
 };

@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import {
+  createQueryResult,
+  QueryResult,
+} from '../../../../shared/domain/common/query';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Lesson } from '../../domain/entities/lesson.entity';
-import { ILessonRepository } from '../../domain/repositories/lesson.repository.interface';
+import {
+  ILessonRepository,
+  LessonPaginatedParams,
+} from '../../domain/repositories/lesson.repository.interface';
 import { LessonMapper } from '../mapper/lesson.mapper';
 import { LessonDelegate } from './lesson.repository.type';
 
@@ -26,4 +33,32 @@ export class PrismaLessonRepository implements ILessonRepository {
     if (!record) return null;
     return this.mapper.toDomain(record);
   }
+
+  async findByCourseId(
+    params: LessonPaginatedParams,
+  ): Promise<QueryResult<Lesson>> {
+    const where: Record<string, unknown> = { courseId: params.courseId };
+
+    if (params.search) {
+      where.title = { contains: params.search, mode: 'insensitive' };
+    }
+
+    const orderBy = params.sortBy
+      ? { [params.sortBy]: params.sortOrder ?? 'asc' }
+      : { orderIndex: 'asc' as const };
+
+    const [total, records] = await Promise.all([
+      this.lessonDelegate.count({ where }),
+      this.lessonDelegate.findMany({
+        where,
+        orderBy,
+        skip: params.skip,
+        take: params.limit,
+      }),
+    ]);
+
+    const lessons = records.map((r) => this.mapper.toDomain(r));
+    return createQueryResult(lessons, total, params);
+  }
 }
+
