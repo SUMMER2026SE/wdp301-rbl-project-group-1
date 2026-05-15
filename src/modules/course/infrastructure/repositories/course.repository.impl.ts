@@ -37,6 +37,19 @@ export class PrismaCourseRepository implements ICourseRepository {
     return this.mapper.toDomain(coursePrisma);
   }
 
+  async findByIdWithMeta(id: string): Promise<CourseWithMeta | null> {
+    const c = await this.courseDelegate.findUnique({
+      where: { id },
+      include: { subject: true, grade: true },
+    });
+    if (!c) return null;
+    return {
+      course: this.mapper.toDomain(c),
+      subject: { id: c.subjectId, name: c.subject?.name ?? null },
+      grade: { id: c.gradeId, name: c.grade?.name ?? null },
+    };
+  }
+
   async findAll(
     params: CoursePaginatedParams,
   ): Promise<QueryResult<CourseWithMeta>> {

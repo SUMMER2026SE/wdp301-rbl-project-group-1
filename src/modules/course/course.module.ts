@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateCourseCommandHandler } from './application/commands/create-course/create-course.handler';
+import { GetCourseByIdQueryHandler } from './application/queries/get-course-by-id/get-course-by-id.handler';
 import { GetCoursesQueryHandler } from './application/queries/get-courses/get-courses.handler';
 import { ICourseRepository } from './domain/repositories/course.repository.interface';
 import { PrismaCourseRepository } from './infrastructure/repositories/course.repository.impl';
 import { CourseController } from './presentation/controllers/course.controller';
 const CommandHandlers = [CreateCourseCommandHandler];
-const QueryHandlers = [GetCoursesQueryHandler];
+const QueryHandlers = [GetCoursesQueryHandler, GetCourseByIdQueryHandler];
 @Module({
   imports: [CqrsModule],
   controllers: [CourseController],

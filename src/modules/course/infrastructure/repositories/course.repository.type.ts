@@ -27,6 +27,7 @@ export type CourseWriteData = Omit<
 export type CourseDelegate = {
   findUnique(args: {
     where: { id: string };
+    include?: { subject?: boolean; grade?: boolean };
   }): Promise<PrismaCourseRecord | null>;
   create(args: { data: CourseWriteData }): Promise<PrismaCourseRecord>;
   update(args: {

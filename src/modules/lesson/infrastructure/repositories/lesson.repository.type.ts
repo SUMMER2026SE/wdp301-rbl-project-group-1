@@ -23,5 +23,6 @@ export type LessonDelegate = {
   findUnique(args: {
     where: { id: string };
   }): Promise<PrismaLessonRecord | null>;
+  findMany(): Promise<PrismaLessonRecord[]>;
   create(args: { data: LessonWriteData }): Promise<PrismaLessonRecord>;
 };

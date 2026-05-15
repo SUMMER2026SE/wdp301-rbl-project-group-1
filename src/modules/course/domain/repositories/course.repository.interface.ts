@@ -22,6 +22,7 @@ export interface CourseWithMeta {
 export interface ICourseRepository {
   create(course: Course): Promise<Course>;
   findById(id: string): Promise<Course | null>;
+  findByIdWithMeta(id: string): Promise<CourseWithMeta | null>;
   findAll(params: CoursePaginatedParams): Promise<QueryResult<CourseWithMeta>>;
   update(course: Course): Promise<Course>;
 }

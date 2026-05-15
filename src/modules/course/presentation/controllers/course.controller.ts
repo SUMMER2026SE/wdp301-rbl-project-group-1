@@ -14,6 +14,7 @@ import { UserRole } from '../../../../shared/domain/enums/enums';
 import {
   ApiCreatedResponseWrapped,
   ApiOkResponseQueryWrapped,
+  ApiOkResponseWrapped,
 } from '../../../../shared/presentation/decorators/api-response.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
@@ -24,6 +25,8 @@ import { ChangeCourseStatusCommand } from '../../application/commands/change-cou
 import { ChangeCourseStatusResult } from '../../application/commands/change-course-status/change-course-status.result';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
 import { CreateCourseResult } from '../../application/commands/create-course/create-course.result';
+import { GetCourseByIdQuery } from '../../application/queries/get-course-by-id/get-course-by-id.query';
+import { GetCourseByIdResult } from '../../application/queries/get-course-by-id/get-course-by-id.result';
 import { GetCoursesQuery } from '../../application/queries/get-courses/get-courses.query';
 import {
   CourseResultData,
@@ -112,6 +115,23 @@ export class CourseController {
     >(new GetCoursesQuery(params));
 
     return QueryResponse.query(result);
+  }
+
+  @Get(':id')
+  @Public()
+  @ApiOperation({
+    operationId: 'getCourseById',
+    summary: 'Get a course by ID',
+  })
+  @ApiOkResponseWrapped(CourseResponseDto, {
+    description: 'Course returned successfully.',
+  })
+  async getCourseById(@Param('id') id: string) {
+    const result = await this.queryBus.execute<
+      GetCourseByIdQuery,
+      GetCourseByIdResult
+    >(new GetCourseByIdQuery(id));
+    return BaseResponse.ok(result);
   }
 
   @Patch(':courseId')

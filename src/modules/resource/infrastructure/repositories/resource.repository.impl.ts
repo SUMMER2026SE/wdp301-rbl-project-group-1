@@ -41,6 +41,34 @@ export class PrismaResourceRepository implements IResourceRepository {
     return this.mapper.toDomain(record);
   }
 
+  async findAll(): Promise<Resource[]> {
+    const records = await this.resourceDelegate.findMany();
+    return records.map((r) => this.mapper.toDomain(r));
+  }
+
+  async findByTarget(
+    targetType: 'COURSE' | 'LESSON',
+    targetId: string,
+  ): Promise<Resource[]> {
+    if (targetType === 'COURSE') {
+      const rows = await this.courseResourceDelegate.findMany({
+        where: { courseId: targetId },
+        include: { resource: true },
+      });
+      return rows
+        .filter((r) => r.resource)
+        .map((r) => this.mapper.toDomain(r.resource!));
+    }
+
+    const rows = await this.lessonResourceDelegate.findMany({
+      where: { lessonId: targetId },
+      include: { resource: true },
+    });
+    return rows
+      .filter((r) => r.resource)
+      .map((r) => this.mapper.toDomain(r.resource!));
+  }
+
   async assignToCourse(resourceId: string, courseId: string): Promise<void> {
     try {
       await this.courseResourceDelegate.create({

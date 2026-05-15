@@ -23,6 +23,9 @@ export type ResourceDelegate = {
   findUnique(args: {
     where: { id: string };
   }): Promise<PrismaResourceRecord | null>;
+  findMany(args?: {
+    where?: Record<string, unknown>;
+  }): Promise<PrismaResourceRecord[]>;
   create(args: { data: ResourceWriteData }): Promise<PrismaResourceRecord>;
 };
 
@@ -30,10 +33,18 @@ export type CourseResourceDelegate = {
   create(args: {
     data: { courseId: string; resourceId: string };
   }): Promise<{ courseId: string; resourceId: string }>;
+  findMany(args: {
+    where: Record<string, unknown>;
+    include?: { resource?: boolean };
+  }): Promise<{ resourceId: string; resource?: PrismaResourceRecord }[]>;
 };
 
 export type LessonResourceDelegate = {
   create(args: {
     data: { lessonId: string; resourceId: string };
   }): Promise<{ lessonId: string; resourceId: string }>;
+  findMany(args: {
+    where: Record<string, unknown>;
+    include?: { resource?: boolean };
+  }): Promise<{ resourceId: string; resource?: PrismaResourceRecord }[]>;
 };
