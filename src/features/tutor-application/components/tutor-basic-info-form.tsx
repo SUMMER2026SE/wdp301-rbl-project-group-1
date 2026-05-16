@@ -4,11 +4,9 @@ import { Button } from "@/src/shared/components/ui/button";
 import { Input } from "@/src/shared/components/ui/input";
 import { Label } from "@/src/shared/components/ui/label";
 import { Textarea } from "@/src/shared/components/ui/textarea";
-import CheckboxField from "@/src/shared/components/atoms/checkbox-field/checkbox-field";
-import {
-  useGetAllGradesQuery,
-  useGetAllSubjectsQuery,
-} from "@/src/features/academic-catalog/academicCatalogApi";
+import { SubjectCheckbox } from "@/src/features/academic-catalog/components/subject-checkbox";
+import { GradeCheckbox } from "@/src/features/academic-catalog/components/grade-checkbox";
+import { FormFieldWrapper } from "@/src/shared/components/molecules/form-field/form-field-wrapper";
 import { useState } from "react";
 import { useFormContext, Controller } from "react-hook-form";
 import type { TutorRegistrationData } from "../schemas/tutorRegistrationSchemas";
@@ -30,18 +28,6 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
 
   const bioValue = watch("bio") || "";
   const [charCount, setCharCount] = useState(bioValue.length);
-
-  const { data: subjectsData, isLoading: subjectsLoading } =
-    useGetAllSubjectsQuery();
-  const { data: gradesData, isLoading: gradesLoading } = useGetAllGradesQuery();
-
-  const subjectOptions =
-    subjectsData?.data.map((s) => ({ value: s.id, label: s.name })) ?? [];
-  const gradeOptions =
-    gradesData?.data
-      .slice()
-      .sort((a, b) => a.order - b.order)
-      .map((g) => ({ value: g.id, label: g.name })) ?? [];
 
   const selectedSubjectIds = watch("subjectIds") ?? [];
   const selectedGradeIds = watch("gradeIds") ?? [];
@@ -199,73 +185,39 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
           )}
         </div>
 
-        <div>
-          <Label className="text-sm font-bold text-foreground mb-3 block">
-            Môn học giảng dạy
-          </Label>
-          {subjectsLoading ? (
-            <p className="text-sm text-muted-foreground">Đang tải...</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
-              {subjectOptions.map((opt) => (
-                <CheckboxField
-                  key={opt.value}
-                  id={`subject-${opt.value}`}
-                  name={`subject-${opt.value}`}
-                  label={opt.label}
-                  defaultValue={selectedSubjectIds.includes(opt.value)}
-                  onChange={() => {
-                    const isChecked = selectedSubjectIds.includes(opt.value);
-                    const next = isChecked
-                      ? selectedSubjectIds.filter((id) => id !== opt.value)
-                      : [...selectedSubjectIds, opt.value];
-                    setValue("subjectIds", next, { shouldValidate: true });
-                  }}
-                />
-              ))}
-            </div>
-          )}
-          {errors.subjectIds && (
-            <p className="text-xs text-destructive mt-2">
-              {(errors.subjectIds as { message?: string }).message ??
-                "Vui lòng chọn ít nhất 1 môn học"}
-            </p>
-          )}
-        </div>
+        <FormFieldWrapper
+          label="Môn học giảng dạy"
+          error={
+            errors.subjectIds
+              ? (errors.subjectIds as { message?: string }).message ??
+                "Vui lòng chọn ít nhất 1 môn học"
+              : undefined
+          }
+        >
+          <SubjectCheckbox
+            selectedIds={selectedSubjectIds}
+            onChange={(next) =>
+              setValue("subjectIds", next, { shouldValidate: true })
+            }
+          />
+        </FormFieldWrapper>
 
-        <div>
-          <Label className="text-sm font-bold text-foreground mb-3 block">
-            Cấp lớp giảng dạy
-          </Label>
-          {gradesLoading ? (
-            <p className="text-sm text-muted-foreground">Đang tải...</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
-              {gradeOptions.map((opt) => (
-                <CheckboxField
-                  key={opt.value}
-                  id={`grade-${opt.value}`}
-                  name={`grade-${opt.value}`}
-                  label={opt.label}
-                  defaultValue={selectedGradeIds.includes(opt.value)}
-                  onChange={() => {
-                    const isChecked = selectedGradeIds.includes(opt.value);
-                    const next = isChecked
-                      ? selectedGradeIds.filter((id) => id !== opt.value)
-                      : [...selectedGradeIds, opt.value];
-                    setValue("gradeIds", next, { shouldValidate: true });
-                  }}
-                />
-              ))}
-            </div>
-          )}
-          {errors.gradeIds && (
-            <p className="text-xs text-destructive mt-2">
-              {(errors.gradeIds as { message?: string }).message ??
-                "Vui lòng chọn ít nhất 1 cấp lớp"}
-            </p>
-          )}
-        </div>
+        <FormFieldWrapper
+          label="Cấp lớp giảng dạy"
+          error={
+            errors.gradeIds
+              ? (errors.gradeIds as { message?: string }).message ??
+                "Vui lòng chọn ít nhất 1 cấp lớp"
+              : undefined
+          }
+        >
+          <GradeCheckbox
+            selectedIds={selectedGradeIds}
+            onChange={(next) =>
+              setValue("gradeIds", next, { shouldValidate: true })
+            }
+          />
+        </FormFieldWrapper>
 
         <div>
           <Label

@@ -143,6 +143,16 @@ export type RegisterResultDto = {
   /** Created user id */
   userId: string;
 };
+export type StudentRegisterData = {
+  /** School name (optional) */
+  school?: string;
+  /** Learning goal (optional) */
+  learningGoal?: string;
+  /** List of subject IDs the student is interested in */
+  subjectIds: string[];
+  /** List of grade IDs for the student */
+  gradeIds: string[];
+};
 export type RegisterDto = {
   /** The email of the user */
   email: string;
@@ -156,6 +166,8 @@ export type RegisterDto = {
   phone: string;
   /** Date of birth */
   dateOfBirth: string;
+  /** Required when role is STUDENT */
+  studentData?: StudentRegisterData;
 };
 export type LoginUserDto = {
   id: string;

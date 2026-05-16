@@ -2,83 +2,25 @@
 
 import Header from "@/src/features/landing/components/header";
 import Link from "next/link";
-import { Controller, useFormContext } from "react-hook-form";
-import { toast } from "sonner";
-
-import {
-  GRADE_LEVELS,
-  SUBJECTS,
-} from "@/src/features/auth/constants/constants";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   registerFormSchema,
   type RegisterFormData,
 } from "@/src/features/auth/schemas/authSchemas";
 import CheckboxField from "@/src/shared/components/atoms/checkbox-field/checkbox-field";
-import SelectBox from "@/src/shared/components/atoms/select-box/select-box";
 import SubmitButton from "@/src/shared/components/atoms/submit-button/submit-button";
 import TextBox from "@/src/shared/components/atoms/text-box/text-box";
 import InputForm from "@/src/shared/components/organisms/input-form/input-form";
-import { Checkbox } from "@/src/shared/components/ui/checkbox";
-import { Label } from "@/src/shared/components/ui/label";
-
-const SubjectsSelection = () => {
-  const { control } = useFormContext<RegisterFormData>();
-  return (
-    <Controller
-      name="subjects"
-      control={control}
-      render={({ field }) => (
-        <div>
-          <Label className="uppercase tracking-wide text-sm font-semibold text-foreground">
-            Môn học muốn học
-          </Label>
-          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {SUBJECTS.map((subject) => {
-              const checked = field.value?.includes(subject);
-              return (
-                <label
-                  key={subject}
-                  className="flex cursor-pointer items-center gap-2 rounded-lg border p-3 text-sm transition-colors hover:bg-muted"
-                >
-                  <Checkbox
-                    checked={checked}
-                    onCheckedChange={(isChecked) => {
-                      const updated = isChecked
-                        ? [...(field.value || []), subject]
-                        : (field.value || []).filter((s) => s !== subject);
-                      field.onChange(updated);
-                    }}
-                    className="mt-0 size-4 rounded border"
-                  />
-                  <span className="text-foreground">{subject}</span>
-                </label>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    />
-  );
-};
+import { Input } from "@/src/shared/components/ui/input";
+import { GradeCheckbox } from "@/src/features/academic-catalog/components/grade-checkbox";
+import { SubjectCheckbox } from "@/src/features/academic-catalog/components/subject-checkbox";
+import FormField from "@/src/shared/components/molecules/form-field/form-field";
+import { FormFieldWrapper } from "@/src/shared/components/molecules/form-field/form-field-wrapper";
+import { useRegisterForm } from "../hooks/use-register-form";
+import { DEFAULT_REGISTER_FORM_VALUES } from "../constants/constants";
 
 export default function RegisterForm() {
-  const handleSubmit = async (data: RegisterFormData) => {
-    const validatedData = registerFormSchema.safeParse(data);
-
-    if (!validatedData.success) {
-      toast.error(
-        validatedData.error.issues[0]?.message ??
-          "Vui lòng kiểm tra lại thông tin trên form.",
-      );
-      return;
-    }
-
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  const { handleSubmit, isSubmitting } = useRegisterForm();
 
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
@@ -98,23 +40,12 @@ export default function RegisterForm() {
           <InputForm<RegisterFormData>
             id="register-form"
             className="w-full"
-            defaultValues={{
-              fullname: "",
-              email: "",
-              phone: "",
-              password: "",
-              confirmPassword: "",
-              grade: "",
-              subjects: [],
-              parentName: "",
-              parentPhone: "",
-              parentEmail: "",
-              termsAccepted: undefined,
-            }}
+            resolver={zodResolver(registerFormSchema)}
+            defaultValues={DEFAULT_REGISTER_FORM_VALUES}
             onSubmit={handleSubmit}
           >
             <div className="space-y-8">
-              {/* Thông tin cá nhân */}
+              {/* ── Thông tin cá nhân ── */}
               <div className="space-y-4">
                 <p className="text-sm font-bold uppercase tracking-wide text-foreground">
                   Thông tin cá nhân
@@ -124,7 +55,7 @@ export default function RegisterForm() {
                   id="fullname"
                   name="fullname"
                   label="Họ và tên học sinh"
-                  placeholder="Nguyen Van A"
+                  placeholder="Nguyễn Văn A"
                   inputClassName="h-11"
                 />
 
@@ -147,6 +78,27 @@ export default function RegisterForm() {
                   />
                 </div>
 
+                <FormField<RegisterFormData, "dateOfBirth">
+                  name="dateOfBirth"
+                  render={({ field, fieldState }) => (
+                    <FormFieldWrapper
+                      label={
+                        <>
+                          Ngày sinh <span className="text-destructive">*</span>
+                        </>
+                      }
+                      error={fieldState.error?.message}
+                    >
+                      <Input
+                        id="dateOfBirth"
+                        type="date"
+                        className="h-11"
+                        {...field}
+                      />
+                    </FormFieldWrapper>
+                  )}
+                />
+
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <TextBox
                     id="password"
@@ -167,53 +119,70 @@ export default function RegisterForm() {
                 </div>
               </div>
 
-              {/* Thông tin học tập */}
+              {/* ── Thông tin học tập ── */}
               <div className="space-y-4">
                 <p className="text-sm font-bold uppercase tracking-wide text-foreground">
                   Thông tin học tập
                 </p>
-                <SelectBox
-                  id="grade"
-                  name="grade"
-                  label="Cấp học"
-                  options={GRADE_LEVELS}
-                  placeholder="Chọn cấp học/lớp"
-                  triggerClassName="h-11"
-                />
-                <SubjectsSelection />
-              </div>
 
-              {/* Thông tin phụ huynh */}
-              <div className="space-y-4">
-                <p className="text-sm font-bold uppercase tracking-wide text-foreground">
-                  Thông tin phụ huynh
-                </p>
+                <FormField<RegisterFormData, "subjectIds">
+                  name="subjectIds"
+                  render={({ field, fieldState }) => (
+                    <FormFieldWrapper
+                      label={
+                        <>
+                          Môn học muốn học{" "}
+                          <span className="text-destructive">*</span>
+                        </>
+                      }
+                    >
+                      <SubjectCheckbox
+                        selectedIds={field.value ?? []}
+                        onChange={field.onChange}
+                        error={fieldState.error?.message}
+                      />
+                    </FormFieldWrapper>
+                  )}
+                />
+
+                <FormField<RegisterFormData, "gradeIds">
+                  name="gradeIds"
+                  render={({ field, fieldState }) => (
+                    <FormFieldWrapper
+                      label={
+                        <>
+                          Cấp lớp học{" "}
+                          <span className="text-destructive">*</span>
+                        </>
+                      }
+                    >
+                      <GradeCheckbox
+                        selectedIds={field.value ?? []}
+                        onChange={field.onChange}
+                        error={fieldState.error?.message}
+                      />
+                    </FormFieldWrapper>
+                  )}
+                />
+
                 <TextBox
-                  id="parentName"
-                  name="parentName"
-                  label="Họ và tên phụ huynh"
-                  placeholder="Nguyen Van B"
+                  id="school"
+                  name="school"
+                  label="Trường học (tùy chọn)"
+                  placeholder="THPT Chu Văn An"
                   inputClassName="h-11"
                 />
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <TextBox
-                    id="parentPhone"
-                    name="parentPhone"
-                    label="Số điện thoại phụ huynh"
-                    placeholder="0987654321"
-                    inputClassName="h-11"
-                  />
-                  <TextBox
-                    id="parentEmail"
-                    name="parentEmail"
-                    label="Email phụ huynh (tùy chọn)"
-                    type="email"
-                    placeholder="phuhuynh@example.com"
-                    inputClassName="h-11"
-                  />
-                </div>
+
+                <TextBox
+                  id="learningGoal"
+                  name="learningGoal"
+                  label="Mục tiêu học tập (tùy chọn)"
+                  placeholder="Vượt qua kỳ thi đại học..."
+                  inputClassName="h-11"
+                />
               </div>
 
+              {/* ── Terms ── */}
               <div className="space-y-2 mt-2">
                 <CheckboxField id="termsAccepted" name="termsAccepted">
                   <span className="ml-2 inline-block">
@@ -236,18 +205,9 @@ export default function RegisterForm() {
               </div>
 
               <div className="mt-4">
-                <SubmitButton>Tạo tài khoản</SubmitButton>
-              </div>
-
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-card px-2 text-muted-foreground">
-                    Hoặc đăng ký bằng
-                  </span>
-                </div>
+                <SubmitButton isLoading={isSubmitting}>
+                  Tạo tài khoản
+                </SubmitButton>
               </div>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
