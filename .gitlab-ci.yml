@@ -1,5 +1,9 @@
 image: node:22
 
+default:
+  tags:
+    - edura-runner
+
 variables:
   npm_config_cache: "$CI_PROJECT_DIR/.npm"
   NEXT_TELEMETRY_DISABLED: "1"
