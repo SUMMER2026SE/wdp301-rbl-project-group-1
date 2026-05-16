@@ -1,5 +1,12 @@
 import { UserRole } from '../../../../../shared/domain/enums/enums';
 
+export interface StudentRegisterData {
+  school?: string;
+  learningGoal?: string;
+  subjectIds: string[];
+  gradeIds: string[];
+}
+
 export class RegisterCommand {
   constructor(
     public readonly email: string,
@@ -8,5 +15,6 @@ export class RegisterCommand {
     public readonly nickname: string,
     public readonly phone: string,
     public readonly dateOfBirth: Date,
+    public readonly studentData?: StudentRegisterData,
   ) {}
 }

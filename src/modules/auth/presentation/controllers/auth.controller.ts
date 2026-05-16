@@ -93,6 +93,14 @@ export class AuthController {
         dto.nickname,
         dto.phone,
         new Date(dto.dateOfBirth),
+        dto.studentData
+          ? {
+              school: dto.studentData.school,
+              learningGoal: dto.studentData.learningGoal,
+              subjectIds: dto.studentData.subjectIds,
+              gradeIds: dto.studentData.gradeIds,
+            }
+          : undefined,
       ),
     );
     return BaseResponse.ok(result);

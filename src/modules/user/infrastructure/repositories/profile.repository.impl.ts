@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { PrismaTransactionContext } from '../../../../shared/infrastructure/database/prisma/prisma-transaction.context';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Profile } from '../../domain/entities/profile.entity';
 import { IProfileRepository } from '../../domain/repositories/profile.repository.interface';
@@ -11,10 +12,15 @@ export class PrismaProfileRepository implements IProfileRepository {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /** Returns the ambient tx client inside a UoW block, or the root PrismaService. */
+  private get client() {
+    return PrismaTransactionContext.getClient() ?? this.prisma;
+  }
+
   async save(profile: Profile): Promise<Profile> {
     const data = this.mapper.toPersistence(profile);
 
-    const savedProfile = await this.prisma.profile.upsert({
+    const savedProfile = await this.client.profile.upsert({
       where: { userId: profile.userId },
       create: data,
       update: data,
@@ -24,7 +30,7 @@ export class PrismaProfileRepository implements IProfileRepository {
   }
 
   async findByUserId(userId: string): Promise<Profile | null> {
-    const profile = await this.prisma.profile.findUnique({
+    const profile = await this.client.profile.findUnique({
       where: { userId },
     });
 
