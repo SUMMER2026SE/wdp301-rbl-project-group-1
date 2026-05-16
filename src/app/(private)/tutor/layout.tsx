@@ -4,6 +4,7 @@ import { NotificationPopover } from "@/src/shared/components/molecules/notificat
 import { TutorPopover } from "@/src/shared/components/molecules/tutor-popover/tutor-popover";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
 import SearchBox from "@/src/shared/components/molecules/search-box/search-box";
+import { GraduationCap } from "lucide-react";
 
 export default function TutorLayout({
   children,
@@ -26,9 +27,12 @@ export default function TutorLayout({
           <NavigationBar
             menu={navLinks}
             brand={
-              <Link href="/tutor/home" className="flex items-center gap-4">
-                <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground">
-                  TutorConnect
+              <Link href="/student/home" className="flex items-center gap-4">
+                <div className="flex size-8 items-center justify-center text-primary dark:text-primary">
+                  <GraduationCap className="size-8" />
+                </div>
+                <h2 className="text-xl font-bold leading-tight tracking-tight text-foreground dark:text-foreground">
+                  Edura
                 </h2>
               </Link>
             }
