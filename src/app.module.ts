@@ -3,6 +3,7 @@ import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AcademicCatalogModule } from 'src/modules/academic-catalog/academic-catalog.module';
 import { CourseModule } from 'src/modules/course/course.module';
+import { EnrollmentModule } from 'src/modules/enrollment/enrollment.module';
 import { HealthModule } from 'src/modules/health/health.module';
 import { LessonModule } from 'src/modules/lesson/lesson.module';
 import { NotificationModule } from 'src/modules/notification/notification.module';
@@ -31,6 +32,7 @@ import { ResourceModule } from './modules/resource/resource.module';
     NotificationModule,
     AcademicCatalogModule,
     CourseModule,
+    EnrollmentModule,
     LessonModule,
     TutorApplicationModule,
     PaymentModule,
