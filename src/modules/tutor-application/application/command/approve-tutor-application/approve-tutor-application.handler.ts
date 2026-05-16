@@ -8,6 +8,7 @@ import {
   ConflictException,
   EntityNotFoundException,
 } from '../../../../../shared/domain/exceptions/domain-exception';
+import { IUnitOfWork } from '../../../../../shared/application/interfaces/unit-of-work';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { User } from '../../../../user/domain/entities/user.entity';
 import { Tutor } from '../../../../user/domain/entities/tutor.entity';
@@ -27,12 +28,15 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
     private readonly userRepository: IUserRepository,
     @Inject(IHashService)
     private readonly hashService: IHashService,
+    @Inject(IUnitOfWork)
+    private readonly unitOfWork: IUnitOfWork,
     private readonly commandBus: CommandBus,
   ) {}
 
   async execute(
     command: ApproveTutorApplicationCommand,
   ): Promise<ApproveTutorApplicationResult> {
+    // --- Pre-flight reads (outside transaction to keep tx short) ---
     const application = await this.tutorApplicationRepository.findById(
       command.id,
     );
@@ -57,40 +61,49 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
       );
     }
 
+    // Generate credentials before entering transaction
     const temporaryPassword = randomBytes(8).toString('hex');
     const hashedPassword = await this.hashService.hash(temporaryPassword);
 
-    const newUser = User.create('', {
-      email: application.email,
-      password: hashedPassword,
-      role: UserRole.TUTOR,
-      isActive: true,
-      isVerified: true,
-      isFlag: false,
-      reportCount: 0,
-      createdAt: new Date(),
+    // --- Atomic writes ---
+    const { savedUserId } = await this.unitOfWork.execute(async () => {
+      // Build User + Tutor profile from the full application data
+      const newUser = User.create('', {
+        email: application.email,
+        password: hashedPassword,
+        role: UserRole.TUTOR,
+        isActive: true,
+        isVerified: true,
+        isFlag: false,
+        reportCount: 0,
+        createdAt: new Date(),
+      });
+
+      const tutorProfile = Tutor.create('', {
+        userId: '',
+        bio: application.bio ?? null,
+        specialization: application.specialization,
+        experience: application.experience ?? null,
+        education: application.education ?? null,
+        pricePerHour: application.pricePerHour ?? null,
+        rating: 0,
+        reviewCount: 0,
+        studentCount: 0,
+      });
+      newUser.setTutor(tutorProfile);
+
+      const savedUser = await this.userRepository.save(newUser);
+
+      // Approve & link the application to the new user account
+      application.approve();
+      application.linkUser(savedUser.id);
+      await this.tutorApplicationRepository.update(application);
+
+      return { savedUserId: savedUser.id };
     });
 
-    const tutorProfile = Tutor.create('', {
-      userId: '',
-      bio: application.bio,
-      specialization: application.specialization,
-      experience: application.experience,
-      education: application.education,
-      pricePerHour: application.pricePerHour,
-      rating: 0,
-      reviewCount: 0,
-      studentCount: 0,
-    });
-    newUser.setTutor(tutorProfile);
-
-    const savedUser = await this.userRepository.save(newUser);
-
-    application.approve();
-    application.linkUser(savedUser.id);
-
-    await this.tutorApplicationRepository.update(application);
-
+    // --- Side effect: send welcome email (outside transaction) ---
+    // If this fails, the user account is still created — email can be retried separately.
     await this.commandBus.execute(
       new SendEmailCommand(
         application.email,
@@ -102,7 +115,7 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
 
     return new ApproveTutorApplicationResult(
       application.id,
-      savedUser.id,
+      savedUserId,
       application.email,
       temporaryPassword,
     );

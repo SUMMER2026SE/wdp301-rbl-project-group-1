@@ -3,6 +3,7 @@ import {
   createQueryResult,
   QueryResult,
 } from '../../../../shared/domain/common/query';
+import { PrismaTransactionContext } from '../../../../shared/infrastructure/database/prisma/prisma-transaction.context';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Resource } from '../../domain/entities/resource.entity';
 import {
@@ -22,17 +23,28 @@ export class PrismaResourceRepository implements IResourceRepository {
 
   constructor(private readonly prisma: PrismaService) {}
 
+  /**
+   * Returns the active Prisma transaction client when called inside a
+   * `IUnitOfWork.execute()` block, otherwise falls back to the root
+   * PrismaService. This allows all repository methods to be fully transactional
+   * without requiring explicit tx propagation.
+   */
+  private get client() {
+    return PrismaTransactionContext.getClient() ?? this.prisma;
+  }
+
   private get resourceDelegate(): ResourceDelegate {
-    return this.prisma.resource as unknown as ResourceDelegate;
+    return this.client.resource as unknown as ResourceDelegate;
   }
 
   private get courseResourceDelegate(): CourseResourceDelegate {
-    return this.prisma.courseResource as unknown as CourseResourceDelegate;
+    return this.client.courseResource as unknown as CourseResourceDelegate;
   }
 
   private get lessonResourceDelegate(): LessonResourceDelegate {
-    return this.prisma.lessonResource as unknown as LessonResourceDelegate;
+    return this.client.lessonResource as unknown as LessonResourceDelegate;
   }
+
 
   async create(resource: Resource): Promise<Resource> {
     const data = this.mapper.toPersistence(resource);

@@ -4,6 +4,7 @@ import {
   QueryResult,
   createQueryResult,
 } from '../../../../shared/domain/common/query';
+import { PrismaTransactionContext } from '../../../../shared/infrastructure/database/prisma/prisma-transaction.context';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { TutorApplication } from '../../domain/entities/tutor-application.entity';
 import {
@@ -21,8 +22,13 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
     super();
   }
 
+  /** Returns the ambient tx client inside a UoW block, or the root PrismaService. */
+  private get client() {
+    return PrismaTransactionContext.getClient() ?? this.prisma;
+  }
+
   private get tutorApplicationDelegate(): TutorApplicationDelegate {
-    return this.prisma.tutorApplication as unknown as TutorApplicationDelegate;
+    return this.client.tutorApplication as unknown as TutorApplicationDelegate;
   }
 
   async create(application: TutorApplication): Promise<TutorApplication> {

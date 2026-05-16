@@ -3,6 +3,7 @@ import {
   Prisma,
   UserRole as PrismaUserRole,
 } from '../../../../../generated/prisma/client';
+import { PrismaTransactionContext } from '../../../../shared/infrastructure/database/prisma/prisma-transaction.context';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { User } from '../../domain/entities/user.entity';
 import {
@@ -18,6 +19,11 @@ export class PrismaUserRepository implements IUserRepository {
   private readonly mapper = new UserMapper();
 
   constructor(private readonly prisma: PrismaService) {}
+
+  /** Returns the ambient tx client inside a UoW block, or the root PrismaService. */
+  private get client() {
+    return PrismaTransactionContext.getClient() ?? this.prisma;
+  }
 
   private buildWhereClause(params: FindAllUsersParams): Prisma.UserWhereInput {
     const where: Prisma.UserWhereInput = {};
@@ -67,7 +73,7 @@ export class PrismaUserRepository implements IUserRepository {
       : {};
 
     const savedUser = user.id
-      ? await this.prisma.user.update({
+      ? await this.client.user.update({
           where: { id: user.id },
           data: {
             ...data,
@@ -85,7 +91,7 @@ export class PrismaUserRepository implements IUserRepository {
                 : undefined,
           } as Prisma.UserUpdateInput,
         })
-      : await this.prisma.user.create({
+      : await this.client.user.create({
           data: {
             ...data,
             tutor:
