@@ -19,7 +19,6 @@ interface DocumentViewerProps {
 
 export function DocumentViewer({
   fileName,
-  fileUrl,
   totalPages = 45,
 }: DocumentViewerProps) {
   const [zoom, setZoom] = useState(100);

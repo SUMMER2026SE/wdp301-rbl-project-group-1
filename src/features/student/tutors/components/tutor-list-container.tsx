@@ -13,10 +13,7 @@ interface TutorListContainerProps {
   totalCount?: number;
 }
 
-export function TutorListContainer({
-  tutors,
-  totalCount = 124,
-}: TutorListContainerProps) {
+export function TutorListContainer({ tutors }: TutorListContainerProps) {
   const form = useForm<FilterFormData>({
     resolver: zodResolver(filterSchema),
     defaultValues: {
@@ -32,7 +29,7 @@ export function TutorListContainer({
   // Watch form values
   const search = form.watch("search");
   const subjects = form.watch("subjects");
-  const levels = form.watch("levels");
+
   const priceRange = form.watch("priceRange");
   const rating = form.watch("rating");
   const sortBy = form.watch("sortBy");

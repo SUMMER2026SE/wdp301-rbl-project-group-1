@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   ScheduleCalendar,
   ScheduleHeader,
@@ -27,16 +29,14 @@ export default function TutorSchedulePage() {
       <div className="layout-content-container flex flex-col max-w-300 flex-1 w-full gap-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <a
+          <Link
             className="hover:text-primary transition-colors"
             href="/tutor/home"
           >
             Tổng quan
-          </a>
+          </Link>
           <ChevronRight className="size-4" />
-          <span className="text-foreground font-medium">
-            Lịch dạy
-          </span>
+          <span className="text-foreground font-medium">Lịch dạy</span>
         </div>
 
         {/* Header Section */}
@@ -53,7 +53,7 @@ export default function TutorSchedulePage() {
             <ScheduleCalendar
               classes={scheduleClasses}
               selectedFilter={selectedFilter}
-              onClassClick={() => {}}
+              onClassClick={() => { }}
             />
 
             {/* Info Banner */}

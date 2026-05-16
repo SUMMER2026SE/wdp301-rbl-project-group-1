@@ -15,7 +15,7 @@ interface ResourceDetailPageProps {
   resourceId?: string;
 }
 
-export function ResourceDetailPage({ resourceId }: ResourceDetailPageProps) {
+export function ResourceDetailPage({}: ResourceDetailPageProps) {
   const router = useRouter();
 
   // In a real app, fetch resource data based on resourceId
