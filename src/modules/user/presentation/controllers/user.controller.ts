@@ -3,6 +3,8 @@ import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { ApiImageUpload } from '../../../../modules/storage/presentation/decorators/api-image-upload.decorator';
+import { UploadedImage } from '../../../../modules/storage/presentation/decorators/uploaded-image.decorator';
+import { UploadedImageDto } from '../../../../modules/storage/presentation/schemas/upload-image.dto';
 import {
   QueryParams,
   QueryResult,
@@ -12,10 +14,8 @@ import {
   ApiOkResponseWrapped,
 } from '../../../../shared/presentation/decorators/api-response.decorator';
 import { Query as QueryParamsDecorator } from '../../../../shared/presentation/decorators/query.decorator';
-import { UploadedImage } from '../../../../modules/storage/presentation/decorators/uploaded-image.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
-import { UploadedImageDto } from '../../../../modules/storage/presentation/schemas/upload-image.dto';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { ChangeAvatarCommand } from '../../application/commands/change-avatar/change-avatar.command';
 import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';
@@ -23,12 +23,15 @@ import { UpdateProfileCommand } from '../../application/commands/update-profile/
 import { UpdateProfileResult } from '../../application/commands/update-profile/update-profile.result';
 import { UpgradeTutorCommand } from '../../application/commands/upgrade-tutor/upgrade-tutor.command';
 import { UpgradeTutorResult } from '../../application/commands/upgrade-tutor/upgrade-tutor.result';
+import { GetProfileQuery } from '../../application/queries/get-profile/get-profile.query';
+import { GetProfileResult } from '../../application/queries/get-profile/get-profile.result';
 import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
 import {
   GetUsersResult,
   GetUsersResultData,
 } from '../../application/queries/get-users/get-users.result';
 import { ChangeAvatarResultDto } from '../schemas/change-avatar-response.dto';
+import { GetProfileResponseDto } from '../schemas/get-profile-response.dto';
 import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
 import { UpdateProfileDto } from '../schemas/update-profile.dto';
 import { UpgradeTutorResultDto } from '../schemas/upgrade-tutor-response.dto';
@@ -56,6 +59,26 @@ export class UserController {
     >(new GetUsersQuery(query));
 
     return QueryResponse.query(result);
+  }
+
+  @Get('profile')
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getProfile',
+    summary: 'Get current authenticated user profile',
+  })
+  @ApiOkResponseWrapped(GetProfileResponseDto, {
+    description: 'Current user information returned successfully.',
+  })
+  async getProfile(
+    @CurrentUser() user: { userId: string },
+  ): Promise<BaseResponse<GetProfileResult>> {
+    const result = await this.queryBus.execute<
+      GetProfileQuery,
+      GetProfileResult
+    >(new GetProfileQuery(user.userId));
+
+    return BaseResponse.ok(result);
   }
 
   @Patch('profile')

@@ -5,6 +5,7 @@ import { ChangeAvatarHandler } from './application/commands/change-avatar/change
 import { UpdateProfileHandler } from './application/commands/update-profile/update-profile.handler';
 import { UpgradeTutorCommandHandler } from './application/commands/upgrade-tutor/upgrade-tutor.handler';
 
+import { GetProfileQueryHandler } from './application/queries/get-profile/get-profile.handler';
 import { GetUsersQueryHandler } from './application/queries/get-users/get-users.handler';
 
 import { IProfileRepository } from './domain/repositories/profile.repository.interface';
@@ -21,6 +22,7 @@ import { UserController } from './presentation/controllers/user.controller';
   imports: [CqrsModule],
   controllers: [UserController],
   providers: [
+    GetProfileQueryHandler,
     GetUsersQueryHandler,
     UpdateProfileHandler,
     ChangeAvatarHandler,

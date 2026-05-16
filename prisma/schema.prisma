@@ -383,7 +383,6 @@ model Student {
   id   String @id
   user User   @relation(fields: [id], references: [id])
 
-  grade        String?
   school       String?
   learningGoal String? @map("learning_goal")
 
@@ -393,9 +392,33 @@ model Student {
   attempts          Attempt[]
   gradebookRecords  GradebookRecord[]
 
-  parents ParentStudent[]
+  parents  ParentStudent[]
+  subjects StudentSubject[]
+  grades   StudentGrade[]
 
   @@map("student")
+}
+
+model StudentSubject {
+  studentId String @map("student_id")
+  subjectId String @map("subject_id")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, subjectId])
+  @@map("student_subject")
+}
+
+model StudentGrade {
+  studentId String @map("student_id")
+  gradeId   String @map("grade_id")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  grade   Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, gradeId])
+  @@map("student_grade")
 }
 
 model Parent {
@@ -546,6 +569,7 @@ model Subject {
   courses              Course[]
   userSubjectInterests UserSubjectInterest[]
   tutorApplications    TutorApplicationSubject[]
+  studentSubjects      StudentSubject[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -562,6 +586,7 @@ model Grade {
 
   courses           Course[]
   tutorApplications TutorApplicationGrade[]
+  studentGrades     StudentGrade[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
