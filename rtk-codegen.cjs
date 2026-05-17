@@ -6,14 +6,14 @@ const config = {
   apiImport: "baseApi",
 
   outputFiles: {
-    "./src/features/auth/authApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
-      exportName: "authApi",
-    },
-    // "./src/features/user/userApi.ts": {
-    //   filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
-    //   exportName: "userApi",
+    // "./src/features/auth/authApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
+    //   exportName: "authApi",
     // },
+    "./src/features/user/userApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
+      exportName: "userApi",
+    },
     "./src/features/tutor-application/tutorApplicationApi.ts": {
       filterEndpoints: (_, { path }) =>
         path.startsWith("/api/tutor-application"),
