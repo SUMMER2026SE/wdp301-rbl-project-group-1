@@ -16,11 +16,14 @@ import {
 } from "date-fns";
 import { vi } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
 const WEEKDAYS_SHORT = ["T2", "T3", "T4", "T5", "T6", "T7", "CN"];
 
-const LEGEND_DOT_CLASSES: Record<"blue" | "purple" | "emerald" | "orange", string> = {
+const LEGEND_DOT_CLASSES: Record<
+  "blue" | "purple" | "emerald" | "orange",
+  string
+> = {
   blue: "bg-schedule-blue-text",
   purple: "bg-schedule-purple-text",
   emerald: "bg-schedule-emerald-text",
@@ -56,6 +59,11 @@ interface ScheduleCalendarProps {
     classes: ScheduleClass[],
     filter: ClassFilter,
   ) => ScheduleClass[];
+  /** Optional custom event chip renderer. Receives the class and whether its day is in the current month. */
+  renderEvent?: (
+    cls: ScheduleClass,
+    isCurrentMonth: boolean,
+  ) => React.ReactNode;
 }
 
 export function ScheduleCalendar({
@@ -66,6 +74,7 @@ export function ScheduleCalendar({
   legendItems,
   getClassesForDate,
   filterClasses,
+  renderEvent,
 }: ScheduleCalendarProps) {
   const [currentDate, setCurrentDate] = useState(new Date(2023, 9, 1)); // Oct 2023 from design
   const [view, setView] = useState<"month" | "week">("month");
@@ -177,6 +186,13 @@ export function ScheduleCalendar({
                 </span>
                 <div className="flex flex-col gap-1">
                   {dayClasses.map((cls) => {
+                    if (renderEvent) {
+                      return (
+                        <Fragment key={`${day.toISOString()}-${cls.id}`}>
+                          {renderEvent(cls, isCurrentMonth)}
+                        </Fragment>
+                      );
+                    }
                     const colorStyle = classColorMap[cls.color];
                     return (
                       <div
@@ -206,7 +222,9 @@ export function ScheduleCalendar({
           <div className="p-5 border-t border-border flex flex-wrap gap-4 justify-center text-xs text-muted-foreground">
             {legendItems.map((item) => (
               <div key={item.color} className="flex items-center gap-2">
-                <div className={`w-3 h-3 rounded-full ${LEGEND_DOT_CLASSES[item.color]}`} />
+                <div
+                  className={`w-3 h-3 rounded-full ${LEGEND_DOT_CLASSES[item.color]}`}
+                />
                 <span>{item.label}</span>
               </div>
             ))}
