@@ -145,19 +145,6 @@ enum ResourceType {
   @@map("resource_type")
 }
 
-enum InteractionEntityType {
-  TUTOR
-  COURSE
-}
-
-enum InteractionEventType {
-  VIEW
-  CLICK
-  FAVORITE
-  ENROLL
-  SEARCH_CLICK
-}
-
 enum AssessmentType {
   QUIZ
   EXAM
@@ -226,15 +213,11 @@ model User {
 
   posts                    Post[]
   comments                 Comment[]
-  messages                 Message[]
   notifications            NotificationTarget[]
   reports                  Report[]                  @relation("Reporter")
   postLikes                PostLike[]
-  conversationParticipants ConversationParticipant[]
-  activityLogs             ActivityLog[]
-  subjectInterests         UserSubjectInterest[]
-  interactions             Interaction[]
   resources                Resource[]
+  payments                 Payment[]
 
   @@map("user")
 }
@@ -276,18 +259,6 @@ model Profile {
   @@map("profile")
 }
 
-model UserSubjectInterest {
-  userId    String @map("user_id")
-  subjectId String @map("subject_id")
-
-  weight Float @default(1)
-
-  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([userId, subjectId])
-  @@map("user_subject_interest")
-}
 
 model Tutor {
   id   String @id @map("id")
@@ -303,7 +274,6 @@ model Tutor {
   studentCount   Int     @default(0) @map("student_count")
 
   courses            Course[]
-  stats              TutorStats?
   courseApplications CourseApplication[]
 
   @@map("tutor")
@@ -489,73 +459,6 @@ model Otp {
 }
 
 //////////////////////////////////////////////////
-// MODEL
-//////////////////////////////////////////////////
-
-// ================= INTERACTION =================
-model Interaction {
-  id String @id @default(cuid())
-
-  userId String @map("user_id")
-
-  entityId   String                @map("entity_id")
-  entityType InteractionEntityType @map("entity_type")
-
-  eventType InteractionEventType @map("event_type")
-
-  weight Float? // optional precomputed score
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([entityId, entityType])
-  @@index([createdAt])
-  @@map("interaction")
-}
-
-model UserTutorRecommendation {
-  userId  String @map("user_id")
-  tutorId String @map("tutor_id")
-
-  score Float
-
-  @@id([userId, tutorId])
-  @@map("user_tutor_recommendation")
-}
-
-model UserCourseRecommendation {
-  userId   String @map("user_id")
-  courseId String @map("course_id")
-
-  score Float
-
-  @@id([userId, courseId])
-  @@map("user_course_recommendation")
-}
-
-model TutorSimilarity {
-  tutorId        String @map("tutor_id")
-  similarTutorId String @map("similar_tutor_id")
-
-  score Float
-
-  @@id([tutorId, similarTutorId])
-  @@map("tutor_similarity")
-}
-
-model CourseSimilarity {
-  courseId        String @map("course_id")
-  similarCourseId String @map("similar_course_id")
-
-  score Float
-
-  @@id([courseId, similarCourseId])
-  @@map("course_similarity")
-}
-
-//////////////////////////////////////////////////
 // COURSE SYSTEM
 //////////////////////////////////////////////////
 
@@ -566,10 +469,9 @@ model Subject {
   name String // "Toán"
   slug String @unique // "toan"
 
-  courses              Course[]
-  userSubjectInterests UserSubjectInterest[]
-  tutorApplications    TutorApplicationSubject[]
-  studentSubjects      StudentSubject[]
+  courses           Course[]
+  tutorApplications TutorApplicationSubject[]
+  studentSubjects   StudentSubject[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -636,7 +538,6 @@ model Course {
   lessons          Lesson[]
   enrollments      Enrollment[]
   reviews          CourseReview[]
-  stats            CourseStats?
   resources        CourseResource[]
   assessments      Assessment[]
   questionBanks    QuestionBank[]
@@ -1046,6 +947,7 @@ model Payment {
   id        String @id @default(cuid())
   
   payerUserId String @map("payer_user_id")
+  payer       User   @relation(fields: [payerUserId], references: [id])
 
   referenceType PaymentReferenceType @map("reference_type")
   referenceId   String               @map("reference_id")
@@ -1062,108 +964,6 @@ model Payment {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("payment")
-}
-
-//////////////////////////////////////////////////
-// CHAT
-//////////////////////////////////////////////////
-
-model Conversation {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now()) @map("created_at")
-
-  participants ConversationParticipant[]
-  messages     Message[]
-
-  @@map("conversation")
-}
-
-model ConversationParticipant {
-  conversationId String @map("conversation_id")
-  userId         String @map("user_id")
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  user         User         @relation(fields: [userId], references: [id])
-
-  @@id([conversationId, userId])
-  @@map("conversation_participant")
-}
-
-model Message {
-  id             String @id @default(cuid())
-  conversationId String @map("conversation_id")
-  senderId       String @map("sender_id")
-
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  sender       User         @relation(fields: [senderId], references: [id])
-
-  @@map("message")
-}
-
-//////////////////////////////////////////////////
-// ANALYTICS
-//////////////////////////////////////////////////
-
-model SystemStats {
-  id   String   @id @default(cuid())
-  date DateTime @unique
-
-  totalUsers         Int   @map("total_users")
-  totalTutors        Int   @map("total_tutors")
-  totalStudents      Int   @map("total_students")
-  totalCourses       Int   @map("total_courses")
-  totalActiveCourses Int   @map("total_active_courses")
-  totalEnrollments   Int   @map("total_enrollments")
-  totalRevenue       Float @map("total_revenue")
-  totalPosts         Int   @map("total_posts")
-  totalComments      Int   @map("total_comments")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("system_stats")
-}
-
-model TutorStats {
-  tutorId String @id @map("tutor_id")
-
-  totalStudents Int   @map("total_students")
-  totalCourses  Int   @map("total_courses")
-  totalEarnings Float @map("total_earnings")
-  avgRating     Float @map("avg_rating")
-
-  tutor Tutor @relation(fields: [tutorId], references: [id])
-
-  @@map("tutor_stats")
-}
-
-model CourseStats {
-  courseId String @id @map("course_id")
-
-  totalStudents Int   @map("total_students")
-  totalRevenue  Float @map("total_revenue")
-  avgRating     Float @map("avg_rating")
-
-  course Course @relation(fields: [courseId], references: [id])
-
-  @@map("course_stats")
-}
-
-model ActivityLog {
-  id     String @id @default(cuid())
-  userId String @map("user_id")
-
-  action     String
-  entityType String @map("entity_type")
-  entityId   Int    @map("entity_id")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("activity_log")
 }
 
 model Report {
