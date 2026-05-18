@@ -19,10 +19,12 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ResourceModule } from './modules/resource/resource.module';
+import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
     AppConfigModule,
+    RabbitmqModule,
     DatabaseModule,
     LoggerModule,
     StorageModule,

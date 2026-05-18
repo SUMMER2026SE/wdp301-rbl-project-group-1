@@ -46,4 +46,7 @@ export default () => ({
     apiKey: process.env.PAYOS_API_KEY,
     checksumKey: process.env.PAYOS_CHECKSUM_KEY,
   },
+  rabbitmq: {
+    url: process.env.RABBITMQ_URL,
+  },
 });

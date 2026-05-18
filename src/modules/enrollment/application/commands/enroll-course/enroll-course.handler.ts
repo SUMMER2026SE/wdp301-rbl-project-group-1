@@ -38,9 +38,7 @@ export class EnrollCourseCommandHandler
       command.courseId,
     );
     if (existing) {
-      throw new ConflictException(
-        'Student is already enrolled in this course',
-      );
+      throw new ConflictException('Student is already enrolled in this course');
     }
 
     const enrollment = Enrollment.create('', {

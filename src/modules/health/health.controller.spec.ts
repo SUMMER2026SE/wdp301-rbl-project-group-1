@@ -2,8 +2,11 @@ import {
   HealthCheckResult,
   HealthCheckService,
   MongooseHealthIndicator,
+  MicroserviceHealthIndicator,
 } from '@nestjs/terminus';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { RabbitmqService } from 'src/shared/infrastructure/messaging/rabbitmq/rabbitmq.service';
 import { HealthController } from './health.controller';
 import { PrismaHealthIndicator } from './prisma.health';
 import { RedisHealthIndicator } from './redis.health';
@@ -31,6 +34,12 @@ describe('HealthController', () => {
   let redisIndicator: {
     pingCheck: jest.MockedFunction<RedisHealthIndicator['pingCheck']>;
   };
+  let microserviceIndicator: {
+    pingCheck: jest.MockedFunction<MicroserviceHealthIndicator['pingCheck']>;
+  };
+  let configService: {
+    get: jest.MockedFunction<ConfigService['get']>;
+  };
 
   beforeEach(async () => {
     const mongoosePingCheck = jest.fn() as jest.MockedFunction<
@@ -41,6 +50,9 @@ describe('HealthController', () => {
     >;
     const redisPingCheck = jest.fn() as jest.MockedFunction<
       RedisHealthIndicator['pingCheck']
+    >;
+    const microservicePingCheck = jest.fn() as jest.MockedFunction<
+      MicroserviceHealthIndicator['pingCheck']
     >;
     const healthCheck = jest.fn() as jest.MockedFunction<
       HealthCheckService['check']
@@ -62,6 +74,17 @@ describe('HealthController', () => {
       pingCheck: redisPingCheck,
     };
     redisIndicator.pingCheck.mockResolvedValue({ redis: { status: 'up' } });
+
+    microserviceIndicator = {
+      pingCheck: microservicePingCheck,
+    };
+    microserviceIndicator.pingCheck.mockResolvedValue({
+      rabbitmq: { status: 'up' },
+    });
+
+    configService = {
+      get: jest.fn().mockReturnValue('amqp://localhost:5672'),
+    };
 
     healthCheckService = {
       check: healthCheck,
@@ -86,6 +109,18 @@ describe('HealthController', () => {
           provide: RedisHealthIndicator,
           useValue: redisIndicator,
         },
+        {
+          provide: MicroserviceHealthIndicator,
+          useValue: microserviceIndicator,
+        },
+        {
+          provide: ConfigService,
+          useValue: configService,
+        },
+        {
+          provide: RabbitmqService,
+          useValue: { publishEvent: jest.fn() },
+        },
       ],
     }).compile();
 
@@ -103,6 +138,7 @@ describe('HealthController', () => {
         mongodb: { status: 'up' },
         prisma: { status: 'up' },
         redis: { status: 'up' },
+        rabbitmq: { status: 'up' },
       },
       details: {},
     };
@@ -121,6 +157,7 @@ describe('HealthController', () => {
         mongodb: { status: 'up' },
         prisma: { status: 'up' },
         redis: { status: 'up' },
+        rabbitmq: { status: 'up' },
       },
       details: {},
     };
@@ -137,5 +174,9 @@ describe('HealthController', () => {
     expect(mongooseIndicator.pingCheck).toHaveBeenCalledWith('mongodb');
     expect(prismaIndicator.pingCheck).toHaveBeenCalledWith('prisma');
     expect(redisIndicator.pingCheck).toHaveBeenCalledWith('redis');
+    expect(microserviceIndicator.pingCheck).toHaveBeenCalledWith(
+      'rabbitmq',
+      expect.any(Object),
+    );
   });
 });
