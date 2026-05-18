@@ -1,4 +1,4 @@
-from src.models.popularity import popular_candidates
+from src.algorithms.popularity import popular_candidates
 
 
 def collaborative_candidates(interactions, user_id, top_k=50, entity_type=None):

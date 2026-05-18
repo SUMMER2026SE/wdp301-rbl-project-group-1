@@ -1,72 +1,100 @@
-from pathlib import Path
-
 import pandas as pd
 
-from src.config import query
 from src.data.preprocess import add_score
+from src.models.user import User
+from src.models.item import Item
+from src.models.interaction import Interaction
 
-DATA_DIR = Path(__file__).resolve().parents[2] / "data"
+async def load_interactions():
+    docs = await Interaction.find_all().to_list()
+    
+    if not docs:
+        df = pd.DataFrame(columns=["id", "user_id", "entity_id", "entity_type", "event_type", "weight", "created_at"])
+    else:
+        data = []
+        for doc in docs:
+            data.append({
+                "id": str(doc.id),
+                "user_id": doc.userId,
+                "entity_id": doc.itemId,
+                "entity_type": doc.itemType,
+                "event_type": doc.type,
+                "weight": doc.value,
+                "created_at": doc.createdAt
+            })
+        df = pd.DataFrame(data)
 
+    if not df.empty and "score" not in df.columns:
+        df = add_score(df)
 
-def _empty_frame(columns):
-    return pd.DataFrame(columns=columns)
-
-
-def _load_csv_if_available(file_name, columns):
-    file_path = DATA_DIR / file_name
-    if not file_path.exists() or file_path.stat().st_size == 0:
-        return _empty_frame(columns)
-
-    data = pd.read_csv(file_path)
-    missing_columns = [column for column in columns if column not in data.columns]
-    for column in missing_columns:
-        data[column] = pd.NA
-
-    return data[columns]
-
-
-def _safe_query(sql, columns):
-    try:
-        return query(sql)
-    except Exception:
-        return _empty_frame(columns)
-
-def load_interactions():
-    interactions = _safe_query("""
-        SELECT id, user_id, entity_id, entity_type, event_type, weight, created_at
-        FROM interaction
-    """, ["id", "user_id", "entity_id", "entity_type", "event_type", "weight", "created_at"])
-
-    if interactions.empty:
-        interactions = _load_csv_if_available(
-            "interactions.csv",
-            ["user_id", "entity_id", "entity_type", "event_type"],
-        )
-
-    if "score" not in interactions.columns:
-        interactions = add_score(interactions)
-
-    return interactions
-
-def load_tutors():
-    return _safe_query("""
-        SELECT id, rating, student_count, price_per_hour, bio, specialization, experience, education
-        FROM tutor
-    """, ["id", "rating", "student_count", "price_per_hour", "bio", "specialization", "experience", "education"])
-
-def load_courses():
-    return _safe_query("""
-        SELECT id, tutor_id, subject_id, grade_id, title, description, price, level, status
-        FROM course
-    """, ["id", "tutor_id", "subject_id", "grade_id", "title", "description", "price", "level", "status"])
+    return df
 
 
-def load_users():
-    return _safe_query("""
-        SELECT id, email, role, is_active, is_verified, created_at
-        FROM "user"
-    """, ["id", "email", "role", "is_active", "is_verified", "created_at"])
+async def load_tutors():
+    docs = await Item.find(Item.itemType == "TUTOR").to_list()
+    
+    if not docs:
+        return pd.DataFrame(columns=["id", "rating", "student_count", "price_per_hour", "bio", "specialization", "experience", "education"])
+    
+    data = []
+    for doc in docs:
+        features = doc.features or {}
+        metrics = doc.metrics
+        data.append({
+            "id": str(doc.id),
+            "rating": metrics.rating if metrics else 0.0,
+            "student_count": metrics.studentCount if metrics else 0,
+            "price_per_hour": features.get("pricePerHour", 0),
+            "bio": doc.basicInfo.title if doc.basicInfo else "",
+            "specialization": features.get("specialization"),
+            "experience": features.get("experience", 0),
+            "education": features.get("education"),
+        })
+    return pd.DataFrame(data)
 
 
-def load_data():
-    return load_interactions()
+async def load_courses():
+    docs = await Item.find(Item.itemType == "COURSE").to_list()
+    
+    if not docs:
+        return pd.DataFrame(columns=["id", "tutor_id", "subject_id", "grade_id", "title", "description", "price", "level", "status"])
+    
+    data = []
+    for doc in docs:
+        features = doc.features or {}
+        metrics = doc.metrics
+        data.append({
+            "id": str(doc.id),
+            "title": doc.basicInfo.title if doc.basicInfo else "",
+            "description": "", # Mapping placeholder
+            "price": features.get("price", 0),
+            "tutor_id": features.get("tutorId"),
+            "subject_id": features.get("subjectSlug"),
+            "grade_id": features.get("gradeSlug"),
+            "level": features.get("level"),
+            "status": "PUBLISHED",
+        })
+    return pd.DataFrame(data)
+
+
+async def load_users():
+    docs = await User.find_all().to_list()
+    
+    if not docs:
+        return pd.DataFrame(columns=["id", "email", "role", "is_active", "is_verified", "created_at"])
+    
+    data = []
+    for doc in docs:
+        data.append({
+            "id": str(doc.id),
+            "email": "",
+            "role": doc.role,
+            "is_active": True,
+            "is_verified": True,
+            "created_at": doc.createdAt,
+        })
+    return pd.DataFrame(data)
+
+
+async def load_data():
+    return await load_interactions()

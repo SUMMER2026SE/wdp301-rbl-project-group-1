@@ -1,6 +1,6 @@
 import pandas as pd
 
-from src.models.popularity import popular_candidates
+from src.algorithms.popularity import popular_candidates
 
 
 def _score_candidate(row, seed_rows, categorical_columns, numeric_columns):

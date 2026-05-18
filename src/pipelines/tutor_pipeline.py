@@ -1,13 +1,13 @@
 from src.data.loader import load_interactions, load_tutors
-from src.models.collaborative import collaborative_candidates
-from src.models.content_based import content_candidates
-from src.models.popularity import popular_candidates
+from src.algorithms.collaborative import collaborative_candidates
+from src.algorithms.content_based import content_candidates
+from src.algorithms.popularity import popular_candidates
 from src.ranking.ranker import rank_candidates
 
 
-def recommend_tutors(user_id):
-    interactions = load_interactions()
-    tutors = load_tutors()
+async def recommend_tutors(user_id):
+    interactions = await load_interactions()
+    tutors = await load_tutors()
 
     collab = collaborative_candidates(interactions, user_id, entity_type="TUTOR")
     content = content_candidates(
