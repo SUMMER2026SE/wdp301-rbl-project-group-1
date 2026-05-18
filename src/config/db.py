@@ -1,30 +1,35 @@
-# pyrefly: ignore [missing-import]
-from sqlalchemy import create_engine, text
-from dotenv import load_dotenv
 import os
-import pandas as pd
+from motor.motor_asyncio import AsyncIOMotorClient
+from beanie import init_beanie
+from dotenv import load_dotenv
+
+# Import models
+from src.models.user import User
+from src.models.item import Item
+from src.models.interaction import Interaction
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("PRISMA_URL")
+MONGO_URI = os.getenv("MONGO_URI")
 
-if DATABASE_URL and DATABASE_URL.startswith("postgres://"):
-    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+async def init_db():
+    if not MONGO_URI:
+        raise ValueError("MONGO_URI environment variable is missing.")
 
-engine = create_engine(DATABASE_URL)
+    # Create Motor client
+    client = AsyncIOMotorClient(MONGO_URI)
+    
+    # Get database (from URI or specify name)
+    # Beanie uses the default database specified in the URI if present
+    db = client.get_default_database()
 
-def query(sql: str, params=None):
-    with engine.connect() as conn:
-        print("[DB] Connected successfully")
-        return pd.read_sql(text(sql), conn, params=params or {})
-
-
-def execute(sql: str, params=None):
-    with engine.begin() as conn:
-        print("[DB] Connected successfully")
-        conn.execute(text(sql), params or {})
-
-
-if __name__ == "__main__":
-    with engine.connect():
-        print("[DB] Connected successfully")
+    # Initialize Beanie with all models
+    await init_beanie(
+        database=db,
+        document_models=[
+            User,
+            Item,
+            Interaction
+        ]
+    )
+    print(f"[*] [MongoDB] Connected successfully to '{db.name}' via Beanie.")
