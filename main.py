@@ -1,8 +1,21 @@
 from fastapi import FastAPI
+from contextlib import asynccontextmanager
+import asyncio
 
 from src.api.recommend import router as recommend_router
+from src.config.rabbitmq import start_rabbitmq_consumer
 
-app = FastAPI(title="Recommendation System")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Run the RabbitMQ consumer
+    connection = await start_rabbitmq_consumer()
+    yield
+    # Shutdown: Close the connection
+    if connection:
+        await connection.close()
+        print("[*] [RabbitMQ] Connection closed.")
+
+app = FastAPI(title="Recommendation System", lifespan=lifespan)
 app.include_router(recommend_router)
 
 

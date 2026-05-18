@@ -41,9 +41,11 @@ enum OtpType {
 
 enum CourseStatus {
   DRAFT
+  PENDING_APPROVAL
   PUBLISHED
   ONGOING
   CLOSED
+  REJECTED
 
   @@map("course_status")
 }
@@ -57,13 +59,13 @@ enum EnrollmentStatus {
   @@map("enrollment_status")
 }
 
-enum ScheduleStatus {
+enum LessonStatus {
   SCHEDULED
   ONGOING
   COMPLETED
   CANCELLED
 
-  @@map("schedule_status")
+  @@map("lesson_status")
 }
 
 enum AttendanceStatus {
@@ -82,6 +84,12 @@ enum PaymentStatus {
   @@map("payment_status")
 }
 
+enum PaymentReferenceType {
+  COURSE_ENROLLMENT
+
+  @@map("payment_reference_type")
+}
+
 enum NotificationType {
   SYSTEM
   COURSE
@@ -98,16 +106,82 @@ enum ReportStatus {
   @@map("report_status")
 }
 
+enum TutorApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("tutor_application_status")
+}
+
+enum CourseApplicationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("course_application_status")
+}
+
 enum CourseLevel {
   BEGINNER
   INTERMEDIATE
   ADVANCED
+
+  @@map("course_level")
 }
 
 enum TagCategory {
   KNOWLEDGE
   SKILL
   TOOL
+}
+
+enum ResourceType {
+  FILE
+  VIDEO
+  LINK
+  DOCUMENT
+
+  @@map("resource_type")
+}
+
+enum AssessmentType {
+  QUIZ
+  EXAM
+
+  @@map("assessment_type")
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  SINGLE_CHOICE
+  TRUE_FALSE
+  TEXT_ANSWER
+
+  @@map("question_type")
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+
+  @@map("question_difficulty")
+}
+
+enum GradingPolicy {
+  HIGHEST
+  AVERAGE
+  LATEST
+
+  @@map("grading_policy")
+}
+
+enum AuthProvider {
+  LOCAL
+  GOOGLE
+
+  @@map("auth_provider")
 }
 
 //////////////////////////////////////////////////
@@ -127,24 +201,46 @@ model User {
 
   createdAt DateTime @default(now()) @map("created_at")
 
-  profile   Profile?
+  profile    Profile?
+  identities UserIdentity[]
 
   refreshTokens RefreshToken[]
 
-  tutor   Tutor?
-  student Student?
-  parent  Parent?
+  tutor            Tutor?
+  student          Student?
+  parent           Parent?
+  tutorApplication TutorApplication?
 
   posts                    Post[]
   comments                 Comment[]
-  messages                 Message[]
   notifications            NotificationTarget[]
   reports                  Report[]                  @relation("Reporter")
   postLikes                PostLike[]
-  conversationParticipants ConversationParticipant[]
-  activityLogs             ActivityLog[]
+  resources                Resource[]
+  payments                 Payment[]
 
   @@map("user")
+}
+
+model UserIdentity {
+  id String @id @default(cuid())
+
+  userId         String       @map("user_id")
+  provider       AuthProvider
+  providerUserId String       @map("provider_user_id")
+  email          String?
+  emailVerified  Boolean      @default(false) @map("email_verified")
+  avatarUrl      String?      @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@unique([userId, provider])
+  @@index([provider, email])
+  @@map("user_identity")
 }
 
 model Profile {
@@ -163,9 +259,10 @@ model Profile {
   @@map("profile")
 }
 
+
 model Tutor {
-  id   String  @id @map("id")
-  user User @relation(fields: [id], references: [id])
+  id   String @id @map("id")
+  user User   @relation(fields: [id], references: [id])
 
   bio            String?
   specialization String?
@@ -176,33 +273,127 @@ model Tutor {
   reviewCount    Int     @default(0) @map("review_count")
   studentCount   Int     @default(0) @map("student_count")
 
-  courses Course[]
-  stats   TutorStats?
+  courses            Course[]
+  courseApplications CourseApplication[]
 
   @@map("tutor")
 }
 
-model Student {
-  id   String  @id
-  user User @relation(fields: [id], references: [id])
+model TutorApplication {
+  id String @id @default(cuid())
 
-  grade        String?
+  email  String  @unique
+  userId String? @unique @map("user_id")
+
+  bio            String?
+  specialization String
+  experience     Int?
+  education      String?
+  pricePerHour   Float?   @map("price_per_hour")
+  avatarUrl      String?  @map("avatar_url")
+  files          String[] @default([])
+
+  status TutorApplicationStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  subjects TutorApplicationSubject[]
+  grades   TutorApplicationGrade[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("tutor_application")
+}
+
+model TutorApplicationSubject {
+  tutorApplicationId String @map("tutor_application_id")
+  subjectId          String @map("subject_id")
+
+  tutorApplication TutorApplication @relation(fields: [tutorApplicationId], references: [id], onDelete: Cascade)
+  subject          Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([tutorApplicationId, subjectId])
+  @@map("tutor_application_subject")
+}
+
+model TutorApplicationGrade {
+  tutorApplicationId String @map("tutor_application_id")
+  gradeId            String @map("grade_id")
+
+  tutorApplication TutorApplication @relation(fields: [tutorApplicationId], references: [id], onDelete: Cascade)
+  grade            Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  @@id([tutorApplicationId, gradeId])
+  @@map("tutor_application_grade")
+}
+
+model CourseApplication {
+  id       String @id @default(cuid())
+  courseId String @unique @map("course_id")
+  tutorId  String @map("tutor_id")
+
+  status    CourseApplicationStatus @default(PENDING)
+  adminNote String?                 @map("admin_note")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tutor  Tutor  @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("course_application")
+}
+
+model Student {
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
+
   school       String?
   learningGoal String? @map("learning_goal")
 
-  enrollments Enrollment[]
-  reviews     CourseReview[]
-  schedules   ScheduleStudent[]
-  payments    Payment[]
+  enrollments       Enrollment[]
+  reviews           CourseReview[]
+  lessonAttendances LessonAttendance[]
+  attempts          Attempt[]
+  gradebookRecords  GradebookRecord[]
 
-  parents ParentStudent[]
+  parents  ParentStudent[]
+  subjects StudentSubject[]
+  grades   StudentGrade[]
 
   @@map("student")
 }
 
+model StudentSubject {
+  studentId String @map("student_id")
+  subjectId String @map("subject_id")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, subjectId])
+  @@map("student_subject")
+}
+
+model StudentGrade {
+  studentId String @map("student_id")
+  gradeId   String @map("grade_id")
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  grade   Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  @@id([studentId, gradeId])
+  @@map("student_grade")
+}
+
 model Parent {
-  id   String  @id
-  user User @relation(fields: [id], references: [id])
+  id   String @id
+  user User   @relation(fields: [id], references: [id])
 
   phone   String?
   address String?
@@ -241,7 +432,7 @@ model RefreshToken {
 }
 
 model Otp {
-  id     String @id @default(cuid())
+  id String @id @default(cuid())
 
   email  String
   userId String? @map("user_id") // optional nếu user đã tồn tại
@@ -253,13 +444,13 @@ model Otp {
   isUsed    Boolean  @default(false) @map("is_used")
 
   attempts    Int @default(0)
-  maxAttempts Int @default(5)  @map("max_attempts")
+  maxAttempts Int @default(5) @map("max_attempts")
 
   lastSentAt DateTime? @map("last_sent_at")
   ipAddress  String?   @map("ip_address")
 
   createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt      @map("updated_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([email, type])
   @@index([userId])
@@ -273,12 +464,14 @@ model Otp {
 
 // ================= SUBJECT =================
 model Subject {
-  id   String @id @default(cuid())
+  id String @id @default(cuid())
 
   name String // "Toán"
   slug String @unique // "toan"
 
-  courses Course[]
+  courses           Course[]
+  tutorApplications TutorApplicationSubject[]
+  studentSubjects   StudentSubject[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -287,13 +480,15 @@ model Subject {
 
 // ================= GRADE =================
 model Grade {
-  id   String @id @default(cuid())
+  id String @id @default(cuid())
 
   name  String // "Lớp 11"
   slug  String @unique // "lop-11"
   order Int // để sort (10, 11, 12)
 
-  courses Course[]
+  courses           Course[]
+  tutorApplications TutorApplicationGrade[]
+  studentGrades     StudentGrade[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -302,7 +497,7 @@ model Grade {
 
 // ================= TAG =================
 model Tag {
-  id   String @id @default(cuid())
+  id String @id @default(cuid())
 
   name String // "Đạo hàm", "React"
   slug String @unique
@@ -331,7 +526,7 @@ model Course {
   level CourseLevel
 
   status    CourseStatus
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime     @default(now()) @map("created_at")
 
   // RELATIONS
   tutor   Tutor   @relation(fields: [tutorId], references: [id])
@@ -340,18 +535,19 @@ model Course {
 
   tags CourseTag[]
 
-  lessons     Lesson[]
-  enrollments Enrollment[]
-  reviews     CourseReview[]
-  schedules   Schedule[]
-  payments    Payment[]
-  stats       CourseStats?
+  lessons          Lesson[]
+  enrollments      Enrollment[]
+  reviews          CourseReview[]
+  resources        CourseResource[]
+  assessments      Assessment[]
+  questionBanks    QuestionBank[]
+  gradebookRecords GradebookRecord[]
+  application      CourseApplication?
 
   // INDEX (quan trọng)
   @@index([subjectId])
   @@index([gradeId])
   @@index([level])
-
   @@map("course")
 }
 
@@ -372,12 +568,41 @@ model Lesson {
 
   title      String
   content    String?
-  videoUrl   String? @map("video_url")
-  orderIndex Int     @map("order_index")
+  meetingUrl String?      @map("meeting_url")
+  videoUrl   String?      @map("video_url")
+  startTime  DateTime     @map("start_time")
+  endTime    DateTime     @map("end_time")
+  orderIndex Int          @map("order_index")
+  status     LessonStatus @default(SCHEDULED)
+  createdAt  DateTime     @default(now()) @map("created_at")
 
-  course Course @relation(fields: [courseId], references: [id])
+  course      Course             @relation(fields: [courseId], references: [id])
+  attendances LessonAttendance[]
+  resources   LessonResource[]
+  assessments Assessment[]
 
   @@map("lesson")
+}
+
+model LessonAttendance {
+  id String @id @default(cuid())
+
+  studentId String @map("student_id")
+
+  status AttendanceStatus @map("attendance_status")
+  note   String?
+
+  markedAt  DateTime @default(now()) @map("marked_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  lessonId String? @map("lesson_id")
+  lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  student  Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([lessonId, studentId])
+  @@index([studentId])
+  @@index([status])
+  @@map("lesson_attendance")
 }
 
 model Enrollment {
@@ -411,38 +636,212 @@ model CourseReview {
 }
 
 //////////////////////////////////////////////////
-// SCHEDULE
+// RESOURCE SYSTEM
 //////////////////////////////////////////////////
 
-model Schedule {
-  id       String @id @default(cuid())
-  courseId String @map("course_id")
+model Resource {
+  id     String       @id @default(cuid())
+  userId String       @map("user_id")
+  name   String
+  url    String
+  type   ResourceType
+  size   Int? // Size in bytes
 
-  title      String
-  startTime  DateTime @map("start_time")
-  endTime    DateTime @map("end_time")
-  meetingUrl String?  @map("meeting_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  status    ScheduleStatus
-  createdAt DateTime       @default(now()) @map("created_at")
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  course   Course            @relation(fields: [courseId], references: [id])
-  students ScheduleStudent[]
+  courseResources CourseResource[]
+  lessonResources LessonResource[]
 
-  @@map("schedule")
+  @@index([userId])
+  @@map("resource")
 }
 
-model ScheduleStudent {
-  scheduleId String @map("schedule_id")
-  studentId  String @map("student_id")
+model CourseResource {
+  courseId   String @map("course_id")
+  resourceId String @map("resource_id")
 
-  attendanceStatus AttendanceStatus @map("attendance_status")
+  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
 
-  schedule Schedule @relation(fields: [scheduleId], references: [id])
-  student  Student  @relation(fields: [studentId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@id([scheduleId, studentId])
-  @@map("schedule_student")
+  @@id([courseId, resourceId])
+  @@map("course_resource")
+}
+
+model LessonResource {
+  lessonId   String @map("lesson_id")
+  resourceId String @map("resource_id")
+
+  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([lessonId, resourceId])
+  @@map("lesson_resource")
+}
+
+//////////////////////////////////////////////////
+// ASSESSMENT SYSTEM
+//////////////////////////////////////////////////
+
+model Assessment {
+  id       String  @id @default(cuid())
+  courseId String  @map("course_id")
+  lessonId String? @map("lesson_id")
+
+  title       String
+  description String?
+  type        AssessmentType
+
+  maxAttempts    Int?          @map("max_attempts")
+  timeLimit      Int?          @map("time_limit") // minutes
+  isRandomized   Boolean       @default(false) @map("is_randomized")
+  shuffleOptions Boolean       @default(false) @map("shuffle_options")
+  antiCheat      Boolean       @default(false) @map("anti_cheat")
+  passScore      Float?        @map("pass_score")
+  gradingPolicy  GradingPolicy @default(HIGHEST) @map("grading_policy")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  course Course  @relation(fields: [courseId], references: [id])
+  lesson Lesson? @relation(fields: [lessonId], references: [id])
+
+  questions        Question[]
+  attempts         Attempt[]
+  bankConfigs      AssessmentBankConfig[]
+  gradebookRecords GradebookRecord[]
+
+  @@map("assessment")
+}
+
+model Question {
+  id           String  @id @default(cuid())
+  assessmentId String? @map("assessment_id")
+  bankId       String? @map("bank_id")
+
+  type       QuestionType
+  difficulty QuestionDifficulty @default(MEDIUM)
+  content    String
+  points     Float              @default(1)
+  orderIndex Int                @map("order_index")
+
+  assessment Assessment?   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  bank       QuestionBank? @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  options        Option[]
+  attemptAnswers AttemptAnswer[]
+
+  @@map("question")
+}
+
+model Option {
+  id         String @id @default(cuid())
+  questionId String @map("question_id")
+
+  content    String
+  isCorrect  Boolean @default(false) @map("is_correct")
+  orderIndex Int     @map("order_index")
+
+  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@map("option")
+}
+
+model Attempt {
+  id           String @id @default(cuid())
+  assessmentId String @map("assessment_id")
+  studentId    String @map("student_id")
+
+  startTime DateTime  @default(now()) @map("start_time")
+  endTime   DateTime? @map("end_time")
+
+  score    Float?
+  isPassed Boolean? @map("is_passed")
+
+  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  answers         AttemptAnswer[]
+  gradebookRecord GradebookRecord? @relation("BestAttempt")
+
+  @@map("attempt")
+}
+
+model AttemptAnswer {
+  id         String @id @default(cuid())
+  attemptId  String @map("attempt_id")
+  questionId String @map("question_id")
+
+  optionIds  String[] @map("option_ids") // For Multiple/Single choice
+  textAnswer String?  @map("text_answer") // For Text Answer
+
+  isCorrect Boolean? @map("is_correct")
+  points    Float?
+
+  attempt  Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  question Question @relation(fields: [questionId], references: [id])
+
+  @@map("attempt_answer")
+}
+
+model QuestionBank {
+  id          String  @id @default(cuid())
+  courseId    String  @map("course_id")
+  title       String
+  description String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  course            Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  questions         Question[]
+  assessmentConfigs AssessmentBankConfig[]
+
+  @@map("question_bank")
+}
+
+model AssessmentBankConfig {
+  id           String @id @default(cuid())
+  assessmentId String @map("assessment_id")
+  bankId       String @map("bank_id")
+
+  difficulty        QuestionDifficulty?
+  count             Int
+  pointsPerQuestion Float               @default(1) @map("points_per_question")
+
+  assessment Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  bank       QuestionBank @relation(fields: [bankId], references: [id], onDelete: Cascade)
+
+  @@map("assessment_bank_config")
+}
+
+model GradebookRecord {
+  id           String @id @default(cuid())
+  studentId    String @map("student_id")
+  courseId     String @map("course_id")
+  assessmentId String @map("assessment_id")
+
+  finalScore Float   @map("final_score")
+  isPassed   Boolean @map("is_passed")
+
+  bestAttemptId String? @unique @map("best_attempt_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  assessment  Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  bestAttempt Attempt?   @relation("BestAttempt", fields: [bestAttemptId], references: [id])
+
+  @@unique([studentId, assessmentId])
+  @@map("gradebook_record")
 }
 
 //////////////////////////////////////////////////
@@ -546,121 +945,25 @@ model NotificationTarget {
 
 model Payment {
   id        String @id @default(cuid())
-  studentId String @map("student_id")
-  courseId  String @map("course_id")
+  
+  payerUserId String @map("payer_user_id")
+  payer       User   @relation(fields: [payerUserId], references: [id])
+
+  referenceType PaymentReferenceType @map("reference_type")
+  referenceId   String               @map("reference_id")
 
   amount        Float
   status        PaymentStatus
   paymentMethod String?       @map("payment_method")
 
-  createdAt DateTime @default(now()) @map("created_at")
+  orderCode     Int     @unique @default(autoincrement()) @map("order_code")
+  checkoutUrl   String? @map("checkout_url")
+  transactionId String? @map("transaction_id")
 
-  student Student @relation(fields: [studentId], references: [id])
-  course  Course  @relation(fields: [courseId], references: [id])
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("payment")
-}
-
-//////////////////////////////////////////////////
-// CHAT
-//////////////////////////////////////////////////
-
-model Conversation {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now()) @map("created_at")
-
-  participants ConversationParticipant[]
-  messages     Message[]
-
-  @@map("conversation")
-}
-
-model ConversationParticipant {
-  conversationId String @map("conversation_id")
-  userId         String @map("user_id")
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  user         User         @relation(fields: [userId], references: [id])
-
-  @@id([conversationId, userId])
-  @@map("conversation_participant")
-}
-
-model Message {
-  id             String @id @default(cuid())
-  conversationId String @map("conversation_id")
-  senderId       String @map("sender_id")
-
-  content   String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  conversation Conversation @relation(fields: [conversationId], references: [id])
-  sender       User         @relation(fields: [senderId], references: [id])
-
-  @@map("message")
-}
-
-//////////////////////////////////////////////////
-// ANALYTICS
-//////////////////////////////////////////////////
-
-model SystemStats {
-  id   String   @id @default(cuid())
-  date DateTime @unique
-
-  totalUsers         Int   @map("total_users")
-  totalTutors        Int   @map("total_tutors")
-  totalStudents      Int   @map("total_students")
-  totalCourses       Int   @map("total_courses")
-  totalActiveCourses Int   @map("total_active_courses")
-  totalEnrollments   Int   @map("total_enrollments")
-  totalRevenue       Float @map("total_revenue")
-  totalPosts         Int   @map("total_posts")
-  totalComments      Int   @map("total_comments")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@map("system_stats")
-}
-
-model TutorStats {
-  tutorId String @id @map("tutor_id")
-
-  totalStudents Int   @map("total_students")
-  totalCourses  Int   @map("total_courses")
-  totalEarnings Float @map("total_earnings")
-  avgRating     Float @map("avg_rating")
-
-  tutor Tutor @relation(fields: [tutorId], references: [id])
-
-  @@map("tutor_stats")
-}
-
-model CourseStats {
-  courseId String @id @map("course_id")
-
-  totalStudents Int   @map("total_students")
-  totalRevenue  Float @map("total_revenue")
-  avgRating     Float @map("avg_rating")
-
-  course Course @relation(fields: [courseId], references: [id])
-
-  @@map("course_stats")
-}
-
-model ActivityLog {
-  id     String @id @default(cuid())
-  userId String @map("user_id")
-
-  action     String
-  entityType String @map("entity_type")
-  entityId   Int    @map("entity_id")
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("activity_log")
 }
 
 model Report {
