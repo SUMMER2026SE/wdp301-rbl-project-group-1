@@ -1,38 +1,44 @@
 import asyncio
 import os
 import json
+
 # pyrefly: ignore [missing-import]
 import aio_pika
 from dotenv import load_dotenv
+
+from src.handlers import HANDLER_REGISTRY
 
 load_dotenv()
 
 RABBITMQ_URL = os.getenv("RABBITMQ_URL")
 QUEUE_NAME = "edura_events_queue"
 
-async def process_message(message: aio_pika.IncomingMessage):
+
+async def process_message(message: aio_pika.IncomingMessage) -> None:
     async with message.process():
         body = message.body.decode()
         try:
-            # Parse the incoming NestJS microservice message format.
-            # NestJS typically sends data like: {"pattern": "event_name", "data": {...}}
+            # NestJS sends: {"pattern": "event_name", "data": {...}}
             data = json.loads(body)
-            print(f"[*] [RabbitMQ] Received message: {data}")
-            
-            # Example logic to route messages based on pattern
-            pattern = data.get("pattern")
-            payload = data.get("data")
-            
-            if pattern == "enrollment_created":
-                print(f"[*] Processing new enrollment: {payload}")
-                # Save to DB or trigger model training
+            pattern: str = data.get("pattern", "")
+            payload: dict = data.get("data", {})
+
+            print(f"[*] [RabbitMQ] Received: pattern='{pattern}'")
+
+            handler = HANDLER_REGISTRY.get(pattern)
+            if handler:
+                try:
+                    await handler.handle(payload)
+                except Exception as e:
+                    print(f"[!] Handler error for pattern '{pattern}': {e}")
             else:
-                print(f"[*] Unknown pattern: {pattern}")
-                
+                print(f"[!] No handler registered for pattern: '{pattern}'")
+
         except json.JSONDecodeError:
             print(f"[!] [RabbitMQ] Failed to parse JSON: {body}")
         except Exception as e:
-            print(f"[!] [RabbitMQ] Error processing message: {e}")
+            print(f"[!] [RabbitMQ] Unexpected error: {e}")
+
 
 async def start_rabbitmq_consumer():
     if not RABBITMQ_URL:
@@ -41,19 +47,15 @@ async def start_rabbitmq_consumer():
 
     while True:
         try:
-            # connect_robust will automatically reconnect if connection is lost
+            # connect_robust auto-reconnects on connection loss
             connection = await aio_pika.connect_robust(RABBITMQ_URL)
             channel = await connection.channel()
-
-            # Declare queue to match NestJS
             queue = await channel.declare_queue(QUEUE_NAME, durable=True)
 
             print(f"[*] [RabbitMQ] Connected successfully. Waiting for messages on '{QUEUE_NAME}'")
 
-            # Start consuming
             await queue.consume(process_message)
-            
             return connection
         except Exception as e:
-            print(f"[!] [RabbitMQ] Connection failed, retrying in 5 seconds... Error: {e}")
+            print(f"[!] [RabbitMQ] Connection failed, retrying in 5s... Error: {e}")
             await asyncio.sleep(5)
