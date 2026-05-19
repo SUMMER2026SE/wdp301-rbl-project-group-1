@@ -85,7 +85,7 @@ export class TutorApplicationController {
   }
 
   @Get()
-  @Roles(UserRole.ADMIN)
+  // @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getTutorApplications',
@@ -123,7 +123,7 @@ export class TutorApplicationController {
   }
 
   @Patch(':id/approve')
-  @Roles(UserRole.ADMIN)
+  // @Roles(UserRole.ADMIN)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'approveTutorApplication',

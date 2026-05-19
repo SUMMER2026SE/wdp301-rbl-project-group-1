@@ -1,4 +1,4 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Inject } from '@nestjs/common';
 import {
   HealthCheck,
   HealthCheckService,
@@ -8,7 +8,8 @@ import {
 import { Transport, RmqOptions } from '@nestjs/microservices';
 import { ConfigService } from '@nestjs/config';
 import { Public } from 'src/modules/auth/presentation/decorators/public.decorator';
-import { RabbitmqService } from 'src/shared/infrastructure/messaging/rabbitmq/rabbitmq.service';
+import { IMessageBroker } from 'src/shared/application/interfaces/message-broker.interface';
+import { EVENTS } from 'src/shared/application/constants/events.constants';
 import { PrismaHealthIndicator } from './prisma.health';
 import { RedisHealthIndicator } from './redis.health';
 
@@ -21,13 +22,14 @@ export class HealthController {
     private redisDb: RedisHealthIndicator,
     private microservice: MicroserviceHealthIndicator,
     private configService: ConfigService,
-    private rabbitmqService: RabbitmqService,
+    @Inject(IMessageBroker)
+    private rabbitmqService: IMessageBroker,
   ) {}
 
   @Public()
   @Get('test-rabbitmq')
   async testRabbitMQ() {
-    await this.rabbitmqService.publishEvent('enrollment_created', {
+    await this.rabbitmqService.publishEvent(EVENTS.ENROLLMENT_CREATED, {
       studentId: 'user_123',
       courseId: 'course_456',
       message: 'Hello from NestJS!',

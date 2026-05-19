@@ -1,10 +1,14 @@
+import { IMapper } from '../../../../shared/application/interfaces/mapper.interface';
 import { Enrollment } from '../../domain/entities/enrollment.entity';
 import {
   EnrollmentWriteData,
   PrismaEnrollmentRecord,
 } from '../repositories/enrollment.repository.type';
 
-export class EnrollmentMapper {
+export class EnrollmentMapper implements IMapper<
+  Enrollment,
+  PrismaEnrollmentRecord | EnrollmentWriteData
+> {
   toDomain(record: PrismaEnrollmentRecord): Enrollment {
     return Enrollment.create(record.id, {
       studentId: record.studentId,

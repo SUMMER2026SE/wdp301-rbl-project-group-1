@@ -1,3 +1,4 @@
+import { IMapper } from '../../../../shared/application/interfaces/mapper.interface';
 import { Resource } from '../../domain/entities/resource.entity';
 import { ResourceType } from '../../domain/value-objects/resource-type';
 import {
@@ -5,7 +6,10 @@ import {
   ResourceWriteData,
 } from '../repositories/resource.repository.type';
 
-export class ResourceMapper {
+export class ResourceMapper implements IMapper<
+  Resource,
+  PrismaResourceRecord | ResourceWriteData
+> {
   toDomain(record: PrismaResourceRecord): Resource {
     return Resource.create(record.id, {
       userId: record.userId,

@@ -8,10 +8,11 @@ import {
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
 import { RABBITMQ_SERVICE } from './rabbitmq.constants';
+import { IMessageBroker } from '../../../application/interfaces/message-broker.interface';
 
 @Injectable()
 export class RabbitmqService
-  implements OnApplicationBootstrap, OnApplicationShutdown
+  implements OnApplicationBootstrap, OnApplicationShutdown, IMessageBroker
 {
   private readonly logger = new Logger(RabbitmqService.name);
 

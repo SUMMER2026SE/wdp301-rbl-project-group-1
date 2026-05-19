@@ -8,7 +8,7 @@ export abstract class AggregateRoot<TId> extends BaseEntity<TId> {
     return this._domainEvents;
   }
 
-  protected addDomainEvent(event: DomainEvent): void {
+  addDomainEvent(event: DomainEvent): void {
     this._domainEvents.push(event);
   }
 

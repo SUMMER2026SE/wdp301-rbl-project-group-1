@@ -276,6 +276,9 @@ model Tutor {
   courses            Course[]
   courseApplications CourseApplication[]
 
+  subjects TutorSubject[]
+  grades   TutorGrade[]
+
   @@map("tutor")
 }
 
@@ -306,6 +309,28 @@ model TutorApplication {
   @@index([status])
   @@index([createdAt])
   @@map("tutor_application")
+}
+
+model TutorSubject {
+  tutorId   String @map("tutor_id")
+  subjectId String @map("subject_id")
+
+  tutor   Tutor   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@id([tutorId, subjectId])
+  @@map("tutor_subject")
+}
+
+model TutorGrade {
+  tutorId String @map("tutor_id")
+  gradeId String @map("grade_id")
+
+  tutor Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  grade Grade @relation(fields: [gradeId], references: [id], onDelete: Cascade)
+
+  @@id([tutorId, gradeId])
+  @@map("tutor_grade")
 }
 
 model TutorApplicationSubject {
@@ -472,6 +497,7 @@ model Subject {
   courses           Course[]
   tutorApplications TutorApplicationSubject[]
   studentSubjects   StudentSubject[]
+  tutorSubjects     TutorSubject[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -489,6 +515,7 @@ model Grade {
   courses           Course[]
   tutorApplications TutorApplicationGrade[]
   studentGrades     StudentGrade[]
+  tutorGrades       TutorGrade[]
 
   createdAt DateTime @default(now()) @map("created_at")
 

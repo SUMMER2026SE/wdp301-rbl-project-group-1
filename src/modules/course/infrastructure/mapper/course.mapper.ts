@@ -1,3 +1,4 @@
+import { IMapper } from '../../../../shared/application/interfaces/mapper.interface';
 import { Course } from '../../domain/entities/course.entity';
 import { CourseLevel } from '../../domain/value-objects/course-level';
 import {
@@ -5,7 +6,10 @@ import {
   PrismaCourseRecord,
 } from '../repositories/course.repository.type';
 
-export class CourseMapper {
+export class CourseMapper implements IMapper<
+  Course,
+  PrismaCourseRecord | CourseWriteData
+> {
   toDomain(record: PrismaCourseRecord): Course {
     return Course.create(record.id, {
       tutorId: record.tutorId,

@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientProxyFactory, Transport } from '@nestjs/microservices';
 import { RABBITMQ_SERVICE } from './rabbitmq.constants';
 import { RabbitmqService } from './rabbitmq.service';
+import { IMessageBroker } from '../../../application/interfaces/message-broker.interface';
 
 @Global()
 @Module({
@@ -20,7 +21,7 @@ import { RabbitmqService } from './rabbitmq.service';
           transport: Transport.RMQ,
           options: {
             urls: [url],
-            queue: 'edura_events_queue', // default queue, or you can make it configurable
+            queue: 'edura_events_queue',
             queueOptions: {
               durable: true,
             },
@@ -29,8 +30,11 @@ import { RabbitmqService } from './rabbitmq.service';
       },
       inject: [ConfigService],
     },
-    RabbitmqService,
+    {
+      provide: IMessageBroker,
+      useClass: RabbitmqService,
+    },
   ],
-  exports: [RabbitmqService, RABBITMQ_SERVICE],
+  exports: [IMessageBroker, RABBITMQ_SERVICE],
 })
 export class RabbitmqModule {}

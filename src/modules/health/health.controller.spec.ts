@@ -1,12 +1,12 @@
+import { ConfigService } from '@nestjs/config';
 import {
   HealthCheckResult,
   HealthCheckService,
-  MongooseHealthIndicator,
   MicroserviceHealthIndicator,
+  MongooseHealthIndicator,
 } from '@nestjs/terminus';
-import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { RabbitmqService } from 'src/shared/infrastructure/messaging/rabbitmq/rabbitmq.service';
+import { IMessageBroker } from 'src/shared/application/interfaces/message-broker.interface';
 import { HealthController } from './health.controller';
 import { PrismaHealthIndicator } from './prisma.health';
 import { RedisHealthIndicator } from './redis.health';
@@ -118,7 +118,7 @@ describe('HealthController', () => {
           useValue: configService,
         },
         {
-          provide: RabbitmqService,
+          provide: IMessageBroker,
           useValue: { publishEvent: jest.fn() },
         },
       ],

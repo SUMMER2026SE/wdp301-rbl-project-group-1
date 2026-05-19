@@ -6,13 +6,17 @@ import { IEnrollmentRepository } from './domain/repositories/enrollment.reposito
 import { PrismaEnrollmentRepository } from './infrastructure/repositories/enrollment.repository.impl';
 import { EnrollmentController } from './presentation/controllers/enrollment.controller';
 
+import { SyncEnrollmentToRabbitMqHandler } from './application/events/sync-enrollment-to-rabbitmq.handler';
+
 const CommandHandlers = [EnrollCourseCommandHandler];
+const EventHandlers = [SyncEnrollmentToRabbitMqHandler];
 
 @Module({
   imports: [CqrsModule, CourseModule],
   controllers: [EnrollmentController],
   providers: [
     ...CommandHandlers,
+    ...EventHandlers,
     {
       provide: IEnrollmentRepository,
       useClass: PrismaEnrollmentRepository,

@@ -10,12 +10,15 @@ import { TutorApplicationRepository } from './domain/repositories/tutor-applicat
 import { PrismaTutorApplicationRepository } from './infrastructure/repositories/tutor-application.repository.impl';
 import { TutorApplicationController } from './presentation/controllers/tutor-application.controller';
 
+import { SyncTutorToRabbitMqHandler } from './application/events/sync-tutor-to-rabbitmq.handler';
+
 const CommandHandlers = [
   CreateTutorApplicationHandler,
   ApproveTutorApplicationHandler,
   RejectTutorApplicationHandler,
 ];
 const QueryHandlers = [GetTutorApplicationHandler];
+const EventHandlers = [SyncTutorToRabbitMqHandler];
 
 @Module({
   imports: [CqrsModule, UserModule, AuthModule],
@@ -23,6 +26,7 @@ const QueryHandlers = [GetTutorApplicationHandler];
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
+    ...EventHandlers,
     {
       provide: TutorApplicationRepository,
       useClass: PrismaTutorApplicationRepository,

@@ -16,6 +16,13 @@ import { TutorApplicationRepository } from '../../../domain/repositories/tutor-a
 import { ApproveTutorApplicationCommand } from './approve-tutor-application.command';
 import { ApproveTutorApplicationResult } from './approve-tutor-application.result';
 
+import { EventBus } from '@nestjs/cqrs';
+import { DomainEvent } from '../../../../../shared/domain/events/domain-event';
+import { UserCreatedDomainEvent } from '../../../../user/domain/events/user-created.domain-event';
+import { TutorCreatedDomainEvent } from '../../../domain/events/tutor-created.domain-event';
+import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
+import { PrismaTransactionContext } from '../../../../../shared/infrastructure/database/prisma/prisma-transaction.context';
+
 @CommandHandler(ApproveTutorApplicationCommand)
 export class ApproveTutorApplicationHandler implements ICommandHandler<
   ApproveTutorApplicationCommand,
@@ -31,6 +38,8 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
     @Inject(IUnitOfWork)
     private readonly unitOfWork: IUnitOfWork,
     private readonly commandBus: CommandBus,
+    private readonly eventBus: EventBus,
+    private readonly prisma: PrismaService,
   ) {}
 
   async execute(
@@ -65,7 +74,8 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
     const temporaryPassword = randomBytes(8).toString('hex');
     const hashedPassword = await this.hashService.hash(temporaryPassword);
 
-    // --- Atomic writes ---
+    const dispatchedEvents: DomainEvent[] = [];
+
     const { savedUserId } = await this.unitOfWork.execute(async () => {
       // Build User + Tutor profile from the full application data
       const newUser = User.create('', {
@@ -94,7 +104,40 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
 
       const savedUser = await this.userRepository.save(newUser);
 
-      // Approve & link the application to the new user account
+      const tx = PrismaTransactionContext.getClient() ?? this.prisma;
+      if (application.subjectIds && application.subjectIds.length > 0) {
+        await tx.tutorSubject.createMany({
+          data: application.subjectIds.map((subjectId) => ({
+            tutorId: savedUser.id,
+            subjectId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      if (application.gradeIds && application.gradeIds.length > 0) {
+        await tx.tutorGrade.createMany({
+          data: application.gradeIds.map((gradeId) => ({
+            tutorId: savedUser.id,
+            gradeId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+
+      savedUser.addDomainEvent(
+        new UserCreatedDomainEvent(
+          savedUser.id,
+          savedUser.email,
+          'Tutor',
+          savedUser.role,
+        ),
+      );
+      savedUser.addDomainEvent(new TutorCreatedDomainEvent(savedUser.id));
+
+      dispatchedEvents.push(...savedUser.domainEvents);
+      savedUser.clearDomainEvents();
+
       application.approve();
       application.linkUser(savedUser.id);
       await this.tutorApplicationRepository.update(application);
@@ -102,8 +145,8 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
       return { savedUserId: savedUser.id };
     });
 
-    // --- Side effect: send welcome email (outside transaction) ---
-    // If this fails, the user account is still created — email can be retried separately.
+    dispatchedEvents.forEach((event) => void this.eventBus.publish(event));
+
     await this.commandBus.execute(
       new SendEmailCommand(
         application.email,

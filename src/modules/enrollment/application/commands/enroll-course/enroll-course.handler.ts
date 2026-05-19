@@ -12,6 +12,9 @@ import { IEnrollmentRepository } from '../../../domain/repositories/enrollment.r
 import { EnrollCourseCommand } from './enroll-course.command';
 import { EnrollCourseResult } from './enroll-course.result';
 
+import { EventBus } from '@nestjs/cqrs';
+import { EnrollmentCreatedDomainEvent } from '../../../domain/events/enrollment-created.domain-event';
+
 @CommandHandler(EnrollCourseCommand)
 export class EnrollCourseCommandHandler
   implements
@@ -23,6 +26,7 @@ export class EnrollCourseCommandHandler
     private readonly enrollmentRepository: IEnrollmentRepository,
     @Inject(ICourseRepository)
     private readonly courseRepository: ICourseRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: EnrollCourseCommand): Promise<EnrollCourseResult> {
@@ -49,6 +53,14 @@ export class EnrollCourseCommandHandler
     });
 
     const saved = await this.enrollmentRepository.create(enrollment);
+
+    this.eventBus.publish(
+      new EnrollmentCreatedDomainEvent(
+        saved.id,
+        saved.studentId,
+        saved.courseId,
+      ),
+    );
 
     return new EnrollCourseResult(saved.id, saved.status, saved.enrolledAt);
   }

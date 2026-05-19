@@ -32,6 +32,8 @@ import { ResetTokenStrategy } from './presentation/strategies/reset-token.strate
 
 import { UserModule } from '../user/user.module';
 
+import { SyncUserToRabbitMqHandler } from './application/events/sync-user-to-rabbitmq.handler';
+
 const CommandHandlers = [
   RegisterCommandHandler,
   LoginCommandHandler,
@@ -44,6 +46,8 @@ const CommandHandlers = [
 ];
 
 const QueryHandlers = [GetMeQueryHandler];
+
+const EventHandlers = [SyncUserToRabbitMqHandler];
 
 @Module({
   imports: [
@@ -70,6 +74,7 @@ const QueryHandlers = [GetMeQueryHandler];
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
+    ...EventHandlers,
     JwtStrategy,
     ResetTokenStrategy,
     {

@@ -11,8 +11,11 @@ import { User } from '../../../../user/domain/entities/user.entity';
 import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { IHashService } from '../../services/hash.service';
+import { EventBus } from '@nestjs/cqrs';
+import { UserCreatedDomainEvent } from '../../../../user/domain/events/user-created.domain-event';
 import { RegisterCommand } from './register.command';
 import { RegisterResult } from './register.result';
+import { DomainEvent } from '../../../../../shared/domain/events/domain-event';
 
 @CommandHandler(RegisterCommand)
 export class RegisterCommandHandler
@@ -26,6 +29,7 @@ export class RegisterCommandHandler
     private readonly profileRepository: IProfileRepository,
     @Inject(IHashService) private readonly hashService: IHashService,
     @Inject(IUnitOfWork) private readonly unitOfWork: IUnitOfWork,
+    private readonly eventBus: EventBus,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -38,9 +42,9 @@ export class RegisterCommandHandler
     const hashedPassword = await this.hashService.hash(command.password);
 
     let savedUserId: string;
+    const dispatchedEvents: DomainEvent[] = [];
 
     await this.unitOfWork.execute(async () => {
-      // 1. Create User
       const userToSave = User.create('', {
         email: command.email,
         password: hashedPassword,
@@ -55,7 +59,17 @@ export class RegisterCommandHandler
       const savedUser = await this.userRepository.save(userToSave);
       savedUserId = savedUser.id;
 
-      // 2. Create Profile
+      savedUser.addDomainEvent(
+        new UserCreatedDomainEvent(
+          savedUser.id,
+          savedUser.email,
+          command.nickname,
+          savedUser.role,
+        ),
+      );
+      dispatchedEvents.push(...savedUser.domainEvents);
+      savedUser.clearDomainEvents();
+
       const profileToSave = Profile.create('', {
         userId: savedUser.id,
         nickname: command.nickname,
@@ -65,13 +79,11 @@ export class RegisterCommandHandler
 
       await this.profileRepository.save(profileToSave);
 
-      // 3. If STUDENT role, create StudentSubject and StudentGrade records
       if (command.role === UserRole.STUDENT && command.studentData) {
         const tx = PrismaTransactionContext.getClient() ?? this.prisma;
         const { school, learningGoal, subjectIds, gradeIds } =
           command.studentData;
 
-        // Update Student record with school/learningGoal
         await tx.student.update({
           where: { id: savedUser.id },
           data: {
@@ -80,7 +92,6 @@ export class RegisterCommandHandler
           },
         });
 
-        // Create StudentSubject records
         if (subjectIds.length > 0) {
           await tx.studentSubject.createMany({
             data: subjectIds.map((subjectId) => ({
@@ -91,7 +102,6 @@ export class RegisterCommandHandler
           });
         }
 
-        // Create StudentGrade records
         if (gradeIds.length > 0) {
           await tx.studentGrade.createMany({
             data: gradeIds.map((gradeId) => ({
@@ -103,6 +113,8 @@ export class RegisterCommandHandler
         }
       }
     });
+
+    dispatchedEvents.forEach((event) => void this.eventBus.publish(event));
 
     return { userId: savedUserId! };
   }

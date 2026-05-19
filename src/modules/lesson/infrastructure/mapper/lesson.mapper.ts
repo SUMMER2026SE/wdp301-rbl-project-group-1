@@ -1,10 +1,14 @@
+import { IMapper } from '../../../../shared/application/interfaces/mapper.interface';
 import { Lesson } from '../../domain/entities/lesson.entity';
 import {
   LessonWriteData,
   PrismaLessonRecord,
 } from '../repositories/lesson.repository.type';
 
-export class LessonMapper {
+export class LessonMapper implements IMapper<
+  Lesson,
+  PrismaLessonRecord | LessonWriteData
+> {
   toDomain(record: PrismaLessonRecord): Lesson {
     return Lesson.create(record.id, {
       courseId: record.courseId,

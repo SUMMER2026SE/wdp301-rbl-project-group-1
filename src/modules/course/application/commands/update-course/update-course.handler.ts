@@ -1,9 +1,10 @@
 import { Inject } from '@nestjs/common';
-import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import { CommandHandler, ICommandHandler, EventBus } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { EntityNotFoundException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { ICourseRepository } from '../../../domain/repositories/course.repository.interface';
 import { CourseLevel } from '../../../domain/value-objects/course-level';
+import { CourseUpdatedDomainEvent } from '../../../domain/events/course-updated.domain-event';
 import { UpdateCourseCommand } from './update-course.command';
 import { UpdateCourseResult } from './update-course.result';
 
@@ -16,6 +17,7 @@ export class UpdateCourseCommandHandler
   constructor(
     @Inject(ICourseRepository)
     private readonly courseRepository: ICourseRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: UpdateCourseCommand): Promise<UpdateCourseResult> {
@@ -39,6 +41,9 @@ export class UpdateCourseCommandHandler
     });
 
     const updated = await this.courseRepository.update(course);
+
+    void this.eventBus.publish(new CourseUpdatedDomainEvent(updated.id));
+
     return new UpdateCourseResult(updated.id);
   }
 }

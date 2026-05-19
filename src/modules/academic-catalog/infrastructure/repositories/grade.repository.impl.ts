@@ -8,19 +8,20 @@ import { GradeDelegate } from './grade.repository.type';
 @Injectable()
 export class PrismaGradeRepository implements IGradeRepository {
   private gradeDelegate: GradeDelegate;
+  private readonly mapper = new GradeMapper();
 
   constructor(private readonly prisma: PrismaService) {
     this.gradeDelegate = this.prisma.grade;
   }
 
   async create(grade: Grade): Promise<Grade> {
-    const data = GradeMapper.toPersistence(grade);
+    const data = this.mapper.toPersistence(grade);
 
     const savedGrade = await this.gradeDelegate.create({
       data,
     });
 
-    return GradeMapper.toDomain(savedGrade);
+    return this.mapper.toDomain(savedGrade);
   }
 
   async findAll(): Promise<Grade[]> {
@@ -30,6 +31,6 @@ export class PrismaGradeRepository implements IGradeRepository {
       },
     });
 
-    return grades.map((grade) => GradeMapper.toDomain(grade));
+    return grades.map((grade) => this.mapper.toDomain(grade));
   }
 }

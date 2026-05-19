@@ -8,19 +8,20 @@ import { SubjectDelegate } from './subject.repository.type';
 @Injectable()
 export class PrismaSubjectRepository implements ISubjectRepository {
   private subjectDelegate: SubjectDelegate;
+  private readonly mapper = new SubjectMapper();
 
   constructor(private readonly prisma: PrismaService) {
     this.subjectDelegate = this.prisma.subject;
   }
 
   async create(subject: Subject): Promise<Subject> {
-    const data = SubjectMapper.toPersistence(subject);
+    const data = this.mapper.toPersistence(subject);
 
     const savedSubject = await this.subjectDelegate.create({
       data,
     });
 
-    return SubjectMapper.toDomain(savedSubject);
+    return this.mapper.toDomain(savedSubject);
   }
 
   async findAll(): Promise<Subject[]> {
@@ -30,6 +31,6 @@ export class PrismaSubjectRepository implements ISubjectRepository {
       },
     });
 
-    return subjects.map((subject) => SubjectMapper.toDomain(subject));
+    return subjects.map((subject) => this.mapper.toDomain(subject));
   }
 }

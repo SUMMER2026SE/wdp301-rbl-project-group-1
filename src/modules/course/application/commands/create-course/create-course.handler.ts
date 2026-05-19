@@ -9,6 +9,9 @@ import { CourseLevel } from '../../../domain/value-objects/course-level';
 import { CreateCourseCommand } from './create-course.command';
 import { CreateCourseResult } from './create-course.result';
 
+import { EventBus } from '@nestjs/cqrs';
+import { CourseCreatedDomainEvent } from '../../../domain/events/course-created.domain-event';
+
 @CommandHandler(CreateCourseCommand)
 export class CreateCourseCommandHandler
   implements
@@ -18,6 +21,7 @@ export class CreateCourseCommandHandler
   constructor(
     @Inject(ICourseRepository)
     private readonly courseRepository: ICourseRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: CreateCourseCommand): Promise<CreateCourseResult> {
@@ -37,6 +41,8 @@ export class CreateCourseCommandHandler
     });
 
     const savedCourse = await this.courseRepository.create(course);
+
+    this.eventBus.publish(new CourseCreatedDomainEvent(savedCourse.id));
 
     return new CreateCourseResult(savedCourse.id);
   }
