@@ -45,7 +45,6 @@ export class PrismaResourceRepository implements IResourceRepository {
     return this.client.lessonResource as unknown as LessonResourceDelegate;
   }
 
-
   async create(resource: Resource): Promise<Resource> {
     const data = this.mapper.toPersistence(resource);
     const savedResource = await this.resourceDelegate.create({ data });
@@ -147,5 +146,37 @@ export class PrismaResourceRepository implements IResourceRepository {
       }
       throw error;
     }
+  }
+
+  async unassignFromCourse(
+    resourceIds: string[],
+    courseId: string,
+  ): Promise<number> {
+    const result = await this.courseResourceDelegate.deleteMany({
+      where: {
+        courseId,
+        resourceId: { in: resourceIds },
+      },
+    });
+    return result.count;
+  }
+
+  async unassignFromLesson(
+    resourceIds: string[],
+    lessonId: string,
+  ): Promise<number> {
+    const result = await this.lessonResourceDelegate.deleteMany({
+      where: {
+        lessonId,
+        resourceId: { in: resourceIds },
+      },
+    });
+    return result.count;
+  }
+
+  async removeAllFromLesson(lessonId: string): Promise<void> {
+    await this.lessonResourceDelegate.deleteMany({
+      where: { lessonId },
+    });
   }
 }

@@ -20,4 +20,7 @@ export interface IResourceRepository {
   findByUserId(params: ResourcePaginatedParams): Promise<QueryResult<Resource>>;
   assignToCourse(resourceId: string, courseId: string): Promise<void>;
   assignToLesson(resourceId: string, lessonId: string): Promise<void>;
+  unassignFromCourse(resourceIds: string[], courseId: string): Promise<number>;
+  unassignFromLesson(resourceIds: string[], lessonId: string): Promise<number>;
+  removeAllFromLesson(lessonId: string): Promise<void>;
 }

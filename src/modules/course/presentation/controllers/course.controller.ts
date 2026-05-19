@@ -5,6 +5,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
@@ -25,6 +26,8 @@ import { ChangeCourseStatusCommand } from '../../application/commands/change-cou
 import { ChangeCourseStatusResult } from '../../application/commands/change-course-status/change-course-status.result';
 import { CreateCourseCommand } from '../../application/commands/create-course/create-course.command';
 import { CreateCourseResult } from '../../application/commands/create-course/create-course.result';
+import { UpdateCourseCommand } from '../../application/commands/update-course/update-course.command';
+import { UpdateCourseResult } from '../../application/commands/update-course/update-course.result';
 import { GetCourseByIdQuery } from '../../application/queries/get-course-by-id/get-course-by-id.query';
 import { GetCourseByIdResult } from '../../application/queries/get-course-by-id/get-course-by-id.result';
 import { GetCoursesQuery } from '../../application/queries/get-courses/get-courses.query';
@@ -37,12 +40,14 @@ import { ChangeCourseStatusDto } from '../schemas/change-course-status.dto';
 import {
   CourseResponseDto,
   CreateCourseResultDto,
+  UpdateCourseResultDto,
 } from '../schemas/course-response.dto';
 import { CreateCourseDto } from '../schemas/create-course.dto';
 import {
   GetCoursesQueryDto,
   GetCoursesQueryParams,
 } from '../schemas/get-courses-query.dto';
+import { UpdateCourseDto } from '../schemas/update-course.dto';
 
 @ApiTags('Course')
 @Controller('courses')
@@ -131,6 +136,39 @@ export class CourseController {
       GetCourseByIdQuery,
       GetCourseByIdResult
     >(new GetCourseByIdQuery(id));
+    return BaseResponse.ok(result);
+  }
+
+  @Put(':id')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'updateCourse',
+    summary: 'Update a course',
+  })
+  @ApiOkResponseWrapped(UpdateCourseResultDto, {
+    description: 'Course updated successfully.',
+  })
+  async updateCourse(
+    @CurrentUser() user: { userId: string },
+    @Param('id') id: string,
+    @Body() dto: UpdateCourseDto,
+  ): Promise<BaseResponse<UpdateCourseResult>> {
+    const result = await this.commandBus.execute<
+      UpdateCourseCommand,
+      UpdateCourseResult
+    >(
+      new UpdateCourseCommand(
+        user.userId,
+        id,
+        dto.title,
+        dto.description,
+        dto.price,
+        dto.subjectId,
+        dto.gradeId,
+        dto.level,
+      ),
+    );
     return BaseResponse.ok(result);
   }
 

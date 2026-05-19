@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryResult } from '../../../../shared/domain/common/query';
@@ -13,10 +13,10 @@ import { QueryResponse } from '../../../../shared/presentation/responses/query-r
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
-import { AssignResourceCommand } from '../../application/commands/assign-resource/assign-resource.command';
-import { AssignResourceResult } from '../../application/commands/assign-resource/assign-resource.result';
 import { CreateResourceCommand } from '../../application/commands/create-resource/create-resource.command';
 import { CreateResourceResult } from '../../application/commands/create-resource/create-resource.result';
+import { UpdateResourceCommand } from '../../application/commands/update-resource/update-resource.command';
+import { UpdateResourceResult } from '../../application/commands/update-resource/update-resource.result';
 import { GetAllResourcesQuery } from '../../application/queries/get-all-resources/get-all-resources.query';
 import { GetAllResourcesResult } from '../../application/queries/get-all-resources/get-all-resources.result';
 import { GetResourceByIdQuery } from '../../application/queries/get-resource-by-id/get-resource-by-id.query';
@@ -29,7 +29,6 @@ import {
   AssignTarget,
   ResourcePaginatedParams,
 } from '../../domain/repositories/resource.repository.interface';
-import { AssignResourceDto } from '../schemas/assign-resource.dto';
 import { CreateResourceDto } from '../schemas/create-resource.dto';
 import { GetResourcesByTargetQueryDto } from '../schemas/get-resources-by-target-query.dto';
 import {
@@ -37,10 +36,11 @@ import {
   GetResourcesByTutorQueryParams,
 } from '../schemas/get-resources-by-tutor-query.dto';
 import {
-  AssignResourceResultDto,
   CreateResourceResultDto,
   ResourceResponseDto,
+  UpdateResourceResultDto,
 } from '../schemas/resource-response.dto';
+import { UpdateResourceDto } from '../schemas/update-resource.dto';
 
 @ApiTags('Resource')
 @Controller('resources')
@@ -79,28 +79,29 @@ export class ResourceController {
     return BaseResponse.ok(result);
   }
 
-  @Post('assign')
+  @Put('update')
   @Roles(UserRole.TUTOR)
   @ApiBearerAuth()
   @ApiOperation({
-    operationId: 'assignResource',
-    summary: 'Assign a resource to a course or lesson',
+    operationId: 'updateResource',
+    summary: 'Assign, unassign, or replace resources on a target',
     description:
-      'Assign an existing resource by resourceId, or provide new resource data to create and assign in one step.',
+      'Unified endpoint for resource management. Use action=ASSIGN to attach resources, action=UNASSIGN to detach, or action=REPLACE to remove all current assignments and attach the given ones.',
   })
-  @ApiCreatedResponseWrapped(AssignResourceResultDto, {
-    description: 'Resource successfully assigned.',
+  @ApiOkResponseWrapped(UpdateResourceResultDto, {
+    description: 'Resource operation completed successfully.',
   })
-  async assignResource(
+  async updateResource(
     @CurrentUser() user: { userId: string },
-    @Body() dto: AssignResourceDto,
-  ): Promise<BaseResponse<AssignResourceResult>> {
+    @Body() dto: UpdateResourceDto,
+  ): Promise<BaseResponse<UpdateResourceResult>> {
     const result = await this.commandBus.execute<
-      AssignResourceCommand,
-      AssignResourceResult
+      UpdateResourceCommand,
+      UpdateResourceResult
     >(
-      new AssignResourceCommand(
+      new UpdateResourceCommand(
         user.userId,
+        dto.action,
         dto.targetType,
         dto.targetId,
         dto.resourceIds,

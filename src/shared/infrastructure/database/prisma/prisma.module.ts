@@ -15,4 +15,3 @@ import { PrismaService } from './prisma.service';
   exports: [PrismaService, IUnitOfWork],
 })
 export class PrismaModule {}
-

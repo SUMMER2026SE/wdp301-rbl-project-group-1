@@ -48,6 +48,22 @@ export const ResourceResponseSchema = z
   })
   .meta({ id: 'ResourceResponseDto' });
 
-export class ResourceResponseDto extends createZodDto(
-  ResourceResponseSchema,
+export class ResourceResponseDto extends createZodDto(ResourceResponseSchema) {}
+
+export const UpdateResourceResultSchema = z
+  .object({
+    resourceIds: z.array(z.string()).meta({
+      description: 'The IDs of the assigned resources (empty for UNASSIGN)',
+      example: ['clhg12345000008l4f1h5g6i7'],
+    }),
+    removedCount: z.number().int().optional().meta({
+      description:
+        'The number of resource assignments removed (present for UNASSIGN and REPLACE)',
+      example: 2,
+    }),
+  })
+  .meta({ id: 'UpdateResourceResultDto' });
+
+export class UpdateResourceResultDto extends createZodDto(
+  UpdateResourceResultSchema,
 ) {}

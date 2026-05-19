@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MeetingModule } from '../meeting/meeting.module';
+import { ResourceModule } from '../resource/resource.module';
 import { CreateLessonCommandHandler } from './application/commands/create-lesson/create-lesson.handler';
 import { UpdateLessonCommandHandler } from './application/commands/update-lesson/update-lesson.handler';
 import { GetLessonByIdQueryHandler } from './application/queries/get-lesson-by-id/get-lesson-by-id.handler';
@@ -12,7 +13,10 @@ import { LessonMeetingServiceAdapter } from './infrastructure/adapters/meeting-s
 import { PrismaLessonRepository } from './infrastructure/repositories/lesson.repository.impl';
 import { LessonController } from './presentation/controllers/lesson.controller';
 
-const CommandHandlers = [CreateLessonCommandHandler, UpdateLessonCommandHandler];
+const CommandHandlers = [
+  CreateLessonCommandHandler,
+  UpdateLessonCommandHandler,
+];
 const QueryHandlers = [
   GetLessonByIdQueryHandler,
   GetLessonsByCourseQueryHandler,
@@ -20,7 +24,7 @@ const QueryHandlers = [
 ];
 
 @Module({
-  imports: [CqrsModule, MeetingModule],
+  imports: [CqrsModule, MeetingModule, ResourceModule],
   controllers: [LessonController],
   providers: [
     ...CommandHandlers,

@@ -20,17 +20,13 @@ export class GetLessonDetailsQueryHandler
     private readonly lessonRepository: ILessonRepository,
   ) {}
 
-  async execute(
-    query: GetLessonDetailsQuery,
-  ): Promise<GetLessonDetailsResult> {
+  async execute(query: GetLessonDetailsQuery): Promise<GetLessonDetailsResult> {
     const data = await this.lessonRepository.findByIdWithDetails(
       query.lessonId,
     );
 
     if (!data) {
-      throw new NotFoundException(
-        `Lesson with id ${query.lessonId} not found`,
-      );
+      throw new NotFoundException(`Lesson with id ${query.lessonId} not found`);
     }
 
     const { lesson, course, tutor } = data;

@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryResult } from '../../../../shared/domain/common/query';
@@ -17,6 +25,7 @@ import { CreateLessonCommand } from '../../application/commands/create-lesson/cr
 import { CreateLessonResult } from '../../application/commands/create-lesson/create-lesson.result';
 import { UpdateLessonCommand } from '../../application/commands/update-lesson/update-lesson.command';
 import { UpdateLessonResult } from '../../application/commands/update-lesson/update-lesson.result';
+
 import { GetLessonByIdQuery } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.query';
 import { GetLessonByIdResult } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.result';
 import { GetLessonDetailsQuery } from '../../application/queries/get-lesson-details/get-lesson-details.query';
@@ -138,10 +147,7 @@ export class LessonController {
   @ApiOkResponseWrapped(UpdateLessonResultDto, {
     description: 'Lesson updated successfully.',
   })
-  async updateLesson(
-    @Param('id') id: string,
-    @Body() dto: UpdateLessonDto,
-  ) {
+  async updateLesson(@Param('id') id: string, @Body() dto: UpdateLessonDto) {
     const cmd = new UpdateLessonCommand(
       id,
       dto.title,

@@ -65,4 +65,16 @@ export class Course extends AggregateRoot<string> {
   changeStatus(status: CourseStatus): void {
     this.props.status = status;
   }
+
+  update(
+    fields: Partial<Omit<CourseProps, 'tutorId' | 'createdAt' | 'status'>>,
+  ): void {
+    if (fields.title !== undefined) this.props.title = fields.title;
+    if (fields.description !== undefined)
+      this.props.description = fields.description;
+    if (fields.price !== undefined) this.props.price = fields.price;
+    if (fields.subjectId !== undefined) this.props.subjectId = fields.subjectId;
+    if (fields.gradeId !== undefined) this.props.gradeId = fields.gradeId;
+    if (fields.level !== undefined) this.props.level = fields.level;
+  }
 }

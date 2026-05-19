@@ -41,6 +41,9 @@ export type CourseResourceDelegate = {
     where: Record<string, unknown>;
     include?: { resource?: boolean };
   }): Promise<{ resourceId: string; resource?: PrismaResourceRecord }[]>;
+  deleteMany(args: {
+    where: Record<string, unknown>;
+  }): Promise<{ count: number }>;
 };
 
 export type LessonResourceDelegate = {
@@ -51,4 +54,7 @@ export type LessonResourceDelegate = {
     where: Record<string, unknown>;
     include?: { resource?: boolean };
   }): Promise<{ resourceId: string; resource?: PrismaResourceRecord }[]>;
+  deleteMany(args: {
+    where: Record<string, unknown>;
+  }): Promise<{ count: number }>;
 };

@@ -96,10 +96,7 @@ export const LessonDetailsResponseSchema = z
   .object({
     id: z.string().meta({ example: 'clhg12345' }),
     title: z.string().meta({ example: 'Buổi học 1' }),
-    content: z
-      .string()
-      .nullable()
-      .meta({ example: 'Nội dung buổi học' }),
+    content: z.string().nullable().meta({ example: 'Nội dung buổi học' }),
     meetingUrl: z
       .string()
       .nullable()

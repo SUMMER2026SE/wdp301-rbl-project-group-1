@@ -6,9 +6,10 @@ const EnrollmentStatusEnum = z.enum(EnrollmentStatus);
 
 export const EnrollCourseResultSchema = z
   .object({
-    id: z
-      .string()
-      .meta({ description: 'Enrollment ID', example: 'clhg12345000008l4f1h5g6i7' }),
+    id: z.string().meta({
+      description: 'Enrollment ID',
+      example: 'clhg12345000008l4f1h5g6i7',
+    }),
     status: EnrollmentStatusEnum.meta({ example: 'PENDING' }),
     enrolledAt: z
       .string()

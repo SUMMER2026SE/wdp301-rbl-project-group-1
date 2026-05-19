@@ -14,6 +14,19 @@ export class CreateCourseResultDto extends createZodDto(
   CreateCourseResultSchema,
 ) {}
 
+export const UpdateCourseResultSchema = z
+  .object({
+    id: z.string().meta({
+      description: 'The ID of the updated course',
+      example: 'clhg12345000008l4f1h5g6i7',
+    }),
+  })
+  .meta({ id: 'UpdateCourseResultDto' });
+
+export class UpdateCourseResultDto extends createZodDto(
+  UpdateCourseResultSchema,
+) {}
+
 export const CourseResponseSchema = z
   .object({
     id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),

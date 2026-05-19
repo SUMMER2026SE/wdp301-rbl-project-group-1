@@ -8,9 +8,20 @@ export interface NewResourceData {
   size?: number | null;
 }
 
-export class AssignResourceCommand {
+/**
+ * Unified resource update command.
+ *
+ * action:
+ *  - 'ASSIGN'   → assign existing / new resources to the target
+ *  - 'UNASSIGN' → remove resource assignments from the target
+ *  - 'REPLACE'  → remove all current assignments then assign the given ones
+ */
+export type UpdateResourceAction = 'ASSIGN' | 'UNASSIGN' | 'REPLACE';
+
+export class UpdateResourceCommand {
   constructor(
     public readonly userId: string,
+    public readonly action: UpdateResourceAction,
     public readonly targetType: AssignTarget,
     public readonly targetId: string,
     public readonly resourceIds?: string[],

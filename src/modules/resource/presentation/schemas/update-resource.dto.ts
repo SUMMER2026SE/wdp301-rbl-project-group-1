@@ -3,6 +3,7 @@ import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 
 const ResourceTypeEnum = z.enum(['FILE', 'VIDEO', 'LINK', 'DOCUMENT']);
 const AssignTargetEnum = z.enum(['COURSE', 'LESSON']);
+const UpdateActionEnum = z.enum(['ASSIGN', 'UNASSIGN', 'REPLACE']);
 
 const NewResourceSchema = z.object({
   name: z.string().min(1).meta({
@@ -23,11 +24,16 @@ const NewResourceSchema = z.object({
   }),
 });
 
-export const AssignResourceSchema = z
+export const UpdateResourceSchema = z
   .object({
+    action: UpdateActionEnum.meta({
+      example: 'ASSIGN',
+      description:
+        'ASSIGN — attach resources to the target; UNASSIGN — detach resources from the target; REPLACE — remove all current assignments then attach the given ones',
+    }),
     targetType: AssignTargetEnum.meta({
       example: 'COURSE',
-      description: 'Assign to COURSE or LESSON',
+      description: 'Target entity type: COURSE or LESSON',
     }),
     targetId: z.string().min(1).meta({
       example: 'clhg12345000008l4f1h5g6i7',
@@ -38,19 +44,13 @@ export const AssignResourceSchema = z
       .optional()
       .meta({
         example: ['clhg12345000008l4f1h5g6i8'],
-        description: 'IDs of existing resources to assign',
+        description: 'IDs of existing resources',
       }),
     resources: z.array(NewResourceSchema).optional().meta({
-      description: 'New resources data — each will be created and assigned',
+      description:
+        'New resources data — each will be created and assigned (ignored for UNASSIGN)',
     }),
   })
-  .refine(
-    (data) =>
-      (data.resourceIds?.length ?? 0) + (data.resources?.length ?? 0) > 0,
-    {
-      message: 'At least one resourceId or resource must be provided',
-    },
-  )
-  .meta({ id: 'AssignResourceDto' });
+  .meta({ id: 'UpdateResourceDto' });
 
-export class AssignResourceDto extends createZodDto(AssignResourceSchema) {}
+export class UpdateResourceDto extends createZodDto(UpdateResourceSchema) {}

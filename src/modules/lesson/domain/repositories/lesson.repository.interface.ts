@@ -32,9 +32,7 @@ export type LessonWithDetails = {
 export interface ILessonRepository {
   create(lesson: Lesson): Promise<Lesson>;
   findById(id: string): Promise<Lesson | null>;
-  findByCourseId(
-    params: LessonPaginatedParams,
-  ): Promise<QueryResult<Lesson>>;
+  findByCourseId(params: LessonPaginatedParams): Promise<QueryResult<Lesson>>;
   findByIdWithDetails(id: string): Promise<LessonWithDetails | null>;
   update(lesson: Lesson): Promise<Lesson>;
 }

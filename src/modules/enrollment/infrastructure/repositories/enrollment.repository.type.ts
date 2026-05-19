@@ -8,7 +8,10 @@ export type PrismaEnrollmentRecord = {
   enrolledAt: Date;
 };
 
-export type EnrollmentWriteData = Omit<PrismaEnrollmentRecord, 'id' | 'enrolledAt'> & {
+export type EnrollmentWriteData = Omit<
+  PrismaEnrollmentRecord,
+  'id' | 'enrolledAt'
+> & {
   id?: string;
   enrolledAt?: Date;
 };
