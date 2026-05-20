@@ -3,6 +3,7 @@ from typing import Any
 from src.handlers.base import BaseEventHandler
 from src.models.user import User, UserProfile
 from src.models.item import Item, BasicInfo, ItemMetrics
+from src.jobs.embedding_queue import push_to_embedding_queue
 
 
 class UserCreatedHandler(BaseEventHandler):
@@ -31,6 +32,7 @@ class UserCreatedHandler(BaseEventHandler):
         )
         await user.insert()
         print(f"[*] User {user.id} saved to MongoDB.")
+        await push_to_embedding_queue({"type": "USER", "id": user.id})
 
 
 class TutorCreatedHandler(BaseEventHandler):
