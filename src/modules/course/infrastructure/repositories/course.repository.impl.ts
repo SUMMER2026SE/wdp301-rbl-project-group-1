@@ -70,7 +70,14 @@ export class PrismaCourseRepository implements ICourseRepository {
       where.subjectId = params.subjectId;
     }
 
-    if (params.status) {
+    if (params.tutorId) {
+      where.tutorId = params.tutorId;
+    }
+
+    // If restrictStatus is true and no status specified, only show PUBLISHED courses
+    if (params.restrictStatus && !params.status) {
+      where.status = 'PUBLISHED';
+    } else if (params.status) {
       where.status = params.status;
     }
 

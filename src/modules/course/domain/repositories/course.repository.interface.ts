@@ -10,6 +10,8 @@ export interface CoursePaginatedParams extends QueryParams {
   gradeId?: string;
   subjectId?: string;
   status?: CourseStatus;
+  tutorId?: string;
+  restrictStatus?: boolean;
 }
 
 export const ICourseRepository = Symbol('ICourseRepository');

@@ -30,13 +30,18 @@ import { UpdateCourseCommand } from '../../application/commands/update-course/up
 import { UpdateCourseResult } from '../../application/commands/update-course/update-course.result';
 import { GetCourseByIdQuery } from '../../application/queries/get-course-by-id/get-course-by-id.query';
 import { GetCourseByIdResult } from '../../application/queries/get-course-by-id/get-course-by-id.result';
-import { GetJoinedStudentsQuery } from '../../application/queries/get-joined-students/get-joined-students.query';
-import { GetJoinedStudentsResult } from '../../application/queries/get-joined-students/get-joined-students.result';
 import { GetCoursesQuery } from '../../application/queries/get-courses/get-courses.query';
 import {
   CourseResultData,
   GetCoursesResult,
 } from '../../application/queries/get-courses/get-courses.result';
+import { GetJoinedStudentsQuery } from '../../application/queries/get-joined-students/get-joined-students.query';
+import { GetJoinedStudentsResult } from '../../application/queries/get-joined-students/get-joined-students.result';
+import { GetTutorCoursesQuery } from '../../application/queries/get-tutor-courses/get-tutor-courses.query';
+import {
+  GetTutorCoursesResult,
+  TutorCourseResultData,
+} from '../../application/queries/get-tutor-courses/get-tutor-courses.result';
 import { CoursePaginatedParams } from '../../domain/repositories/course.repository.interface';
 import { ChangeCourseStatusDto } from '../schemas/change-course-status.dto';
 import {
@@ -121,6 +126,45 @@ export class CourseController {
       GetCoursesQuery,
       QueryResult<CourseResultData>
     >(new GetCoursesQuery(params));
+
+    return QueryResponse.query(result);
+  }
+
+  @Get('tutor/me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getTutorMeCourses',
+    summary: 'Get courses of the current user (tutor)',
+    description:
+      'Returns a paginated list of courses for the currently authenticated tutor.',
+  })
+  @ApiOkResponseQueryWrapped(CourseResponseDto, {
+    description: 'List of tutor courses returned successfully.',
+  })
+  async getTutorCourses(
+    @CurrentUser() user: { userId: string },
+    @Query() dto: GetCoursesQueryDto,
+  ): Promise<GetTutorCoursesResult> {
+    const query: GetCoursesQueryParams = dto;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const params: CoursePaginatedParams = {
+      page,
+      limit,
+      skip: (page - 1) * limit,
+      search: query.search,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+      gradeId: query.gradeId,
+      subjectId: query.subjectId,
+      status: query.status,
+    };
+
+    const result = await this.queryBus.execute<
+      GetTutorCoursesQuery,
+      QueryResult<TutorCourseResultData>
+    >(new GetTutorCoursesQuery(user.userId, params));
 
     return QueryResponse.query(result);
   }

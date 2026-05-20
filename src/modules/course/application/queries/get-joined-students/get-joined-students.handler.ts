@@ -19,7 +19,9 @@ export class GetJoinedStudentsQueryHandler
     private readonly courseRepository: ICourseRepository,
   ) {}
 
-  async execute(query: GetJoinedStudentsQuery): Promise<GetJoinedStudentsResult> {
+  async execute(
+    query: GetJoinedStudentsQuery,
+  ): Promise<GetJoinedStudentsResult> {
     const course = await this.courseRepository.findById(query.courseId);
 
     if (!course || course.tutorId !== query.tutorId) {
