@@ -49,4 +49,7 @@ export default () => ({
   rabbitmq: {
     url: process.env.RABBITMQ_URL,
   },
+  aiService: {
+    url: process.env.AI_SERVICE_URL,
+  },
 });

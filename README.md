@@ -55,52 +55,32 @@ $ npm run test:e2e
 
 # test coverage
 $ npm run test:cov
-```
-
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
-
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
-
-## Resources
-
-Check out a few resources that may come in handy when working with NestJS:
-
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
-
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
 
 ```
 edura-api
+├─ .agents
+│  └─ backend.md
+├─ .claude
+│  ├─ settings.json
+│  └─ skills
+│     ├─ debug-issue.md
+│     ├─ explore-codebase.md
+│     ├─ refactor-safely.md
+│     └─ review-changes.md
+├─ .cursor
+│  └─ mcp.json
+├─ .cursorrules
+├─ .kiro
+│  └─ steering
+│     └─ code-review-graph.md
+├─ .mcp.json
+├─ .opencode.json
 ├─ .prettierrc
+├─ .windsurfrules
+├─ AGENTS.md
+├─ CLAUDE.md
 ├─ eslint.config.mjs
+├─ GEMINI.md
 ├─ generated
 ├─ GIT_NAMING_CONVENTION_RULES.md
 ├─ nest-cli.json
@@ -108,13 +88,6 @@ edura-api
 ├─ package.json
 ├─ prisma
 │  ├─ migrations
-│  │  ├─ 20260327095030_init
-│  │  │  └─ migration.sql
-│  │  ├─ 20260330164725_create_base_database
-│  │  │  └─ migration.sql
-│  │  ├─ 20260410134022_add_refresh_token
-│  │  │  └─ migration.sql
-│  │  └─ migration_lock.toml
 │  └─ schema.prisma
 ├─ prisma.config.ts
 ├─ README.md
@@ -122,13 +95,67 @@ edura-api
 │  ├─ app.module.ts
 │  ├─ main.ts
 │  ├─ modules
+│  │  ├─ academic-catalog
+│  │  │  ├─ academic-catalog.module.ts
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ create-grade
+│  │  │  │  │  │  ├─ create-grade.command.ts
+│  │  │  │  │  │  ├─ create-grade.handler.ts
+│  │  │  │  │  │  └─ create-grade.result.ts
+│  │  │  │  │  └─ create-subject
+│  │  │  │  │     ├─ create-subject.command.ts
+│  │  │  │  │     ├─ create-subject.handler.ts
+│  │  │  │  │     └─ create-subject.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     ├─ get-grades
+│  │  │  │     │  ├─ get-grades.handler.ts
+│  │  │  │     │  ├─ get-grades.query.ts
+│  │  │  │     │  └─ get-grades.result.ts
+│  │  │  │     └─ get-subjects
+│  │  │  │        ├─ get-subjects.handler.ts
+│  │  │  │        ├─ get-subjects.query.ts
+│  │  │  │        └─ get-subjects.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  ├─ grade.entity.ts
+│  │  │  │  │  └─ subject.entity.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ grade.repository.interface.ts
+│  │  │  │     └─ subject.repository.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ mapper
+│  │  │  │  │  ├─ grade.mapper.ts
+│  │  │  │  │  └─ subject.mapper.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ grade.repository.impl.ts
+│  │  │  │     ├─ grade.repository.type.ts
+│  │  │  │     ├─ subject.repository.impl.ts
+│  │  │  │     └─ subject.repository.type.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  ├─ grade.controller.ts
+│  │  │     │  └─ subject.controller.ts
+│  │  │     └─ schemas
+│  │  │        ├─ create-grade.dto.ts
+│  │  │        ├─ create-subject.dto.ts
+│  │  │        ├─ grade-reponse.dto.ts
+│  │  │        └─ subject-reponse.dto.ts
 │  │  ├─ auth
 │  │  │  ├─ application
 │  │  │  │  ├─ commands
+│  │  │  │  │  ├─ forgot-password
+│  │  │  │  │  │  ├─ forgot-password.command.ts
+│  │  │  │  │  │  ├─ forgot-password.handler.ts
+│  │  │  │  │  │  └─ forgot-password.result.ts
 │  │  │  │  │  ├─ login
 │  │  │  │  │  │  ├─ login.command.ts
 │  │  │  │  │  │  ├─ login.handler.ts
 │  │  │  │  │  │  └─ login.result.ts
+│  │  │  │  │  ├─ login-google
+│  │  │  │  │  │  ├─ login-google.command.ts
+│  │  │  │  │  │  ├─ login-google.handler.ts
+│  │  │  │  │  │  └─ login-google.result.ts
 │  │  │  │  │  ├─ logout
 │  │  │  │  │  │  ├─ logout.command.ts
 │  │  │  │  │  │  └─ logout.handler.ts
@@ -136,30 +163,54 @@ edura-api
 │  │  │  │  │  │  ├─ refresh-token.command.ts
 │  │  │  │  │  │  ├─ refresh-token.handler.ts
 │  │  │  │  │  │  └─ refresh-token.result.ts
-│  │  │  │  │  └─ register
-│  │  │  │  │     ├─ register.command.ts
-│  │  │  │  │     ├─ register.handler.ts
-│  │  │  │  │     └─ register.result.ts
+│  │  │  │  │  ├─ register
+│  │  │  │  │  │  ├─ register.command.ts
+│  │  │  │  │  │  ├─ register.handler.ts
+│  │  │  │  │  │  └─ register.result.ts
+│  │  │  │  │  ├─ reset-password
+│  │  │  │  │  │  ├─ reset-password.command.ts
+│  │  │  │  │  │  ├─ reset-password.handler.ts
+│  │  │  │  │  │  └─ reset-password.result.ts
+│  │  │  │  │  └─ verify-otp
+│  │  │  │  │     ├─ verify-otp.command.ts
+│  │  │  │  │     ├─ verify-otp.handler.ts
+│  │  │  │  │     └─ verify-otp.result.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ sync-user-to-rabbitmq.handler.ts
 │  │  │  │  ├─ queries
-│  │  │  │  │  └─ get-login-history
+│  │  │  │  │  ├─ get-login-history
+│  │  │  │  │  └─ get-me
+│  │  │  │  │     ├─ get-me.handler.ts
+│  │  │  │  │     ├─ get-me.query.ts
+│  │  │  │  │     └─ get-me.result.ts
 │  │  │  │  └─ services
 │  │  │  │     ├─ hash.service.ts
-│  │  │  │     └─ jwt.service.ts
+│  │  │  │     ├─ jwt.service.ts
+│  │  │  │     └─ otp.service.ts
 │  │  │  ├─ auth.module.ts
 │  │  │  ├─ domain
 │  │  │  │  ├─ entities
+│  │  │  │  │  ├─ otp.entity.ts
 │  │  │  │  │  └─ refresh-token.entity.ts
 │  │  │  │  ├─ repositories
-│  │  │  │  │  └─ auth.repository.interface.ts
+│  │  │  │  │  ├─ auth.repository.interface.ts
+│  │  │  │  │  └─ otp.repository.ts
 │  │  │  │  └─ value-objects
 │  │  │  │     └─ auth-token-payload.ts
 │  │  │  ├─ infrastructure
+│  │  │  │  ├─ mapper
+│  │  │  │  │  ├─ otp.mapper.ts
+│  │  │  │  │  └─ refresh-token.mapper.ts
 │  │  │  │  ├─ repositories
 │  │  │  │  │  ├─ auth.repository.impl.ts
-│  │  │  │  │  └─ auth.repository.types.ts
+│  │  │  │  │  ├─ auth.repository.types.ts
+│  │  │  │  │  ├─ otp.repository.impl.ts
+│  │  │  │  │  └─ otp.repository.types.ts
 │  │  │  │  └─ services
+│  │  │  │     ├─ google-auth.service.ts
 │  │  │  │     ├─ hash.service.ts
-│  │  │  │     └─ jwt.service.ts
+│  │  │  │     ├─ jwt.service.ts
+│  │  │  │     └─ otp.service.ts
 │  │  │  └─ presentation
 │  │  │     ├─ controllers
 │  │  │     │  └─ auth.controller.ts
@@ -168,57 +219,458 @@ edura-api
 │  │  │     │  ├─ current-user.decorator.ts
 │  │  │     │  ├─ public.decorator.ts
 │  │  │     │  └─ role.decorator.ts
-│  │  │     ├─ dto
-│  │  │     │  ├─ auth-response.dto.ts
-│  │  │     │  ├─ login.dto.ts
-│  │  │     │  └─ register.dto.ts
 │  │  │     ├─ guards
 │  │  │     │  ├─ jwt-auth.guard.ts
+│  │  │     │  ├─ reset-token.guard.ts
 │  │  │     │  └─ roles.guard.ts
+│  │  │     ├─ schemas
+│  │  │     │  ├─ auth-response.dto.ts
+│  │  │     │  ├─ forgot-password.dto.ts
+│  │  │     │  ├─ login-google.dto.ts
+│  │  │     │  ├─ login.dto.ts
+│  │  │     │  ├─ register.dto.ts
+│  │  │     │  ├─ reset-password.dto.ts
+│  │  │     │  └─ verify-otp.dto.ts
 │  │  │     └─ strategies
-│  │  │        └─ jwt.strategy.ts
+│  │  │        ├─ jwt.strategy.ts
+│  │  │        └─ reset-token.strategy.ts
+│  │  ├─ course
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ change-course-status
+│  │  │  │  │  │  ├─ change-course-status.command.ts
+│  │  │  │  │  │  ├─ change-course-status.handler.ts
+│  │  │  │  │  │  └─ change-course-status.result.ts
+│  │  │  │  │  ├─ create-course
+│  │  │  │  │  │  ├─ create-course.command.ts
+│  │  │  │  │  │  ├─ create-course.handler.ts
+│  │  │  │  │  │  └─ create-course.result.ts
+│  │  │  │  │  └─ update-course
+│  │  │  │  │     ├─ update-course.command.ts
+│  │  │  │  │     ├─ update-course.handler.ts
+│  │  │  │  │     └─ update-course.result.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  ├─ sync-course-to-rabbitmq.handler.ts
+│  │  │  │  │  └─ sync-course-update-to-rabbitmq.handler.ts
+│  │  │  │  └─ queries
+│  │  │  │     ├─ get-course-by-id
+│  │  │  │     │  ├─ get-course-by-id.handler.ts
+│  │  │  │     │  ├─ get-course-by-id.query.ts
+│  │  │  │     │  └─ get-course-by-id.result.ts
+│  │  │  │     ├─ get-courses
+│  │  │  │     │  ├─ get-courses.handler.ts
+│  │  │  │     │  ├─ get-courses.query.ts
+│  │  │  │     │  └─ get-courses.result.ts
+│  │  │  │     ├─ get-joined-students
+│  │  │  │     │  ├─ get-joined-students.handler.ts
+│  │  │  │     │  ├─ get-joined-students.query.ts
+│  │  │  │     │  └─ get-joined-students.result.ts
+│  │  │  │     └─ get-tutor-courses
+│  │  │  │        ├─ get-tutor-courses.handler.ts
+│  │  │  │        ├─ get-tutor-courses.query.ts
+│  │  │  │        └─ get-tutor-courses.result.ts
+│  │  │  ├─ course.module.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ course.entity.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  ├─ course-created.domain-event.ts
+│  │  │  │  │  └─ course-updated.domain-event.ts
+│  │  │  │  ├─ repositories
+│  │  │  │  │  └─ course.repository.interface.ts
+│  │  │  │  └─ value-objects
+│  │  │  │     └─ course-level.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ mapper
+│  │  │  │  │  └─ course.mapper.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ course.repository.impl.ts
+│  │  │  │     ├─ course.repository.type.ts
+│  │  │  │     └─ grade.repository.type.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  └─ course.controller.ts
+│  │  │     └─ schemas
+│  │  │        ├─ change-course-status.dto.ts
+│  │  │        ├─ course-response.dto.ts
+│  │  │        ├─ create-course.dto.ts
+│  │  │        ├─ get-courses-query.dto.ts
+│  │  │        └─ update-course.dto.ts
+│  │  ├─ enrollment
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  └─ enroll-course
+│  │  │  │  │     ├─ enroll-course.command.ts
+│  │  │  │  │     ├─ enroll-course.handler.ts
+│  │  │  │  │     └─ enroll-course.result.ts
+│  │  │  │  └─ events
+│  │  │  │     └─ sync-enrollment-to-rabbitmq.handler.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ enrollment.entity.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ enrollment-created.domain-event.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ enrollment.repository.interface.ts
+│  │  │  ├─ enrollment.module.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ mapper
+│  │  │  │  │  └─ enrollment.mapper.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ enrollment.repository.impl.ts
+│  │  │  │     └─ enrollment.repository.type.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  └─ enrollment.controller.ts
+│  │  │     └─ schemas
+│  │  │        ├─ enroll-course.dto.ts
+│  │  │        └─ enrollment-response.dto.ts
 │  │  ├─ health
 │  │  │  ├─ health.controller.spec.ts
 │  │  │  ├─ health.controller.ts
 │  │  │  ├─ health.module.ts
-│  │  │  └─ prisma.health.ts
+│  │  │  ├─ prisma.health.ts
+│  │  │  └─ redis.health.ts
+│  │  ├─ lesson
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ create-lesson
+│  │  │  │  │  │  ├─ create-lesson.command.ts
+│  │  │  │  │  │  ├─ create-lesson.handler.ts
+│  │  │  │  │  │  └─ create-lesson.result.ts
+│  │  │  │  │  └─ update-lesson
+│  │  │  │  │     ├─ update-lesson.command.ts
+│  │  │  │  │     ├─ update-lesson.handler.ts
+│  │  │  │  │     └─ update-lesson.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     ├─ get-lesson-by-id
+│  │  │  │     │  ├─ get-lesson-by-id.handler.ts
+│  │  │  │     │  ├─ get-lesson-by-id.query.ts
+│  │  │  │     │  └─ get-lesson-by-id.result.ts
+│  │  │  │     ├─ get-lesson-details
+│  │  │  │     │  ├─ get-lesson-details.handler.ts
+│  │  │  │     │  ├─ get-lesson-details.query.ts
+│  │  │  │     │  └─ get-lesson-details.result.ts
+│  │  │  │     └─ get-lessons-by-course
+│  │  │  │        ├─ get-lessons-by-course.handler.ts
+│  │  │  │        ├─ get-lessons-by-course.query.ts
+│  │  │  │        └─ get-lessons-by-course.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ lesson.entity.ts
+│  │  │  │  ├─ interfaces
+│  │  │  │  │  └─ meeting-service.interface.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ lesson.repository.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ adapters
+│  │  │  │  │  └─ meeting-service.adapter.ts
+│  │  │  │  ├─ mapper
+│  │  │  │  │  └─ lesson.mapper.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ lesson.repository.impl.ts
+│  │  │  │     └─ lesson.repository.type.ts
+│  │  │  ├─ lesson.module.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  └─ lesson.controller.ts
+│  │  │     └─ schemas
+│  │  │        ├─ create-lesson.dto.ts
+│  │  │        ├─ get-lessons-by-course-query.dto.ts
+│  │  │        ├─ lesson-response.dto.ts
+│  │  │        └─ update-lesson.dto.ts
+│  │  ├─ meeting
+│  │  │  ├─ application
+│  │  │  │  └─ services
+│  │  │  │     └─ meeting.service.ts
+│  │  │  ├─ domain
+│  │  │  │  └─ interfaces
+│  │  │  │     └─ meeting-provider.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  └─ providers
+│  │  │  │     └─ google-meet.provider.ts
+│  │  │  ├─ meeting.module.ts
+│  │  │  └─ presentation
+│  │  ├─ notification
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  └─ send-email
+│  │  │  │  │     ├─ send-email.command.ts
+│  │  │  │  │     └─ send-email.handler.ts
+│  │  │  │  ├─ services
+│  │  │  │  │  └─ smtp-email.interface.ts
+│  │  │  │  └─ templates
+│  │  │  │     └─ views
+│  │  │  │        ├─ course-status-updated.hbs
+│  │  │  │        ├─ otp.hbs
+│  │  │  │        ├─ tutor-application-approved.hbs
+│  │  │  │        └─ tutor-application-rejected.hbs
+│  │  │  ├─ domain
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ providers
+│  │  │  │  │  └─ mail
+│  │  │  │  │     └─ mailer.provider.ts
+│  │  │  │  └─ services
+│  │  │  │     └─ smtp-email.service.ts
+│  │  │  └─ notification.module.ts
+│  │  ├─ payment
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ confirm-payment
+│  │  │  │  │  │  ├─ confirm-payment.command.ts
+│  │  │  │  │  │  ├─ confirm-payment.handler.ts
+│  │  │  │  │  │  └─ confirm-payment.result.ts
+│  │  │  │  │  └─ create-payment
+│  │  │  │  │     ├─ create-payment.command.ts
+│  │  │  │  │     ├─ create-payment.handler.ts
+│  │  │  │  │     └─ create-payment.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     └─ get-payment
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ payment.entity.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ payment-confirmed.event.ts
+│  │  │  │  ├─ gateways
+│  │  │  │  │  └─ payment.gateway.interface.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ payment.repository.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ gateways
+│  │  │  │  │  └─ payos
+│  │  │  │  │     └─ payos.gateway.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ payment.repository.ts
+│  │  │  │     └─ payment.repository.types.ts
+│  │  │  ├─ payment.module.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  ├─ payment.controller.ts
+│  │  │     │  └─ webhook.controller.ts
+│  │  │     └─ schemas
+│  │  │        └─ create-payment.dto.ts
+│  │  ├─ recommendation
+│  │  │  ├─ application
+│  │  │  │  └─ queries
+│  │  │  │     ├─ get-recommended-courses
+│  │  │  │     │  ├─ get-recommended-courses.handler.ts
+│  │  │  │     │  ├─ get-recommended-courses.query.ts
+│  │  │  │     │  └─ get-recommended-courses.result.ts
+│  │  │  │     └─ get-recommended-tutors
+│  │  │  │        ├─ get-recommended-tutors.handler.ts
+│  │  │  │        ├─ get-recommended-tutors.query.ts
+│  │  │  │        └─ get-recommended-tutors.result.ts
+│  │  │  ├─ domain
+│  │  │  │  └─ services
+│  │  │  │     └─ ai-recommendation.service.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  └─ services
+│  │  │  │     └─ http-ai-recommendation.service.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ recommendation.controller.ts
+│  │  │  │  └─ schemas
+│  │  │  │     └─ recommendation-response.dto.ts
+│  │  │  └─ recommendation.module.ts
+│  │  ├─ resource
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ create-resource
+│  │  │  │  │  │  ├─ create-resource.command.ts
+│  │  │  │  │  │  ├─ create-resource.handler.ts
+│  │  │  │  │  │  └─ create-resource.result.ts
+│  │  │  │  │  ├─ delete-resource
+│  │  │  │  │  │  ├─ delete-resource.command.ts
+│  │  │  │  │  │  ├─ delete-resource.handler.ts
+│  │  │  │  │  │  └─ delete-resource.result.ts
+│  │  │  │  │  └─ update-resource
+│  │  │  │  │     ├─ update-resource.command.ts
+│  │  │  │  │     ├─ update-resource.handler.ts
+│  │  │  │  │     └─ update-resource.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     ├─ get-all-resources
+│  │  │  │     │  ├─ get-all-resources.handler.ts
+│  │  │  │     │  ├─ get-all-resources.query.ts
+│  │  │  │     │  └─ get-all-resources.result.ts
+│  │  │  │     ├─ get-resource-by-id
+│  │  │  │     │  ├─ get-resource-by-id.handler.ts
+│  │  │  │     │  ├─ get-resource-by-id.query.ts
+│  │  │  │     │  └─ get-resource-by-id.result.ts
+│  │  │  │     ├─ get-resources-by-target
+│  │  │  │     │  ├─ get-resources-by-target.handler.ts
+│  │  │  │     │  ├─ get-resources-by-target.query.ts
+│  │  │  │     │  └─ get-resources-by-target.result.ts
+│  │  │  │     └─ get-resources-by-tutor
+│  │  │  │        ├─ get-resources-by-tutor.handler.ts
+│  │  │  │        ├─ get-resources-by-tutor.query.ts
+│  │  │  │        └─ get-resources-by-tutor.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ resource.entity.ts
+│  │  │  │  ├─ repositories
+│  │  │  │  │  └─ resource.repository.interface.ts
+│  │  │  │  └─ value-objects
+│  │  │  │     └─ resource-type.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ mapper
+│  │  │  │  │  └─ resource.mapper.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ resource.repository.impl.ts
+│  │  │  │     └─ resource.repository.type.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ resource.controller.ts
+│  │  │  │  └─ schemas
+│  │  │  │     ├─ create-resource.dto.ts
+│  │  │  │     ├─ get-resources-by-target-query.dto.ts
+│  │  │  │     ├─ get-resources-by-tutor-query.dto.ts
+│  │  │  │     ├─ resource-response.dto.ts
+│  │  │  │     └─ update-resource.dto.ts
+│  │  │  └─ resource.module.ts
+│  │  ├─ storage
+│  │  │  ├─ application
+│  │  │  │  └─ storage.service.ts
+│  │  │  ├─ domain
+│  │  │  │  └─ interfaces
+│  │  │  │     ├─ file-storage.service.interface.ts
+│  │  │  │     └─ image-storage.service.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ cloudinary
+│  │  │  │  │  └─ cloudinary.service.ts
+│  │  │  │  └─ supabase
+│  │  │  │     ├─ supabase-storage.service.ts
+│  │  │  │     └─ supabase.client.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ storage.controller.ts
+│  │  │  │  ├─ decorators
+│  │  │  │  │  ├─ api-image-upload.decorator.ts
+│  │  │  │  │  └─ uploaded-image.decorator.ts
+│  │  │  │  └─ schemas
+│  │  │  │     ├─ presign.dto.ts
+│  │  │  │     └─ upload-image.dto.ts
+│  │  │  └─ storage.module.ts
+│  │  ├─ tutor-application
+│  │  │  ├─ application
+│  │  │  │  ├─ command
+│  │  │  │  │  ├─ approve-tutor-application
+│  │  │  │  │  │  ├─ approve-tutor-application.command.ts
+│  │  │  │  │  │  ├─ approve-tutor-application.handler.ts
+│  │  │  │  │  │  └─ approve-tutor-application.result.ts
+│  │  │  │  │  ├─ create-tutor-application
+│  │  │  │  │  │  ├─ create-tutor-application.command.ts
+│  │  │  │  │  │  ├─ create-tutor-application.handler.ts
+│  │  │  │  │  │  └─ create-tutor-application.result.ts
+│  │  │  │  │  └─ reject-tutor-application
+│  │  │  │  │     ├─ reject-tutor-application.command.ts
+│  │  │  │  │     ├─ reject-tutor-application.handler.ts
+│  │  │  │  │     └─ reject-tutor-application.result.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ sync-tutor-to-rabbitmq.handler.ts
+│  │  │  │  └─ query
+│  │  │  │     └─ get-tutor-application
+│  │  │  │        ├─ get-tutor-application.handler.ts
+│  │  │  │        ├─ get-tutor-application.query.ts
+│  │  │  │        └─ get-tutor-application.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ tutor-application.entity.ts
+│  │  │  │  ├─ enums
+│  │  │  │  │  └─ tutor-application.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ tutor-created.domain-event.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ tutor-application.repository.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  ├─ mapper
+│  │  │  │  │  └─ tutor-application.mapper.ts
+│  │  │  │  └─ repositories
+│  │  │  │     ├─ tutor-application.repository.impl.ts
+│  │  │  │     └─ tutor-application.type.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ tutor-application.controller.ts
+│  │  │  │  └─ schemas
+│  │  │  │     ├─ create-tutor-application.dto.ts
+│  │  │  │     ├─ get-tutor-applications.dto.ts
+│  │  │  │     └─ tutor-application-response.dto.ts
+│  │  │  └─ tutor-application.module.ts
 │  │  └─ user
 │  │     ├─ application
 │  │     │  ├─ commands
+│  │     │  │  ├─ change-avatar
+│  │     │  │  │  ├─ change-avatar.command.ts
+│  │     │  │  │  ├─ change-avatar.handler.ts
+│  │     │  │  │  └─ change-avatar.result.ts
+│  │     │  │  ├─ update-profile
+│  │     │  │  │  ├─ update-profile.command.ts
+│  │     │  │  │  ├─ update-profile.handler.ts
+│  │     │  │  │  └─ update-profile.result.ts
+│  │     │  │  └─ upgrade-tutor
+│  │     │  │     ├─ upgrade-tutor.command.ts
+│  │     │  │     ├─ upgrade-tutor.handler.ts
+│  │     │  │     └─ upgrade-tutor.result.ts
 │  │     │  └─ queries
+│  │     │     ├─ get-profile
+│  │     │     │  ├─ get-profile.handler.ts
+│  │     │     │  ├─ get-profile.query.ts
+│  │     │     │  └─ get-profile.result.ts
 │  │     │     └─ get-users
 │  │     │        ├─ get-users.handler.ts
-│  │     │        └─ get-users.query.ts
+│  │     │        ├─ get-users.query.ts
+│  │     │        └─ get-users.result.ts
 │  │     ├─ domain
 │  │     │  ├─ entities
 │  │     │  │  ├─ parent.entity.ts
+│  │     │  │  ├─ profile.entity.ts
 │  │     │  │  ├─ student.entity.ts
 │  │     │  │  ├─ tutor.entity.ts
+│  │     │  │  ├─ user-identity.entity.ts
 │  │     │  │  └─ user.entity.ts
 │  │     │  ├─ events
+│  │     │  │  └─ user-created.domain-event.ts
 │  │     │  ├─ repositories
+│  │     │  │  ├─ profile.repository.interface.ts
+│  │     │  │  ├─ user-identity.repository.interface.ts
 │  │     │  │  └─ user.repository.interface.ts
 │  │     │  ├─ services
 │  │     │  └─ value-objects
 │  │     ├─ infrastructure
 │  │     │  ├─ mappers
+│  │     │  │  ├─ profile.mapper.ts
+│  │     │  │  ├─ user-identity.mapper.ts
+│  │     │  │  └─ user.mapper.ts
 │  │     │  ├─ repositories
+│  │     │  │  ├─ profile.repository.impl.ts
+│  │     │  │  ├─ user-identity.repository.impl.ts
 │  │     │  │  └─ user.repository.impl.ts
 │  │     │  └─ user.infrastructure.module.ts
 │  │     ├─ presentation
 │  │     │  ├─ controllers
 │  │     │  │  └─ user.controller.ts
-│  │     │  └─ dto
+│  │     │  └─ schemas
+│  │     │     ├─ change-avatar-response.dto.ts
+│  │     │     ├─ change-avatar.dto.ts
+│  │     │     ├─ get-profile-response.dto.ts
+│  │     │     ├─ profile-response.dto.ts
+│  │     │     ├─ update-profile.dto.ts
+│  │     │     ├─ upgrade-tutor-response.dto.ts
 │  │     │     └─ user-response.dto.ts
 │  │     └─ user.module.ts
 │  ├─ shared
 │  │  ├─ application
-│  │  │  ├─ common
-│  │  │  │  └─ pagination.ts
+│  │  │  ├─ constants
+│  │  │  │  ├─ cache.constants.ts
+│  │  │  │  └─ events.constants.ts
 │  │  │  └─ interfaces
+│  │  │     ├─ cache.interface.ts
 │  │  │     ├─ mapper.interface.ts
+│  │  │     ├─ message-broker.interface.ts
+│  │  │     ├─ unit-of-work.ts
 │  │  │     └─ use-case.interface.ts
 │  │  ├─ domain
+│  │  │  ├─ common
+│  │  │  │  └─ query.ts
 │  │  │  ├─ entities
 │  │  │  │  ├─ aggregate-root.ts
 │  │  │  │  ├─ auditable.entity.ts
@@ -245,29 +697,50 @@ edura-api
 │  │  │  │  ├─ database.module.ts
 │  │  │  │  ├─ mongo
 │  │  │  │  │  └─ mongoose.module.ts
-│  │  │  │  └─ prisma
-│  │  │  │     ├─ prisma.module.ts
-│  │  │  │     └─ prisma.service.ts
+│  │  │  │  ├─ prisma
+│  │  │  │  │  ├─ prisma-transaction.context.ts
+│  │  │  │  │  ├─ prisma-unit-of-work.ts
+│  │  │  │  │  ├─ prisma.module.ts
+│  │  │  │  │  └─ prisma.service.ts
+│  │  │  │  └─ redis
+│  │  │  │     ├─ redis.module.ts
+│  │  │  │     └─ redis.service.ts
 │  │  │  ├─ documentation
-│  │  │  │  └─ swagger
-│  │  │  │     ├─ swagger.config.ts
-│  │  │  │     └─ swagger.setup.ts
-│  │  │  └─ logger
-│  │  │     ├─ exception.filter.ts
-│  │  │     ├─ logger.module.ts
-│  │  │     ├─ logger.service.ts
-│  │  │     └─ logging.interceptor.ts
+│  │  │  │  ├─ swagger
+│  │  │  │  │  ├─ swagger.config.ts
+│  │  │  │  │  └─ swagger.setup.ts
+│  │  │  │  └─ zod
+│  │  │  │     └─ zod.ts
+│  │  │  ├─ logger
+│  │  │  │  ├─ exception.filter.ts
+│  │  │  │  ├─ logger.module.ts
+│  │  │  │  ├─ logger.service.ts
+│  │  │  │  └─ logging.interceptor.ts
+│  │  │  └─ messaging
+│  │  │     └─ rabbitmq
+│  │  │        ├─ rabbitmq.constants.ts
+│  │  │        ├─ rabbitmq.module.ts
+│  │  │        ├─ rabbitmq.service.ts
+│  │  │        └─ rabbitmq.types.ts
 │  │  └─ presentation
 │  │     ├─ decorators
-│  │     │  └─ api-response.decorator.ts
+│  │     │  ├─ api-response.decorator.ts
+│  │     │  ├─ decorator.constants.ts
+│  │     │  ├─ query.decorator.ts
+│  │     │  └─ rate-limit.decorator.ts
 │  │     ├─ filters
 │  │     ├─ guards
+│  │     │  ├─ rate-limit.guard.spec.ts
+│  │     │  └─ rate-limit.guard.ts
 │  │     ├─ interceptors
 │  │     │  ├─ logging.interceptor.ts
 │  │     │  └─ response-transform.interceptor.ts
-│  │     └─ responses
-│  │        ├─ api-response.ts
-│  │        └─ base-response.ts
+│  │     ├─ responses
+│  │     │  ├─ api-response.ts
+│  │     │  ├─ base-response.ts
+│  │     │  └─ query-response.ts
+│  │     └─ schemas
+│  │        └─ base-query.dto.ts
 │  └─ types
 │     └─ fastify.d.ts
 ├─ test

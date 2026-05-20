@@ -31,6 +31,7 @@ export const envValidationSchema = z.object({
   EMAIL_USER: z.string(),
   EMAIL_PASS: z.string(),
   RABBITMQ_URL: z.string().url(),
+  AI_SERVICE_URL: z.string().url(),
 });
 
 export const validateEnv = (config: Record<string, unknown>) =>

@@ -61,7 +61,10 @@ export const JoinedStudentSchema = z
     studentId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
     email: z.string().email().meta({ example: 'student@edura.dev' }),
     nickname: z.string().nullable().meta({ example: 'Minh' }),
-    avatarUrl: z.string().nullable().meta({ example: 'https://cdn.example/avatar.png' }),
+    avatarUrl: z
+      .string()
+      .nullable()
+      .meta({ example: 'https://cdn.example/avatar.png' }),
     school: z.string().nullable().meta({ example: 'ABC High School' }),
     learningGoal: z
       .string()
