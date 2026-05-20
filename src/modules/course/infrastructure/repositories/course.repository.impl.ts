@@ -9,9 +9,10 @@ import {
   CoursePaginatedParams,
   CourseWithMeta,
   ICourseRepository,
+  JoinedStudent,
 } from '../../domain/repositories/course.repository.interface';
 import { CourseMapper } from '../mapper/course.mapper';
-import { CourseDelegate } from './course.repository.type';
+import { CourseDelegate, EnrollmentDelegate } from './course.repository.type';
 
 @Injectable()
 export class PrismaCourseRepository implements ICourseRepository {
@@ -21,6 +22,10 @@ export class PrismaCourseRepository implements ICourseRepository {
 
   private get courseDelegate(): CourseDelegate {
     return this.prisma.course as unknown as CourseDelegate;
+  }
+
+  private get enrollmentDelegate(): EnrollmentDelegate {
+    return this.prisma.enrollment as unknown as EnrollmentDelegate;
   }
 
   async create(course: Course): Promise<Course> {
@@ -100,5 +105,33 @@ export class PrismaCourseRepository implements ICourseRepository {
       data,
     });
     return this.mapper.toDomain(updatedCourse);
+  }
+
+  async findJoinedStudents(courseId: string): Promise<JoinedStudent[]> {
+    const enrollments = await this.enrollmentDelegate.findMany({
+      where: { courseId },
+      include: {
+        student: {
+          include: {
+            user: {
+              include: {
+                profile: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    return enrollments.map((e) => ({
+      studentId: e.studentId,
+      email: e.student.user.email,
+      nickname: e.student.user.profile?.nickname ?? null,
+      avatarUrl: e.student.user.profile?.avatarUrl ?? null,
+      school: e.student.school ?? null,
+      learningGoal: e.student.learningGoal ?? null,
+      status: e.status,
+      enrolledAt: e.enrolledAt,
+    }));
   }
 }

@@ -1,4 +1,5 @@
 import { CourseStatus } from '../../../../shared/domain/enums/enums';
+import { EnrollmentStatus } from '../../../../shared/domain/enums/enums';
 import { CourseLevelType } from '../../domain/value-objects/course-level';
 
 export type PrismaCourseRecord = {
@@ -42,4 +43,39 @@ export type CourseDelegate = {
     take?: number;
     include?: { subject?: boolean; grade?: boolean };
   }): Promise<PrismaCourseRecord[]>;
+};
+
+export type EnrollmentWithStudentRecord = {
+  studentId: string;
+  status: EnrollmentStatus;
+  enrolledAt: Date;
+  student: {
+    id: string;
+    school: string | null;
+    learningGoal: string | null;
+    user: {
+      email: string;
+      profile: {
+        nickname: string;
+        avatarUrl: string | null;
+      } | null;
+    };
+  };
+};
+
+export type EnrollmentDelegate = {
+  findMany(args: {
+    where: { courseId: string };
+    include: {
+      student: {
+        include: {
+          user: {
+            include: {
+              profile: boolean;
+            };
+          };
+        };
+      };
+    };
+  }): Promise<EnrollmentWithStudentRecord[]>;
 };

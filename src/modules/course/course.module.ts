@@ -3,6 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { CreateCourseCommandHandler } from './application/commands/create-course/create-course.handler';
 import { UpdateCourseCommandHandler } from './application/commands/update-course/update-course.handler';
 import { GetCourseByIdQueryHandler } from './application/queries/get-course-by-id/get-course-by-id.handler';
+import { GetJoinedStudentsQueryHandler } from './application/queries/get-joined-students/get-joined-students.handler';
 import { GetCoursesQueryHandler } from './application/queries/get-courses/get-courses.handler';
 import { ICourseRepository } from './domain/repositories/course.repository.interface';
 import { PrismaCourseRepository } from './infrastructure/repositories/course.repository.impl';
@@ -14,7 +15,11 @@ const CommandHandlers = [
   CreateCourseCommandHandler,
   UpdateCourseCommandHandler,
 ];
-const QueryHandlers = [GetCoursesQueryHandler, GetCourseByIdQueryHandler];
+const QueryHandlers = [
+  GetCoursesQueryHandler,
+  GetCourseByIdQueryHandler,
+  GetJoinedStudentsQueryHandler,
+];
 const EventHandlers = [SyncCourseToRabbitMqHandler, SyncCourseUpdateToRabbitMqHandler];
 
 @Module({

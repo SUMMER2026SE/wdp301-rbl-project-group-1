@@ -30,6 +30,8 @@ import { UpdateCourseCommand } from '../../application/commands/update-course/up
 import { UpdateCourseResult } from '../../application/commands/update-course/update-course.result';
 import { GetCourseByIdQuery } from '../../application/queries/get-course-by-id/get-course-by-id.query';
 import { GetCourseByIdResult } from '../../application/queries/get-course-by-id/get-course-by-id.result';
+import { GetJoinedStudentsQuery } from '../../application/queries/get-joined-students/get-joined-students.query';
+import { GetJoinedStudentsResult } from '../../application/queries/get-joined-students/get-joined-students.result';
 import { GetCoursesQuery } from '../../application/queries/get-courses/get-courses.query';
 import {
   CourseResultData,
@@ -40,6 +42,7 @@ import { ChangeCourseStatusDto } from '../schemas/change-course-status.dto';
 import {
   CourseResponseDto,
   CreateCourseResultDto,
+  GetJoinedStudentsResultDto,
   UpdateCourseResultDto,
 } from '../schemas/course-response.dto';
 import { CreateCourseDto } from '../schemas/create-course.dto';
@@ -136,6 +139,28 @@ export class CourseController {
       GetCourseByIdQuery,
       GetCourseByIdResult
     >(new GetCourseByIdQuery(id));
+    return BaseResponse.ok(result);
+  }
+
+  @Get(':id/students')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getJoinedStudents',
+    summary: 'Get students joined in a course',
+  })
+  @ApiOkResponseWrapped(GetJoinedStudentsResultDto, {
+    description: 'Joined students returned successfully.',
+  })
+  async getJoinedStudents(
+    @CurrentUser() user: { userId: string },
+    @Param('id') id: string,
+  ): Promise<BaseResponse<GetJoinedStudentsResult>> {
+    const result = await this.queryBus.execute<
+      GetJoinedStudentsQuery,
+      GetJoinedStudentsResult
+    >(new GetJoinedStudentsQuery(user.userId, id));
+
     return BaseResponse.ok(result);
   }
 

@@ -55,3 +55,36 @@ export const CourseResponseSchema = z
   .meta({ id: 'CourseResponseDto' });
 
 export class CourseResponseDto extends createZodDto(CourseResponseSchema) {}
+
+export const JoinedStudentSchema = z
+  .object({
+    studentId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+    email: z.string().email().meta({ example: 'student@edura.dev' }),
+    nickname: z.string().nullable().meta({ example: 'Minh' }),
+    avatarUrl: z.string().nullable().meta({ example: 'https://cdn.example/avatar.png' }),
+    school: z.string().nullable().meta({ example: 'ABC High School' }),
+    learningGoal: z
+      .string()
+      .nullable()
+      .meta({ example: 'Improve math fundamentals' }),
+    status: z
+      .enum(['PENDING', 'ACTIVE', 'COMPLETED', 'CANCELLED'])
+      .meta({ example: 'ACTIVE' }),
+    enrolledAt: z
+      .string()
+      .datetime()
+      .meta({ example: '2025-01-01T00:00:00.000Z' }),
+  })
+  .meta({ id: 'JoinedStudentDto' });
+
+export class JoinedStudentDto extends createZodDto(JoinedStudentSchema) {}
+
+export const GetJoinedStudentsResultSchema = z
+  .object({
+    students: z.array(JoinedStudentSchema),
+  })
+  .meta({ id: 'GetJoinedStudentsResultDto' });
+
+export class GetJoinedStudentsResultDto extends createZodDto(
+  GetJoinedStudentsResultSchema,
+) {}
