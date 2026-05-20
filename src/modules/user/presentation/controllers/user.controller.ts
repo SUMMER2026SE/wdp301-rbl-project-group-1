@@ -9,6 +9,7 @@ import {
   QueryParams,
   QueryResult,
 } from '../../../../shared/domain/common/query';
+import { UserRole } from '../../../../shared/domain/enums/enums';
 import {
   ApiOkResponseQueryWrapped,
   ApiOkResponseWrapped,
@@ -17,10 +18,15 @@ import { Query as QueryParamsDecorator } from '../../../../shared/presentation/d
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
+import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { ChangeAvatarCommand } from '../../application/commands/change-avatar/change-avatar.command';
 import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';
 import { UpdateProfileCommand } from '../../application/commands/update-profile/update-profile.command';
 import { UpdateProfileResult } from '../../application/commands/update-profile/update-profile.result';
+import { UpdateStudentProfileCommand } from '../../application/commands/update-student-profile/update-student-profile.command';
+import { UpdateStudentProfileResult } from '../../application/commands/update-student-profile/update-student-profile.result';
+import { UpdateTutorProfileCommand } from '../../application/commands/update-tutor-profile/update-tutor-profile.command';
+import { UpdateTutorProfileResult } from '../../application/commands/update-tutor-profile/update-tutor-profile.result';
 import { UpgradeTutorCommand } from '../../application/commands/upgrade-tutor/upgrade-tutor.command';
 import { UpgradeTutorResult } from '../../application/commands/upgrade-tutor/upgrade-tutor.result';
 import { GetProfileQuery } from '../../application/queries/get-profile/get-profile.query';
@@ -34,6 +40,8 @@ import { ChangeAvatarResultDto } from '../schemas/change-avatar-response.dto';
 import { GetProfileResponseDto } from '../schemas/get-profile-response.dto';
 import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
 import { UpdateProfileDto } from '../schemas/update-profile.dto';
+import { UpdateStudentProfileDto } from '../schemas/update-student-profile.dto';
+import { UpdateTutorProfileDto } from '../schemas/update-tutor-profile.dto';
 import { UpgradeTutorResultDto } from '../schemas/upgrade-tutor-response.dto';
 import { UserResponseDto } from '../schemas/user-response.dto';
 @ApiTags('Users')
@@ -146,6 +154,52 @@ export class UserController {
       UpgradeTutorCommand,
       UpgradeTutorResult
     >(new UpgradeTutorCommand(user.userId));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Patch('tutor-profile')
+  @ApiBearerAuth()
+  @Roles(UserRole.TUTOR)
+  @ApiOperation({
+    operationId: 'updateTutorProfile',
+    summary:
+      'Update tutor profile (bio, specialization, education, experience, price)',
+  })
+  @ApiOkResponseWrapped(UpdateProfileResultDto, {
+    description: 'Tutor profile updated successfully.',
+  })
+  async updateTutorProfile(
+    @CurrentUser() user: { userId: string },
+    @Body() dto: UpdateTutorProfileDto,
+  ): Promise<BaseResponse<UpdateTutorProfileResult>> {
+    const result = await this.commandBus.execute<
+      UpdateTutorProfileCommand,
+      UpdateTutorProfileResult
+    >(new UpdateTutorProfileCommand(user.userId, dto));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Patch('student-profile')
+  @ApiBearerAuth()
+  @Roles(UserRole.STUDENT)
+  @ApiOperation({
+    operationId: 'updateStudentProfile',
+    summary:
+      'Update student profile (school, learningGoal, gradeIds, subjectIds)',
+  })
+  @ApiOkResponseWrapped(UpdateProfileResultDto, {
+    description: 'Student profile updated successfully.',
+  })
+  async updateStudentProfile(
+    @CurrentUser() user: { userId: string },
+    @Body() dto: UpdateStudentProfileDto,
+  ): Promise<BaseResponse<UpdateStudentProfileResult>> {
+    const result = await this.commandBus.execute<
+      UpdateStudentProfileCommand,
+      UpdateStudentProfileResult
+    >(new UpdateStudentProfileCommand(user.userId, dto));
 
     return BaseResponse.ok(result);
   }

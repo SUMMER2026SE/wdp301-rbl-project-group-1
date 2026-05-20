@@ -72,7 +72,7 @@ export class Tutor extends BaseEntity<string> {
     this.props.experience = experience;
   }
 
-  setPrice(pricePerHour: number): void {
+  setPrice(pricePerHour: number | null): void {
     this.props.pricePerHour = pricePerHour;
   }
 
