@@ -9,6 +9,7 @@ export interface ResourceProps {
   size?: number | null;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date | null;
 }
 
 export class Resource extends AggregateRoot<string> {
@@ -49,5 +50,9 @@ export class Resource extends AggregateRoot<string> {
 
   get updatedAt(): Date {
     return this.props.updatedAt;
+  }
+
+  get deletedAt(): Date | null | undefined {
+    return this.props.deletedAt;
   }
 }

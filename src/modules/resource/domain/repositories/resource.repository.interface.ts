@@ -23,4 +23,5 @@ export interface IResourceRepository {
   unassignFromCourse(resourceIds: string[], courseId: string): Promise<number>;
   unassignFromLesson(resourceIds: string[], lessonId: string): Promise<number>;
   removeAllFromLesson(lessonId: string): Promise<void>;
+  softDelete(id: string, userId: string): Promise<boolean>;
 }

@@ -55,12 +55,14 @@ export class PrismaResourceRepository implements IResourceRepository {
     const record = await this.resourceDelegate.findUnique({
       where: { id },
     });
-    if (!record) return null;
+    if (!record || record.deletedAt) return null;
     return this.mapper.toDomain(record);
   }
 
   async findAll(): Promise<Resource[]> {
-    const records = await this.resourceDelegate.findMany();
+    const records = await this.resourceDelegate.findMany({
+      where: { deletedAt: null },
+    });
     return records.map((r) => this.mapper.toDomain(r));
   }
 
@@ -74,7 +76,7 @@ export class PrismaResourceRepository implements IResourceRepository {
         include: { resource: true },
       });
       return rows
-        .filter((r) => r.resource)
+        .filter((r) => r.resource && !r.resource.deletedAt)
         .map((r) => this.mapper.toDomain(r.resource!));
     }
 
@@ -83,14 +85,17 @@ export class PrismaResourceRepository implements IResourceRepository {
       include: { resource: true },
     });
     return rows
-      .filter((r) => r.resource)
+      .filter((r) => r.resource && !r.resource.deletedAt)
       .map((r) => this.mapper.toDomain(r.resource!));
   }
 
   async findByUserId(
     params: ResourcePaginatedParams,
   ): Promise<QueryResult<Resource>> {
-    const where: Record<string, unknown> = { userId: params.userId };
+    const where: Record<string, unknown> = {
+      userId: params.userId,
+      deletedAt: null,
+    };
 
     if (params.search) {
       where.name = { contains: params.search, mode: 'insensitive' };
@@ -178,5 +183,13 @@ export class PrismaResourceRepository implements IResourceRepository {
     await this.lessonResourceDelegate.deleteMany({
       where: { lessonId },
     });
+  }
+
+  async softDelete(id: string, userId: string): Promise<boolean> {
+    const result = await this.resourceDelegate.updateMany({
+      where: { id, userId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+    return result.count > 0;
   }
 }

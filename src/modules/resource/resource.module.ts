@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { CreateResourceCommandHandler } from './application/commands/create-resource/create-resource.handler';
+import { DeleteResourceCommandHandler } from './application/commands/delete-resource/delete-resource.handler';
 import { UpdateResourceCommandHandler } from './application/commands/update-resource/update-resource.handler';
 import { GetAllResourcesQueryHandler } from './application/queries/get-all-resources/get-all-resources.handler';
 import { GetResourceByIdQueryHandler } from './application/queries/get-resource-by-id/get-resource-by-id.handler';
@@ -12,6 +13,7 @@ import { ResourceController } from './presentation/controllers/resource.controll
 
 const CommandHandlers = [
   CreateResourceCommandHandler,
+  DeleteResourceCommandHandler,
   UpdateResourceCommandHandler,
 ];
 

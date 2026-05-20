@@ -14,6 +14,19 @@ export class CreateResourceResultDto extends createZodDto(
   CreateResourceResultSchema,
 ) {}
 
+export const DeleteResourceResultSchema = z
+  .object({
+    id: z.string().meta({
+      description: 'The ID of the soft-deleted resource',
+      example: 'clhg12345000008l4f1h5g6i7',
+    }),
+  })
+  .meta({ id: 'DeleteResourceResultDto' });
+
+export class DeleteResourceResultDto extends createZodDto(
+  DeleteResourceResultSchema,
+) {}
+
 export const AssignResourceResultSchema = z
   .object({
     resourceIds: z.array(z.string()).meta({

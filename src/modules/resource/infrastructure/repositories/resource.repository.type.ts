@@ -9,14 +9,16 @@ export type PrismaResourceRecord = {
   size: number | null;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt: Date | null;
 };
 
 export type ResourceWriteData = Omit<
   PrismaResourceRecord,
-  'createdAt' | 'updatedAt' | 'id'
+  'createdAt' | 'updatedAt' | 'id' | 'deletedAt'
 > & {
   id?: string;
   createdAt?: Date;
+  deletedAt?: Date | null;
 };
 
 export type ResourceDelegate = {
@@ -31,6 +33,10 @@ export type ResourceDelegate = {
   }): Promise<PrismaResourceRecord[]>;
   count(args: { where: Record<string, unknown> }): Promise<number>;
   create(args: { data: ResourceWriteData }): Promise<PrismaResourceRecord>;
+  updateMany(args: {
+    where: Record<string, unknown>;
+    data: Record<string, unknown>;
+  }): Promise<{ count: number }>;
 };
 
 export type CourseResourceDelegate = {

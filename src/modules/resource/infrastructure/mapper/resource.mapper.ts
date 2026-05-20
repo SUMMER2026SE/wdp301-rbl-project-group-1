@@ -19,6 +19,7 @@ export class ResourceMapper implements IMapper<
       size: record.size,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
+      deletedAt: record.deletedAt,
     });
   }
 

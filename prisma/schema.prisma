@@ -677,6 +677,7 @@ model Resource {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -684,6 +685,7 @@ model Resource {
   lessonResources LessonResource[]
 
   @@index([userId])
+  @@index([deletedAt])
   @@map("resource")
 }
 

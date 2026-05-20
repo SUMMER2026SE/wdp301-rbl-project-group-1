@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryResult } from '../../../../shared/domain/common/query';
@@ -15,6 +24,8 @@ import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateResourceCommand } from '../../application/commands/create-resource/create-resource.command';
 import { CreateResourceResult } from '../../application/commands/create-resource/create-resource.result';
+import { DeleteResourceCommand } from '../../application/commands/delete-resource/delete-resource.command';
+import { DeleteResourceResult } from '../../application/commands/delete-resource/delete-resource.result';
 import { UpdateResourceCommand } from '../../application/commands/update-resource/update-resource.command';
 import { UpdateResourceResult } from '../../application/commands/update-resource/update-resource.result';
 import { GetAllResourcesQuery } from '../../application/queries/get-all-resources/get-all-resources.query';
@@ -37,6 +48,7 @@ import {
 } from '../schemas/get-resources-by-tutor-query.dto';
 import {
   CreateResourceResultDto,
+  DeleteResourceResultDto,
   ResourceResponseDto,
   UpdateResourceResultDto,
 } from '../schemas/resource-response.dto';
@@ -199,6 +211,27 @@ export class ResourceController {
       GetResourceByIdQuery,
       GetResourceByIdResult
     >(new GetResourceByIdQuery(id));
+    return BaseResponse.ok(result);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'deleteResource',
+    summary: 'Soft delete a resource by ID',
+  })
+  @ApiOkResponseWrapped(DeleteResourceResultDto, {
+    description: 'Resource deleted successfully.',
+  })
+  async deleteResource(
+    @CurrentUser() user: { userId: string },
+    @Param('id') id: string,
+  ): Promise<BaseResponse<DeleteResourceResult>> {
+    const result = await this.commandBus.execute<
+      DeleteResourceCommand,
+      DeleteResourceResult
+    >(new DeleteResourceCommand(user.userId, id));
     return BaseResponse.ok(result);
   }
 }
