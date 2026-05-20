@@ -2,6 +2,7 @@ from typing import Any
 
 from src.handlers.base import BaseEventHandler
 from src.models.item import Item, BasicInfo, ItemMetrics
+from src.jobs.embedding_queue import push_to_embedding_queue
 
 
 class CourseCreatedHandler(BaseEventHandler):
@@ -26,6 +27,7 @@ class CourseCreatedHandler(BaseEventHandler):
         )
         await item.insert()
         print(f"[*] Course {item.id} saved to MongoDB.")
+        await push_to_embedding_queue({"type": "COURSE", "id": item.id})
 
 
 class CourseUpdatedHandler(BaseEventHandler):
@@ -46,3 +48,4 @@ class CourseUpdatedHandler(BaseEventHandler):
 
         await existing.save()
         print(f"[*] Course {existing.id} updated in MongoDB.")
+        await push_to_embedding_queue({"type": "COURSE", "id": existing.id})

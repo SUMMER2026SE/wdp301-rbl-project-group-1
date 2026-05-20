@@ -10,6 +10,7 @@ from src.handlers import HANDLER_REGISTRY
 
 load_dotenv()
 
+
 RABBITMQ_URL = os.getenv("RABBITMQ_URL")
 QUEUE_NAME = "edura_events_queue"
 
@@ -40,10 +41,12 @@ async def process_message(message: aio_pika.IncomingMessage) -> None:
             print(f"[!] [RabbitMQ] Unexpected error: {e}")
 
 
+
 async def start_rabbitmq_consumer():
     if not RABBITMQ_URL:
         print("[!] [RabbitMQ] RABBITMQ_URL is not set. Skipping RabbitMQ connection.")
         return None
+
 
     while True:
         try:

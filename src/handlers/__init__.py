@@ -1,9 +1,9 @@
-"""
+"\""
 Handler registry: maps event pattern strings to their handler instances.
 To add a new handler, import it here and add an entry to HANDLER_REGISTRY.
-"""
+"\""
 
-from handlers import events as Events
+from src.config import events as Events
 from src.handlers.user_handler import UserCreatedHandler, TutorCreatedHandler
 from src.handlers.course_handler import CourseCreatedHandler, CourseUpdatedHandler
 from src.handlers.interaction_handler import InteractionLoggedHandler

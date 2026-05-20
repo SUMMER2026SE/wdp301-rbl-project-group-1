@@ -1,10 +1,8 @@
-
 """
 RabbitMQ event pattern constants.
 Mirrors the EVENTS constant in the NestJS backend (events.constants.ts).
 Use these instead of hardcoded strings to avoid typos and enable refactoring.
 """
-
 
 USER_CREATED = "user_created"
 TUTOR_CREATED = "tutor_created"
