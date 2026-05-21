@@ -169,6 +169,45 @@ export class CourseController {
     return QueryResponse.query(result);
   }
 
+  @Get('tutor/:id')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getTutorCoursesByTutorId',
+    summary: 'Get courses of a tutor by ID',
+    description: 'Returns a paginated list of courses for the specified tutor.',
+  })
+  @ApiOkResponseQueryWrapped(CourseResponseDto, {
+    description: 'Tutor courses returned successfully.',
+  })
+  async getTutorCourseById(
+    @Param('id') id: string,
+    @Query() dto: GetCoursesQueryDto,
+  ): Promise<GetTutorCoursesResult> {
+    const query: GetCoursesQueryParams = dto;
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+
+    const params: CoursePaginatedParams = {
+      page,
+      limit,
+      skip: (page - 1) * limit,
+      search: query.search,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+      gradeId: query.gradeId,
+      subjectId: query.subjectId,
+      status: query.status,
+    };
+
+    const result = await this.queryBus.execute<
+      GetTutorCoursesQuery,
+      QueryResult<TutorCourseResultData>
+    >(new GetTutorCoursesQuery(id, params));
+
+    return QueryResponse.query(result);
+  }
+
   @Get(':id')
   @Public()
   @ApiOperation({
