@@ -27,6 +27,26 @@ const injectedRtkApi = api.injectEndpoints({
     upgradeTutor: build.mutation<UpgradeTutorApiResponse, UpgradeTutorApiArg>({
       query: () => ({ url: `/api/users/me/upgrade-tutor`, method: "PATCH" }),
     }),
+    updateTutorProfile: build.mutation<
+      UpdateTutorProfileApiResponse,
+      UpdateTutorProfileApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/users/tutor-profile`,
+        method: "PATCH",
+        body: queryArg.updateTutorProfileDto,
+      }),
+    }),
+    updateStudentProfile: build.mutation<
+      UpdateStudentProfileApiResponse,
+      UpdateStudentProfileApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/users/student-profile`,
+        method: "PATCH",
+        body: queryArg.updateStudentProfileDto,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -78,6 +98,24 @@ export type UpgradeTutorApiResponse =
     data: UpgradeTutorResultDto;
   };
 export type UpgradeTutorApiArg = void;
+export type UpdateTutorProfileApiResponse =
+  /** status 200 Tutor profile updated successfully. */ {
+    success: boolean;
+    message: string;
+    data: UpdateProfileResultDto;
+  };
+export type UpdateTutorProfileApiArg = {
+  updateTutorProfileDto: UpdateTutorProfileDto;
+};
+export type UpdateStudentProfileApiResponse =
+  /** status 200 Student profile updated successfully. */ {
+    success: boolean;
+    message: string;
+    data: UpdateProfileResultDto;
+  };
+export type UpdateStudentProfileApiArg = {
+  updateStudentProfileDto: UpdateStudentProfileDto;
+};
 export type UserResponseDto = {
   id: string;
   email: string;
@@ -174,10 +212,34 @@ export type UpgradeTutorResultDto = {
   /** Indicates whether the upgrade was successful */
   success: boolean;
 };
+export type UpdateTutorProfileDto = {
+  /** Bio */
+  bio?: string | null;
+  /** Specialization subject */
+  specialization?: string | null;
+  /** Years of experience */
+  experience?: number | null;
+  /** Educational background */
+  education?: string | null;
+  /** Price per hour in VND */
+  pricePerHour?: number | null;
+};
+export type UpdateStudentProfileDto = {
+  /** School name */
+  school?: string | null;
+  /** Learning goal */
+  learningGoal?: string | null;
+  /** List of grade IDs the student wants to study */
+  gradeIds?: string[];
+  /** List of subject IDs the student is interested in */
+  subjectIds?: string[];
+};
 export const {
   useGetUsersQuery,
   useGetProfileQuery,
   useUpdateProfileMutation,
   useChangeAvatarMutation,
   useUpgradeTutorMutation,
+  useUpdateTutorProfileMutation,
+  useUpdateStudentProfileMutation,
 } = injectedRtkApi;
