@@ -217,11 +217,14 @@ export class CourseController {
   @ApiOkResponseWrapped(CourseResponseDto, {
     description: 'Course returned successfully.',
   })
-  async getCourseById(@Param('id') id: string) {
+  async getCourseById(
+    @Param('id') id: string,
+    @CurrentUser() user?: { userId: string },
+  ) {
     const result = await this.queryBus.execute<
       GetCourseByIdQuery,
       GetCourseByIdResult
-    >(new GetCourseByIdQuery(id));
+    >(new GetCourseByIdQuery(id, user?.userId));
     return BaseResponse.ok(result);
   }
 

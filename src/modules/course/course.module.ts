@@ -22,9 +22,12 @@ const QueryHandlers = [
   GetJoinedStudentsQueryHandler,
   GetTutorCoursesQueryHandler,
 ];
+import { SyncCourseViewToRabbitMqHandler } from './application/events/sync-course-view-to-rabbitmq.handler';
+
 const EventHandlers = [
   SyncCourseToRabbitMqHandler,
   SyncCourseUpdateToRabbitMqHandler,
+  SyncCourseViewToRabbitMqHandler,
 ];
 @Module({
   imports: [CqrsModule],

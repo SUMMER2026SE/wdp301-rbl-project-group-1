@@ -1,6 +1,7 @@
 import { Inject, NotFoundException } from '@nestjs/common';
-import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
+import { EventBus, IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
+import { CourseViewedDomainEvent } from '../../../domain/events/course-viewed.domain-event';
 import { ICourseRepository } from '../../../domain/repositories/course.repository.interface';
 import { GetCourseByIdQuery } from './get-course-by-id.query';
 import { GetCourseByIdResult } from './get-course-by-id.result';
@@ -14,6 +15,7 @@ export class GetCourseByIdQueryHandler
   constructor(
     @Inject(ICourseRepository)
     private readonly courseRepository: ICourseRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(query: GetCourseByIdQuery): Promise<GetCourseByIdResult> {
@@ -23,6 +25,12 @@ export class GetCourseByIdQueryHandler
     }
 
     const { course, subject, grade } = result;
+
+    if (query.userId) {
+      this.eventBus.publish(
+        new CourseViewedDomainEvent(query.userId, course.id),
+      );
+    }
 
     return new GetCourseByIdResult(
       course.id,

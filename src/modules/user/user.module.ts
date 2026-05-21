@@ -9,7 +9,9 @@ import { UpgradeTutorCommandHandler } from './application/commands/upgrade-tutor
 
 import { GetProfileQueryHandler } from './application/queries/get-profile/get-profile.handler';
 import { GetTutorsQueryHandler } from './application/queries/get-tutors/get-tutors.handler';
+import { GetUserProfileByIdQueryHandler } from './application/queries/get-user-profile-by-id/get-user-profile-by-id.handler';
 import { GetUsersQueryHandler } from './application/queries/get-users/get-users.handler';
+import { SyncTutorViewToRabbitMqHandler } from './application/events/sync-tutor-view-to-rabbitmq.handler';
 
 import { IProfileRepository } from './domain/repositories/profile.repository.interface';
 import { IStudentRepository } from './domain/repositories/student.repository.interface';
@@ -33,11 +35,13 @@ import { UserController } from './presentation/controllers/user.controller';
     GetProfileQueryHandler,
     GetTutorsQueryHandler,
     GetUsersQueryHandler,
+    GetUserProfileByIdQueryHandler,
     UpdateProfileHandler,
     ChangeAvatarHandler,
     UpgradeTutorCommandHandler,
     UpdateTutorProfileHandler,
     UpdateStudentProfileHandler,
+    SyncTutorViewToRabbitMqHandler,
     {
       provide: IUserRepository,
       useClass: PrismaUserRepository,

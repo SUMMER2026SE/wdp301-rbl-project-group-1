@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Patch, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Patch, Param, UseInterceptors } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -19,6 +19,7 @@ import { BaseResponse } from '../../../../shared/presentation/responses/base-res
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
+import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { ChangeAvatarCommand } from '../../application/commands/change-avatar/change-avatar.command';
 import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';
 import { UpdateProfileCommand } from '../../application/commands/update-profile/update-profile.command';
@@ -31,6 +32,8 @@ import { UpgradeTutorCommand } from '../../application/commands/upgrade-tutor/up
 import { UpgradeTutorResult } from '../../application/commands/upgrade-tutor/upgrade-tutor.result';
 import { GetProfileQuery } from '../../application/queries/get-profile/get-profile.query';
 import { GetProfileResult } from '../../application/queries/get-profile/get-profile.result';
+import { GetUserProfileByIdQuery } from '../../application/queries/get-user-profile-by-id/get-user-profile-by-id.query';
+import { GetUserProfileByIdResult } from '../../application/queries/get-user-profile-by-id/get-user-profile-by-id.result';
 import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
 import {
   GetUsersResult,
@@ -38,6 +41,7 @@ import {
 } from '../../application/queries/get-users/get-users.result';
 import { ChangeAvatarResultDto } from '../schemas/change-avatar-response.dto';
 import { GetProfileResponseDto } from '../schemas/get-profile-response.dto';
+import { GetUserProfileByIdResponseDto } from '../schemas/get-user-profile-by-id-response.dto';
 import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
 import { UpdateProfileDto } from '../schemas/update-profile.dto';
 import { UpdateStudentProfileDto } from '../schemas/update-student-profile.dto';
@@ -85,6 +89,27 @@ export class UserController {
       GetProfileQuery,
       GetProfileResult
     >(new GetProfileQuery(user.userId));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Get(':id')
+  @Public()
+  @ApiOperation({
+    operationId: 'getUserProfileById',
+    summary: 'Get public user profile by ID',
+  })
+  @ApiOkResponseWrapped(GetUserProfileByIdResponseDto, {
+    description: 'User profile returned successfully.',
+  })
+  async getUserProfileById(
+    @Param('id') id: string,
+    @CurrentUser() viewer?: { userId: string },
+  ): Promise<BaseResponse<GetUserProfileByIdResult>> {
+    const result = await this.queryBus.execute<
+      GetUserProfileByIdQuery,
+      GetUserProfileByIdResult
+    >(new GetUserProfileByIdQuery(id, viewer?.userId));
 
     return BaseResponse.ok(result);
   }
