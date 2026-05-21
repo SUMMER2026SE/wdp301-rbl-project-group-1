@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Tutor Application Approved</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #f4f6f8;
+      font-family: Arial, sans-serif;
+    }
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white;
+      text-align: center;
+      padding: 24px;
+      font-size: 20px;
+      font-weight: bold;
+    }
+    .content {
+      padding: 30px;
+      text-align: center;
+      color: #333;
+      line-height: 1.6;
+    }
+    .password-box {
+      margin: 24px auto;
+      padding: 16px 24px;
+      font-size: 24px;
+      letter-spacing: 2px;
+      font-weight: bold;
+      color: #10b981;
+      background: #ecfdf5;
+      border-radius: 8px;
+      display: inline-block;
+    }
+    .footer {
+      font-size: 12px;
+      color: #888;
+      text-align: center;
+      padding: 20px;
+      border-top: 1px solid #eee;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      🎉 Application Approved!
+    </div>
+
+    <div class="content">
+      <p>Congratulations!</p>
+      <p>Your tutor application has been successfully approved.</p>
+      <p>You can now log in using your email and the temporary password below:</p>
+
+      <div class="password-box">{{temporaryPassword}}</div>
+
+      <p>Please remember to change this password after your first login.</p>
+    </div>
+
+    <div class="footer">
+      © 2026 Your App. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
