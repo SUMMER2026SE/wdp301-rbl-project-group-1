@@ -8,6 +8,7 @@ import { UpdateTutorProfileHandler } from './application/commands/update-tutor-p
 import { UpgradeTutorCommandHandler } from './application/commands/upgrade-tutor/upgrade-tutor.handler';
 
 import { GetProfileQueryHandler } from './application/queries/get-profile/get-profile.handler';
+import { GetTutorsQueryHandler } from './application/queries/get-tutors/get-tutors.handler';
 import { GetUsersQueryHandler } from './application/queries/get-users/get-users.handler';
 
 import { IProfileRepository } from './domain/repositories/profile.repository.interface';
@@ -22,13 +23,15 @@ import { PrismaTutorRepository } from './infrastructure/repositories/tutor.repos
 import { PrismaUserIdentityRepository } from './infrastructure/repositories/user-identity.repository.impl';
 import { PrismaUserRepository } from './infrastructure/repositories/user.repository.impl';
 
+import { TutorController } from './presentation/controllers/tutor.controller';
 import { UserController } from './presentation/controllers/user.controller';
 
 @Module({
   imports: [CqrsModule],
-  controllers: [UserController],
+  controllers: [UserController, TutorController],
   providers: [
     GetProfileQueryHandler,
+    GetTutorsQueryHandler,
     GetUsersQueryHandler,
     UpdateProfileHandler,
     ChangeAvatarHandler,
