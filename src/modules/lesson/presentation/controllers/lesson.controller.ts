@@ -10,7 +10,10 @@ import {
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryResult } from '../../../../shared/domain/common/query';
-import { UserRole } from '../../../../shared/domain/enums/enums';
+import {
+  AttendanceStatus,
+  UserRole,
+} from '../../../../shared/domain/enums/enums';
 import {
   ApiCreatedResponseWrapped,
   ApiOkResponseQueryWrapped,
@@ -23,9 +26,13 @@ import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateLessonCommand } from '../../application/commands/create-lesson/create-lesson.command';
 import { CreateLessonResult } from '../../application/commands/create-lesson/create-lesson.result';
+import { MarkAttendanceCommand } from '../../application/commands/mark-attendance/mark-attendance.command';
+import { MarkAttendanceResult } from '../../application/commands/mark-attendance/mark-attendance.result';
 import { UpdateLessonCommand } from '../../application/commands/update-lesson/update-lesson.command';
 import { UpdateLessonResult } from '../../application/commands/update-lesson/update-lesson.result';
 
+import { GetAttendanceByLessonQuery } from '../../application/queries/get-attendance-by-lesson/get-attendance-by-lesson.query';
+import { GetAttendanceByLessonResult } from '../../application/queries/get-attendance-by-lesson/get-attendance-by-lesson.result';
 import { GetLessonByIdQuery } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.query';
 import { GetLessonByIdResult } from '../../application/queries/get-lesson-by-id/get-lesson-by-id.result';
 import { GetLessonDetailsQuery } from '../../application/queries/get-lesson-details/get-lesson-details.query';
@@ -33,6 +40,10 @@ import { GetLessonDetailsResult } from '../../application/queries/get-lesson-det
 import { GetLessonsByCourseQuery } from '../../application/queries/get-lessons-by-course/get-lessons-by-course.query';
 import { LessonByCourseResultData } from '../../application/queries/get-lessons-by-course/get-lessons-by-course.result';
 import { LessonPaginatedParams } from '../../domain/repositories/lesson.repository.interface';
+import {
+  MarkAttendanceDto,
+  MarkAttendanceResultDto,
+} from '../schemas/attendance.dto';
 import { CreateLessonDto } from '../schemas/create-lesson.dto';
 import {
   GetLessonsByCourseQueryDto,
@@ -168,6 +179,59 @@ export class LessonController {
       UpdateLessonCommand,
       UpdateLessonResult
     >(cmd);
+    return BaseResponse.ok(result);
+  }
+
+  // ── Attendance ──
+
+  @Post(':lessonId/attendance')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'markAttendance',
+    summary: 'Mark attendance for multiple students in a lesson',
+  })
+  @ApiOkResponseWrapped(MarkAttendanceResultDto, {
+    description: 'Attendance marked successfully.',
+  })
+  async markAttendance(
+    @CurrentUser() user: { userId: string },
+    @Param('lessonId') lessonId: string,
+    @Body() dto: MarkAttendanceDto,
+  ): Promise<BaseResponse<MarkAttendanceResult>> {
+    const cmd = new MarkAttendanceCommand(
+      user.userId,
+      lessonId,
+      dto.attendances.map((a) => ({
+        studentId: a.studentId,
+        status: a.status as AttendanceStatus,
+        note: a.note,
+      })),
+    );
+
+    const result = await this.commandBus.execute<
+      MarkAttendanceCommand,
+      MarkAttendanceResult
+    >(cmd);
+    return BaseResponse.ok(result);
+  }
+
+  @Get(':lessonId/attendance')
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getAttendanceByLesson',
+    summary: 'Get attendance records for a lesson',
+  })
+  @ApiOkResponseWrapped(MarkAttendanceResultDto, {
+    description: 'Attendance records returned successfully.',
+  })
+  async getAttendanceByLesson(
+    @Param('lessonId') lessonId: string,
+  ): Promise<BaseResponse<GetAttendanceByLessonResult>> {
+    const result = await this.queryBus.execute<
+      GetAttendanceByLessonQuery,
+      GetAttendanceByLessonResult
+    >(new GetAttendanceByLessonQuery(lessonId));
     return BaseResponse.ok(result);
   }
 

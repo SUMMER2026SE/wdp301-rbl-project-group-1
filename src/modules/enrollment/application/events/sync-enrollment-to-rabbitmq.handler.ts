@@ -5,9 +5,7 @@ import { EnrollmentCreatedDomainEvent } from '../../domain/events/enrollment-cre
 import { EVENTS } from '../../../../shared/application/constants/events.constants';
 
 @EventsHandler(EnrollmentCreatedDomainEvent)
-export class SyncEnrollmentToRabbitMqHandler
-  implements IEventHandler<EnrollmentCreatedDomainEvent>
-{
+export class SyncEnrollmentToRabbitMqHandler implements IEventHandler<EnrollmentCreatedDomainEvent> {
   constructor(
     @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
   ) {}
