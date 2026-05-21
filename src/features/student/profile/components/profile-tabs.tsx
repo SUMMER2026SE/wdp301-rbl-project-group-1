@@ -1,6 +1,11 @@
 ﻿"use client";
 
 import { ProfileNavigation } from "@/src/features/student/profile/components/profile-navigation";
+import {
+  useGetProfileQuery,
+  useUpdateProfileMutation,
+  useUpdateStudentProfileMutation,
+} from "@/src/features/user/userApi";
 import TextBox from "@/src/shared/components/atoms/text-box/text-box";
 import { Button } from "@/src/shared/components/ui/button";
 import { Card } from "@/src/shared/components/ui/card";
@@ -14,8 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/src/shared/components/ui/select";
+import { Spinner } from "@/src/shared/components/ui/spinner";
+import { useAppSelector } from "@/src/shared/store/hooks";
 import { BookOpen, Flag, Mail, MapPin, Phone, Save, User } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { PROFILE_TABS, type ProfileTabId } from "../constants";
@@ -40,28 +48,71 @@ export function ProfileTabs() {
     PROFILE_TABS.find((tab) => pathname.startsWith(tab.activePrefix))?.id ||
     ("info" as ProfileTabId);
 
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { data, refetch } = useGetProfileQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  const [updateProfile, { isLoading: isUpdatingProfile }] =
+    useUpdateProfileMutation();
+  const [updateStudentProfile, { isLoading: isUpdatingStudent }] =
+    useUpdateStudentProfileMutation();
+
+  const isSubmitting = isUpdatingProfile || isUpdatingStudent;
+
+  const userProfile = data?.data?.profile;
+  const studentInfo = data?.data?.student;
+
+  const buildDefaultValues = () => ({
+    email: data?.data?.email ?? "",
+    phone: userProfile?.phone ?? "",
+    address: userProfile?.address ?? "",
+    parentName: "",
+    parentRelationship: "father",
+    parentPhone: "",
+    parentEmail: "",
+    sendToParent: false,
+    school: studentInfo?.school ?? "",
+    grade: "12",
+    goal: studentInfo?.learningGoal ?? "",
+  });
+
   const methods = useForm<ProfileFormValues>({
-    defaultValues: {
-      email: "nguyen.vana@example.com",
-      phone: "0987654321",
-      address: "123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh",
-      parentName: "Nguyễn Văn B",
-      parentRelationship: "father",
-      parentPhone: "0912345678",
-      parentEmail: "parent@example.com",
-      sendToParent: true,
-      school: "THPT Chuyên Lê Hồng Phong",
-      grade: "12",
-      goal: "Thi đại học khối A (Toán, Lý, Hóa) mục tiêu 27+ điểm",
-    },
+    defaultValues: buildDefaultValues(),
     mode: "onTouched",
   });
 
   const { handleSubmit, control, reset } = methods;
 
-  const onSubmit = async () => {
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    toast.success("Đã lưu thay đổi hồ sơ thành công");
+  useEffect(() => {
+    if (data) {
+      reset(buildDefaultValues());
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
+
+  const onSubmit = async (values: ProfileFormValues) => {
+    try {
+      await Promise.all([
+        updateProfile({
+          updateProfileDto: {
+            email: values.email || undefined,
+            phone: values.phone || undefined,
+            address: values.address || undefined,
+          },
+        }).unwrap(),
+        updateStudentProfile({
+          updateStudentProfileDto: {
+            school: values.school || null,
+            learningGoal: values.goal || null,
+          },
+        }).unwrap(),
+      ]);
+
+      toast.success("Đã lưu thay đổi hồ sơ thành công");
+      await refetch();
+    } catch {
+      toast.error("Lưu thất bại. Vui lòng thử lại.");
+    }
   };
 
   return (
@@ -86,7 +137,7 @@ export function ProfileTabs() {
                       id="full-name"
                       name="full-name"
                       type="text"
-                      value="Nguyễn Văn A"
+                      value={userProfile?.nickname ?? ""}
                       readOnly
                       className="bg-muted text-muted-foreground border-border"
                     />
@@ -310,15 +361,16 @@ export function ProfileTabs() {
                   type="button"
                   variant="outline"
                   className="hover:bg-muted"
-                  onClick={() => reset()}
+                  onClick={() => reset(buildDefaultValues())}
                 >
                   Hủy bỏ
                 </Button>
                 <Button
                   type="submit"
+                  disabled={isSubmitting}
                   className="flex items-center gap-2 bg-primary hover:bg-primary/90 shadow-sm"
                 >
-                  <Save className="w-5 h-5" />
+                  {isSubmitting ? <Spinner /> : <Save className="w-5 h-5" />}
                   Lưu thay đổi
                 </Button>
               </div>

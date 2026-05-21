@@ -189,6 +189,8 @@ export type UpdateProfileResultDto = {
   message: string;
 };
 export type UpdateProfileDto = {
+  /** New email address */
+  email?: string;
   /** Nickname */
   nickname?: string;
   /** Avatar URL */

@@ -2,6 +2,7 @@
 
 import { useGetProfileQuery } from "@/src/features/user/userApi";
 import { Skeleton } from "@/src/shared/components/ui/skeleton";
+import { useAppSelector } from "@/src/shared/store/hooks";
 import { upgradePlans } from "../mock-data";
 import { EditProfileModal } from "./edit-profile-modal";
 import { ProfileTabs } from "./profile-tabs";
@@ -9,7 +10,10 @@ import { TutorProfileHeader } from "./tutor-profile-header";
 import { UpgradePlans } from "./upgrade-plans";
 
 export function TutorProfileContainer() {
-  const { data, isLoading } = useGetProfileQuery();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { data, isLoading } = useGetProfileQuery(undefined, {
+    skip: !isAuthenticated,
+  });
 
   const profile = data?.data;
   const userProfile = profile?.profile;
