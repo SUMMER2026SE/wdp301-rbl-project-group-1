@@ -4,8 +4,8 @@ import {
   CourseGrid,
   FilterSection,
   HeaderSection,
-  PaginationSection,
 } from "@/src/features/tutor/courses/components";
+import {Pagination} from "@/src/shared/components/molecules/pagination/pagination";
 import { useState } from "react";
 
 const mockCourses = [
@@ -74,10 +74,11 @@ export default function TutorCoursesPage() {
         <CourseGrid courses={displayedCourses} />
 
         {/* Pagination */}
-        <PaginationSection
+        <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
           onPageChange={handlePageChange}
+          className="mt-4"
         />
       </div>
     </main>

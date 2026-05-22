@@ -1,10 +1,10 @@
 "use client";
 
 import {
-  BreadcrumbSection,
   HeaderSection,
   TabsSection,
 } from "@/src/features/tutor/courses-detail/components";
+import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { useParams, usePathname } from "next/navigation";
 
 // Mock course data
@@ -79,7 +79,12 @@ export default function CourseDetailLayout({
       <div className="layout-content-container flex flex-col max-w-[1200px] flex-1 w-full gap-8">
         {/* Breadcrumb */}
         <div className="flex flex-col gap-4">
-          <BreadcrumbSection courseName={courseName} />
+          <BreadcrumbNav
+            items={[
+              { label: "Lớp học của tôi", href: "/tutor/courses" },
+              { label: courseName },
+            ]}
+          />
 
           {/* Header */}
           <HeaderSection

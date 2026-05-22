@@ -1,6 +1,6 @@
 "use client";
 
-import { PriceRangeSlider } from "@/src/shared/components/atoms/price-range-slider";
+import { PriceRangeSlider } from "@/src/shared/components/atoms/price-range-slider/price-range-slider";
 import { Button } from "@/src/shared/components/ui/button";
 import { Checkbox } from "@/src/shared/components/ui/checkbox";
 import { useState } from "react";

@@ -1,14 +1,14 @@
-"use client";
-
+import { cn } from "@/src/shared/lib/utils";
 import type { ReactNode } from "react";
 
-interface StatBadgeProps {
+export interface StatBadgeProps {
   icon: ReactNode;
   iconBgColor?: string;
   iconColor?: string;
   value: string | number;
   label: string;
   subtext?: string;
+  className?: string; // Hỗ trợ custom style từ component cha
 }
 
 export function StatBadge({
@@ -18,11 +18,16 @@ export function StatBadge({
   value,
   label,
   subtext,
+  className,
 }: StatBadgeProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className={cn("flex items-center gap-2", className)}>
       <div
-        className={`size-10 rounded-full ${iconBgColor} flex items-center justify-center ${iconColor}`}
+        className={cn(
+          "flex size-10 items-center justify-center rounded-full",
+          iconBgColor,
+          iconColor,
+        )}
       >
         {icon}
       </div>

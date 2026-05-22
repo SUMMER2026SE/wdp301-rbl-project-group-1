@@ -1,6 +1,6 @@
 "use client";
 
-import { SortSelect } from "./sort-select";
+import { SortSelect } from "./sort-select/sort-select";
 
 interface TutorGridHeaderProps {
   totalCount: number;

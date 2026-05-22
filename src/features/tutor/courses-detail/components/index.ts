@@ -1,4 +1,3 @@
-export { BreadcrumbSection } from './breadcrumb-section';
 export { HeaderSection } from './header-section';
 export { TabsSection } from './tabs-section';
 export { DocumentCard } from './document-card';

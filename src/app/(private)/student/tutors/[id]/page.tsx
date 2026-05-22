@@ -8,7 +8,7 @@ import {
   TutorReviews,
 } from "@/src/features/student/tutor-detail/components";
 import { TUTORS_DETAIL_DATA } from "@/src/features/student/tutor-detail/mock-data";
-import { Breadcrumb } from "@/src/shared/components/molecules/breadcrumb";
+import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { Button } from "@/src/shared/components/ui/button";
 import Link from "next/link";
 
@@ -40,7 +40,7 @@ export default async function TutorDetailPage({
       <main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Breadcrumb
+          <BreadcrumbNav
             items={[
               { label: "Trang chủ", href: "/student/home" },
               { label: "Tìm gia sư", href: "/student/tutors" },

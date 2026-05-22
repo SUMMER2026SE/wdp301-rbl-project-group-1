@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BreadcrumbNav,
   CourseContent,
   CourseHeader,
   OnlineClassInfo,
@@ -10,6 +9,7 @@ import {
 } from "@/src/features/student/courses-detail/components";
 import { mockCourseDetail } from "@/src/features/student/mock-data";
 import { mockTutoringCourse } from "@/src/features/student/tutoring-mock-data";
+import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 
 export default function CourseDetailPage() {
   // Use mockTutoringCourse for sidebar/header, but mockCourseDetail for content if needed
@@ -17,9 +17,14 @@ export default function CourseDetailPage() {
 
   return (
     <div className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
-      <BreadcrumbNav courseName={course.title} />
+      <BreadcrumbNav
+        items={[
+          { label: "Khóa học của tôi", href: "/student/courses" },
+          { label: course.title },
+        ]}
+      />
 
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-8 mt-6">
         {/* Main Content */}
         <div className="w-full lg:w-[70%] space-y-8">
           <CourseHeader
