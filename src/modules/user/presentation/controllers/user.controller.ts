@@ -119,6 +119,7 @@ export class UserController {
 
   @Get(':id')
   @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getUserProfileById',
     summary: 'Get public user profile by ID',

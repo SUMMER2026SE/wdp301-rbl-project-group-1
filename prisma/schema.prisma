@@ -4,12 +4,14 @@
 // Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider   = "postgresql"
+  extensions = [vector]
 }
 
 //////////////////////////////////////////////////
@@ -184,6 +186,29 @@ enum AuthProvider {
   @@map("auth_provider")
 }
 
+enum ConversationType {
+  DIRECT
+  GROUP
+
+  @@map("conversation_type")
+}
+
+enum ParticipantRole {
+  MEMBER
+  ADMIN
+
+  @@map("participant_role")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  FILE
+  SYSTEM
+
+  @@map("message_type")
+}
+
 //////////////////////////////////////////////////
 // USER SYSTEM
 //////////////////////////////////////////////////
@@ -201,6 +226,8 @@ model User {
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  recommendation Json?
+
   profile    Profile?
   identities UserIdentity[]
 
@@ -211,13 +238,16 @@ model User {
   parent           Parent?
   tutorApplication TutorApplication?
 
-  posts                    Post[]
-  comments                 Comment[]
-  notifications            NotificationTarget[]
-  reports                  Report[]                  @relation("Reporter")
-  postLikes                PostLike[]
-  resources                Resource[]
-  payments                 Payment[]
+  posts         Post[]
+  comments      Comment[]
+  notifications NotificationTarget[]
+  reports       Report[]             @relation("Reporter")
+  postLikes     PostLike[]
+  resources     Resource[]
+  payments      Payment[]
+
+  conversations ConversationParticipant[]
+  messages      Message[]
 
   @@map("user")
 }
@@ -258,7 +288,6 @@ model Profile {
 
   @@map("profile")
 }
-
 
 model Tutor {
   id   String @id @map("id")
@@ -675,8 +704,8 @@ model Resource {
   type   ResourceType
   size   Int? // Size in bytes
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -941,6 +970,71 @@ model PostCategory {
 }
 
 //////////////////////////////////////////////////
+// CHAT SYSTEM
+//////////////////////////////////////////////////
+
+model Conversation {
+  id        String           @id @default(cuid())
+  type      ConversationType
+  name      String?
+  avatarUrl String?          @map("avatar_url")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@map("conversation")
+}
+
+model ConversationParticipant {
+  conversationId String          @map("conversation_id")
+  userId         String          @map("user_id")
+  role           ParticipantRole @default(MEMBER)
+
+  lastReadMessageId String? @map("last_read_message_id")
+
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lastReadMessage Message?     @relation("LastReadMessage", fields: [lastReadMessageId], references: [id], onDelete: SetNull)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+  @@map("conversation_participant")
+}
+
+model Message {
+  id             String  @id @default(cuid())
+  conversationId String  @map("conversation_id")
+  senderId       String? @map("sender_id") // Nullable for SYSTEM messages
+
+  content String
+  type    MessageType @default(TEXT)
+  fileUrl String?     @map("file_url")
+
+  replyToId String? @map("reply_to_id")
+
+  isDeleted Boolean @default(false) @map("is_deleted")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User?        @relation(fields: [senderId], references: [id], onDelete: SetNull)
+  replyTo      Message?     @relation("ReplyTo", fields: [replyToId], references: [id], onDelete: SetNull)
+  replies      Message[]    @relation("ReplyTo")
+
+  readBy ConversationParticipant[] @relation("LastReadMessage")
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@map("message")
+}
+
+//////////////////////////////////////////////////
 // NOTIFICATION
 //////////////////////////////////////////////////
 
@@ -974,8 +1068,8 @@ model NotificationTarget {
 //////////////////////////////////////////////////
 
 model Payment {
-  id        String @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   payerUserId String @map("payer_user_id")
   payer       User   @relation(fields: [payerUserId], references: [id])
 
@@ -1010,4 +1104,34 @@ model Report {
   reporter User @relation("Reporter", fields: [reporterId], references: [id])
 
   @@map("report")
+}
+
+//////////////////////////////////////////////////
+// AI RECOMMENDATION SYSTEM (Managed by Python)
+//////////////////////////////////////////////////
+
+model Item {
+  id              String                      @id
+  itemType        String                      @map("itemType")
+  basicInfo       Json                        @map("basicInfo")
+  features        Json
+  metrics         Json
+  embeddingVector Unsupported("vector(384)")? @map("embeddingVector")
+  createdAt       DateTime                    @default(now()) @map("createdAt")
+  updatedAt       DateTime                    @updatedAt @map("updatedAt")
+
+  @@map("items")
+}
+
+model Interaction {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("userId")
+  itemId    String   @map("itemId")
+  itemType  String   @map("itemType")
+  type      String
+  value     Float    @default(1.0)
+  context   Json?
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  @@map("interactions")
 }

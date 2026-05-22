@@ -210,6 +210,7 @@ export class CourseController {
 
   @Get(':id')
   @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getCourseById',
     summary: 'Get a course by ID',
