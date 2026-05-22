@@ -1,17 +1,17 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Get,
   Patch,
   Param,
-  UseInterceptors,
+  Req,
 } from '@nestjs/common';
+import type { MultipartFile } from '@fastify/multipart';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
 import { ApiImageUpload } from '../../../../modules/storage/presentation/decorators/api-image-upload.decorator';
-import { UploadedImage } from '../../../../modules/storage/presentation/decorators/uploaded-image.decorator';
-import { UploadedImageDto } from '../../../../modules/storage/presentation/schemas/upload-image.dto';
 import {
   QueryParams,
   QueryResult,
@@ -55,6 +55,23 @@ import { UpdateStudentProfileDto } from '../schemas/update-student-profile.dto';
 import { UpdateTutorProfileDto } from '../schemas/update-tutor-profile.dto';
 import { UpgradeTutorResultDto } from '../schemas/upgrade-tutor-response.dto';
 import { UserResponseDto } from '../schemas/user-response.dto';
+
+const ALLOWED_AVATAR_MIME_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+]);
+
+const ALLOWED_AVATAR_FIELD_NAMES = new Set(['avatar', 'file']);
+
+const streamToBuffer = async (stream: NodeJS.ReadableStream) => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+};
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
@@ -157,15 +174,34 @@ export class UserController {
   @ApiOkResponseWrapped(ChangeAvatarResultDto, {
     description: 'Avatar updated successfully.',
   })
-  @UseInterceptors(FileInterceptor('avatar'))
   async changeAvatar(
     @CurrentUser() user: { userId: string },
-    @UploadedImage() file: UploadedImageDto,
+    @Req() req: FastifyRequest,
   ): Promise<BaseResponse<ChangeAvatarResult>> {
+    if (!req.isMultipart()) {
+      throw new BadRequestException('Request is not multipart');
+    }
+
+    const data: MultipartFile | undefined = await req.file();
+
+    if (!data) {
+      throw new BadRequestException('File is missing');
+    }
+
+    if (!ALLOWED_AVATAR_FIELD_NAMES.has(data.fieldname)) {
+      throw new BadRequestException('Invalid file field name');
+    }
+
+    if (!ALLOWED_AVATAR_MIME_TYPES.has(data.mimetype)) {
+      throw new BadRequestException('Invalid image type');
+    }
+
+    const buffer = await streamToBuffer(data.file);
+
     const result = await this.commandBus.execute<
       ChangeAvatarCommand,
       ChangeAvatarResult
-    >(new ChangeAvatarCommand(user.userId, file.buffer, file.mimetype));
+    >(new ChangeAvatarCommand(user.userId, buffer, data.mimetype));
 
     return BaseResponse.ok(result);
   }
