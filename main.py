@@ -9,11 +9,11 @@ from src.jobs.embedding_worker import embedding_worker_loop
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Connect to MongoDB
+    # Startup: Connect to PostgreSQL
     try:
         await init_db()
     except Exception as e:
-        print(f"[!] [MongoDB] Initialization failed: {e}")
+        print(f"[!] [PostgreSQL] Initialization failed: {e}")
 
     # Startup: Run the RabbitMQ consumer
     connection = await start_rabbitmq_consumer()
