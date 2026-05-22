@@ -202,37 +202,32 @@ export function ProfileTabs() {
                   />
                 </div>
 
-                <div>
-                  <Label
-                    htmlFor="parent-relationship"
-                    className="text-foreground font-medium"
-                  >
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="parent-relationship" className="font-bold">
                     Mối quan hệ
                   </Label>
-                  <div className="mt-2">
-                    <Controller
-                      name="parentRelationship"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn mối quan hệ" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="father">Cha</SelectItem>
-                            <SelectItem value="mother">Mẹ</SelectItem>
-                            <SelectItem value="guardian">
-                              Người giám hộ
-                            </SelectItem>
-                            <SelectItem value="other">Khác</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
+                  <Controller
+                    name="parentRelationship"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="h-12 rounded-xl">
+                          <SelectValue placeholder="Chọn mối quan hệ" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="father">Cha</SelectItem>
+                          <SelectItem value="mother">Mẹ</SelectItem>
+                          <SelectItem value="guardian">
+                            Người giám hộ
+                          </SelectItem>
+                          <SelectItem value="other">Khác</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 <div>
@@ -309,35 +304,36 @@ export function ProfileTabs() {
                   />
                 </div>
 
-                <div>
-                  <Label
-                    htmlFor="grade"
-                    className="text-foreground font-medium"
-                  >
+                <div className="grid w-full items-center gap-3">
+                  <Label htmlFor="grade" className="font-bold">
                     Lớp
                   </Label>
-                  <div className="mt-2">
-                    <Controller
-                      name="grade"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Chọn lớp" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="10">Lớp 10</SelectItem>
-                            <SelectItem value="11">Lớp 11</SelectItem>
-                            <SelectItem value="12">Lớp 12</SelectItem>
-                            <SelectItem value="other">Khác</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                  </div>
+                  <Controller
+                    name="grade"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="h-12 rounded-xl">
+                          <SelectValue placeholder="Chọn lớp" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="6">Lớp 6</SelectItem>
+                          <SelectItem value="7">Lớp 7</SelectItem>
+                          <SelectItem value="8">Lớp 8</SelectItem>
+                          <SelectItem value="9">Lớp 9</SelectItem>
+                          <SelectItem value="10">Lớp 10</SelectItem>
+                          <SelectItem value="11">Lớp 11</SelectItem>
+                          <SelectItem value="12">Lớp 12</SelectItem>
+                          <SelectItem value="college">Cao đẳng</SelectItem>
+                          <SelectItem value="university">Đại học</SelectItem>
+                          <SelectItem value="other">Khác</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
                 </div>
 
                 <div className="sm:col-span-2">

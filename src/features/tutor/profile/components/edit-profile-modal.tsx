@@ -2,15 +2,18 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Pencil } from "lucide-react";
+import { useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { toast } from "sonner";
 
 import {
+  useChangeAvatarMutation,
   useGetProfileQuery,
   useUpdateProfileMutation,
   useUpdateTutorProfileMutation,
 } from "@/src/features/user/userApi";
 import TextBox from "@/src/shared/components/atoms/text-box/text-box";
+import { AvatarUpload } from "@/src/shared/components/molecules/avatar-upload/avatar-upload";
 import InputForm from "@/src/shared/components/organisms/input-form/input-form";
 import { Button } from "@/src/shared/components/ui/button";
 import {
@@ -111,19 +114,36 @@ function EditProfileFormFields() {
 function EditProfileModalContent() {
   const modal = useModalContext()!;
   const { data, refetch } = useGetProfileQuery();
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [updateProfile, { isLoading: isUpdatingProfile }] =
     useUpdateProfileMutation();
   const [updateTutorProfile, { isLoading: isUpdatingTutor }] =
     useUpdateTutorProfileMutation();
+  const [changeAvatar, { isLoading: isUpdatingAvatar }] =
+    useChangeAvatarMutation();
 
-  const isSubmitting = isUpdatingProfile || isUpdatingTutor;
+  const isSubmitting = isUpdatingProfile || isUpdatingTutor || isUpdatingAvatar;
 
   const userProfile = data?.data?.profile;
   const tutorInfo = data?.data?.tutor;
 
+  const uploadAvatar = async (file: File) => {
+    const buildFormData = (fieldName: "avatar" | "file") => {
+      const formData = new FormData();
+      formData.append(fieldName, file, file.name);
+      return formData;
+    };
+
+    try {
+      await changeAvatar({ body: buildFormData("avatar") }).unwrap();
+    } catch {
+      await changeAvatar({ body: buildFormData("file") }).unwrap();
+    }
+  };
+
   const handleSubmit = async (values: EditProfileFormValues) => {
     try {
-      await Promise.all([
+      const tasks: Promise<unknown>[] = [
         updateProfile({
           updateProfileDto: {
             address: values.address ?? undefined,
@@ -136,9 +156,16 @@ function EditProfileModalContent() {
             bio: values.bio,
           },
         }).unwrap(),
-      ]);
+      ];
+
+      if (avatarFile) {
+        tasks.push(uploadAvatar(avatarFile));
+      }
+
+      await Promise.all(tasks);
 
       toast.success("Cập nhật hồ sơ thành công!");
+      setAvatarFile(null);
       await refetch();
       modal.closeModal();
     } catch {
@@ -150,6 +177,7 @@ function EditProfileModalContent() {
     if (open) {
       modal.openModal();
     } else {
+      setAvatarFile(null);
       modal.closeModal();
     }
   };
@@ -181,6 +209,16 @@ function EditProfileModalContent() {
               readOnly
               className="bg-muted/50 cursor-not-allowed text-muted-foreground"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-sm font-bold">Ảnh đại diện</Label>
+            <div className="flex items-center gap-4">
+              <AvatarUpload value={avatarFile} onChange={setAvatarFile} />
+              <p className="text-xs text-muted-foreground">
+                Chọn ảnh JPG/PNG, tối đa 5MB.
+              </p>
+            </div>
           </div>
         </div>
 
