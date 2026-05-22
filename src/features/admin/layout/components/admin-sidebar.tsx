@@ -1,6 +1,15 @@
 "use client";
 
-import { cn } from "@/src/shared/lib/utils";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarSeparator,
+} from "@/src/shared/components/ui/sidebar";
 import {
   BookOpen,
   CircleDollarSign,
@@ -27,49 +36,61 @@ export function AdminSidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 flex-col border-r border-border bg-card lg:flex">
-      <div className="flex items-center gap-3 border-b border-border p-4">
-        <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-          <ScrollText className="size-5" />
+    <Sidebar collapsible="offcanvas">
+      <SidebarHeader className="p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
+            <ScrollText className="size-5" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="truncate text-base font-bold leading-tight text-foreground">
+              Hệ thống Quản trị
+            </h1>
+            <p className="text-xs text-muted-foreground">Trung tâm điều hành</p>
+          </div>
         </div>
-        <div className="min-w-0">
-          <h1 className="truncate text-base font-bold leading-tight text-foreground">
-            Hệ thống Quản trị
-          </h1>
-          <p className="text-xs text-muted-foreground">Trung tâm điều hành</p>
-        </div>
-      </div>
+      </SidebarHeader>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto p-4">
-        {ADMIN_NAV_LINKS.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
+      <SidebarSeparator className="mx-0" />
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
-                isActive && "bg-primary/10 text-primary hover:bg-primary/10 hover:text-primary"
-              )}
-            >
-              <Icon className="size-5" />
-              <span>{item.label}</span>
-            </Link>
-          );
-        })}
-      </nav>
+      <SidebarContent className="p-4">
+        <SidebarMenu className="gap-1">
+          {ADMIN_NAV_LINKS.map((item) => {
+            const isActive = pathname === item.href;
+            const Icon = item.icon;
 
-      <div className="border-t border-border p-4">
-        <Link
-          href="/login"
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-        >
-          <LogOut className="size-5" />
-          <span>Đăng xuất</span>
-        </Link>
-      </div>
-    </aside>
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive}
+                  className="h-10 gap-3 rounded-lg px-3"
+                >
+                  <Link href={item.href}>
+                    <Icon className="size-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarContent>
+
+      <SidebarSeparator className="mx-0" />
+
+      <SidebarFooter className="p-4">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild className="h-10 gap-3 rounded-lg px-3">
+              <Link href="/login">
+                <LogOut className="size-5" />
+                <span>Đăng xuất</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
+    </Sidebar>
   );
 }

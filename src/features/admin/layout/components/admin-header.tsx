@@ -1,12 +1,13 @@
+import { Avatar, AvatarFallback } from "@/src/shared/components/ui/avatar";
 import { Button } from "@/src/shared/components/ui/button";
+import { SidebarTrigger } from "@/src/shared/components/ui/sidebar";
 import { Bell, ShieldCheck } from "lucide-react";
-import { AdminMobileMenu } from "./admin-mobile-menu";
 
 export function AdminHeader() {
   return (
     <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4 shadow-sm sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
-        <AdminMobileMenu />
+        <SidebarTrigger className="md:hidden" />
         <div className="min-w-0">
           <h2 className="truncate text-lg font-bold text-foreground sm:text-xl">
             Bảng điều khiển Admin Tổng lực
@@ -28,9 +29,11 @@ export function AdminHeader() {
             <p className="text-sm font-semibold text-foreground">Admin Edura</p>
             <p className="text-xs text-muted-foreground">Quản trị viên</p>
           </div>
-          <div className="flex size-9 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <ShieldCheck className="size-5" />
-          </div>
+          <Avatar>
+            <AvatarFallback className="bg-primary/10 text-primary">
+              <ShieldCheck className="size-5" />
+            </AvatarFallback>
+          </Avatar>
         </div>
       </div>
     </header>
