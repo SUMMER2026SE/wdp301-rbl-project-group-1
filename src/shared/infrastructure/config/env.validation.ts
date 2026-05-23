@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const envValidationSchema = z.object({
   PORT: z.string().default('8080'),
+  NODE_ENV: z.string().default('development'),
   MONGO_URI: z.string().url(),
   PRISMA_URL: z.string().url(),
   REDIS_URL: z.string().url(),

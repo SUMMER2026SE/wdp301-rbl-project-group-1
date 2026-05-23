@@ -3,6 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ConfirmPaymentCommand } from '../../application/commands/confirm-payment/confirm-payment.command';
 import { Webhook } from '@payos/node';
+import { Public } from '../../../../modules/auth/presentation/decorators/public.decorator';
 
 @ApiTags('Payment Webhook')
 @Controller('payments/webhook')
@@ -10,6 +11,7 @@ export class WebhookController {
   constructor(private readonly commandBus: CommandBus) {}
 
   @Post()
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Handle PayOS webhook' })
   async handleWebhook(@Body() body: Webhook): Promise<void> {

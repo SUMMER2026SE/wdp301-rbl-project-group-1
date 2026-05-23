@@ -5,9 +5,7 @@ import { IMessageBroker } from '../../../../shared/application/interfaces/messag
 import { TutorViewedDomainEvent } from '../../domain/events/tutor-viewed.domain-event';
 
 @EventsHandler(TutorViewedDomainEvent)
-export class SyncTutorViewToRabbitMqHandler
-  implements IEventHandler<TutorViewedDomainEvent>
-{
+export class SyncTutorViewToRabbitMqHandler implements IEventHandler<TutorViewedDomainEvent> {
   constructor(
     @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
   ) {}
