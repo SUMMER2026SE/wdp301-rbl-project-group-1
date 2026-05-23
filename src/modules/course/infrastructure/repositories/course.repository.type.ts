@@ -15,11 +15,19 @@ export type PrismaCourseRecord = {
   createdAt: Date;
   subject?: { id: string; name: string } | null;
   grade?: { id: string; name: string } | null;
+  tutor?: {
+    user?: {
+      profile?: {
+        nickname: string;
+        avatarUrl: string | null;
+      } | null;
+    } | null;
+  } | null;
 };
 
 export type CourseWriteData = Omit<
   PrismaCourseRecord,
-  'createdAt' | 'id' | 'subject' | 'grade'
+  'createdAt' | 'id' | 'subject' | 'grade' | 'tutor'
 > & {
   id?: string;
   createdAt?: Date;
@@ -28,7 +36,7 @@ export type CourseWriteData = Omit<
 export type CourseDelegate = {
   findUnique(args: {
     where: { id: string };
-    include?: { subject?: boolean; grade?: boolean };
+    include?: any;
   }): Promise<PrismaCourseRecord | null>;
   create(args: { data: CourseWriteData }): Promise<PrismaCourseRecord>;
   update(args: {
@@ -41,7 +49,7 @@ export type CourseDelegate = {
     orderBy?: Record<string, 'asc' | 'desc'>;
     skip?: number;
     take?: number;
-    include?: { subject?: boolean; grade?: boolean };
+    include?: any;
   }): Promise<PrismaCourseRecord[]>;
 };
 

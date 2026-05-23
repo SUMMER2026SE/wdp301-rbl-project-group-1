@@ -118,8 +118,11 @@ export class CourseController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      gradeId: query.gradeId,
-      subjectId: query.subjectId,
+      gradeIds: query.gradeIds,
+      subjectIds: query.subjectIds,
+      status: query.status,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
     };
 
     const result = await this.queryBus.execute<
@@ -156,9 +159,11 @@ export class CourseController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      gradeId: query.gradeId,
-      subjectId: query.subjectId,
+      gradeIds: query.gradeIds,
+      subjectIds: query.subjectIds,
       status: query.status,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
     };
 
     const result = await this.queryBus.execute<
@@ -195,9 +200,11 @@ export class CourseController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      gradeId: query.gradeId,
-      subjectId: query.subjectId,
+      gradeIds: query.gradeIds,
+      subjectIds: query.subjectIds,
       status: query.status,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
     };
 
     const result = await this.queryBus.execute<

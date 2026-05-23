@@ -45,13 +45,30 @@ export class PrismaCourseRepository implements ICourseRepository {
   async findByIdWithMeta(id: string): Promise<CourseWithMeta | null> {
     const c = await this.courseDelegate.findUnique({
       where: { id },
-      include: { subject: true, grade: true },
+      include: {
+        subject: true,
+        grade: true,
+        tutor: {
+          include: {
+            user: {
+              include: {
+                profile: true,
+              },
+            },
+          },
+        },
+      },
     });
     if (!c) return null;
     return {
       course: this.mapper.toDomain(c),
       subject: { id: c.subjectId, name: c.subject?.name ?? null },
       grade: { id: c.gradeId, name: c.grade?.name ?? null },
+      tutor: {
+        id: c.tutorId,
+        name: c.tutor?.user?.profile?.nickname ?? null,
+        avatarUrl: c.tutor?.user?.profile?.avatarUrl ?? null,
+      },
     };
   }
 
@@ -63,15 +80,22 @@ export class PrismaCourseRepository implements ICourseRepository {
     if (params.search) {
       where.title = { contains: params.search, mode: 'insensitive' };
     }
-    if (params.gradeId) {
-      where.gradeId = params.gradeId;
+    if (params.gradeIds && params.gradeIds.length > 0) {
+      where.gradeId = { in: params.gradeIds };
     }
-    if (params.subjectId) {
-      where.subjectId = params.subjectId;
+    if (params.subjectIds && params.subjectIds.length > 0) {
+      where.subjectId = { in: params.subjectIds };
     }
 
     if (params.tutorId) {
       where.tutorId = params.tutorId;
+    }
+
+    if (params.minPrice !== undefined || params.maxPrice !== undefined) {
+      const priceFilter: Record<string, number> = {};
+      if (params.minPrice !== undefined) priceFilter.gte = params.minPrice;
+      if (params.maxPrice !== undefined) priceFilter.lte = params.maxPrice;
+      where.price = priceFilter;
     }
 
     // If restrictStatus is true and no status specified, only show PUBLISHED courses
@@ -92,7 +116,19 @@ export class PrismaCourseRepository implements ICourseRepository {
         orderBy,
         skip: params.skip,
         take: params.limit,
-        include: { subject: true, grade: true },
+        include: {
+          subject: true,
+          grade: true,
+          tutor: {
+            include: {
+              user: {
+                include: {
+                  profile: true,
+                },
+              },
+            },
+          },
+        },
       }),
     ]);
 
@@ -100,6 +136,11 @@ export class PrismaCourseRepository implements ICourseRepository {
       course: this.mapper.toDomain(c),
       subject: { id: c.subjectId, name: c.subject?.name ?? null },
       grade: { id: c.gradeId, name: c.grade?.name ?? null },
+      tutor: {
+        id: c.tutorId,
+        name: c.tutor?.user?.profile?.nickname ?? null,
+        avatarUrl: c.tutor?.user?.profile?.avatarUrl ?? null,
+      },
     }));
 
     return createQueryResult(courses, total, params);

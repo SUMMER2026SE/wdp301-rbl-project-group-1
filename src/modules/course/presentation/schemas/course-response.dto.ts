@@ -31,6 +31,14 @@ export const CourseResponseSchema = z
   .object({
     id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
     tutorId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+    tutor: z.object({
+      id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+      name: z.string().nullable().meta({ example: 'Nguyễn Văn A' }),
+      avatarUrl: z
+        .string()
+        .nullable()
+        .meta({ example: 'https://cdn.example/avatar.png' }),
+    }),
     title: z.string().meta({ example: 'Toán 11 - Nâng cao' }),
     description: z
       .string()

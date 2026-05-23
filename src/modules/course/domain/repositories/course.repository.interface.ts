@@ -7,11 +7,13 @@ import {
 import { type Course } from '../entities/course.entity';
 
 export interface CoursePaginatedParams extends QueryParams {
-  gradeId?: string;
-  subjectId?: string;
+  gradeIds?: string[];
+  subjectIds?: string[];
   status?: CourseStatus;
   tutorId?: string;
   restrictStatus?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export const ICourseRepository = Symbol('ICourseRepository');
@@ -20,6 +22,11 @@ export interface CourseWithMeta {
   course: Course;
   subject: { id: string; name: string | null };
   grade: { id: string; name: string | null };
+  tutor: {
+    id: string;
+    name: string | null;
+    avatarUrl: string | null;
+  };
 }
 
 export interface JoinedStudent {
