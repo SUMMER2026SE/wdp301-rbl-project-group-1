@@ -1,9 +1,11 @@
 "use client";
 
+import { useGetAllCoursesQuery } from "@/src/features/course/courseApi";
 import { FilterSidebar } from "@/src/shared/components/organisms/filter-sidebar";
+import { useDebounce } from "@/src/shared/hooks/use-debounce";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { MOCK_COURSES } from "../mock-data";
 import {
   coursesFilterSchema,
   type CoursesFilterFormData,
@@ -12,30 +14,18 @@ import type { Course } from "../types";
 import { CoursesGrid } from "./courses-grid";
 import { CoursesSearchSection } from "./courses-search-section";
 
-const SUBJECTS = [
-  "Toán học",
-  "Vật lý",
-  "Tiếng Anh",
-  "Hóa học",
-  "Ngữ văn",
-  "Sinh học",
-  "Lập trình",
-  "Kỹ năng mềm",
-];
+import { useGetAllSubjectsQuery } from "@/src/features/academic-catalog/academicCatalogApi";
 
 const FORMATS = [
   { id: "online", label: "Trực tuyến" },
   { id: "offline", label: "Offline" },
 ];
 
-const DEFAULT_PRICE_MIN = 100000;
+const DEFAULT_PRICE_MIN = 0;
 const DEFAULT_PRICE_MAX = 2000000;
 
 export function CoursesListContainer() {
-  // TODO: Replace MOCK_COURSES with RTK Query when API is ready
-  // import { useGetCoursesQuery } from "@/src/features/courses/coursesApi";
-  // const { data, isLoading } = useGetCoursesQuery({ page, limit, subjects, formats, priceMin, priceMax, rating, search, sortBy });
-  const allCourses: Course[] = MOCK_COURSES;
+  const [currentPage, setCurrentPage] = useState(1);
 
   const form = useForm<CoursesFilterFormData>({
     resolver: zodResolver(coursesFilterSchema),
@@ -50,47 +40,105 @@ export function CoursesListContainer() {
   });
 
   const search = form.watch("search");
+  const debouncedSearch = useDebounce(search, 500);
   const subjects = form.watch("subjects");
   const formats = form.watch("formats");
   const priceRange = form.watch("priceRange");
   const rating = form.watch("rating");
   const sortBy = form.watch("sortBy");
 
-  // TODO: Replace with server-side filtering when API is ready
-  // Pass all filter values as query params to the API endpoint
-  const filteredCourses = allCourses.filter((course) => {
-    if (search) {
-      const q = search.toLowerCase();
-      const matchesSearch =
-        course.title.toLowerCase().includes(q) ||
-        course.subject.toLowerCase().includes(q) ||
-        course.instructor.name.toLowerCase().includes(q) ||
-        course.description.toLowerCase().includes(q);
-      if (!matchesSearch) return false;
+  // Map local sortBy to API sortBy and sortOrder
+  const apiSortParams = useMemo(() => {
+    switch (sortBy) {
+      case "price-low":
+        return { sortBy: "price", sortOrder: "asc" as const };
+      case "price-high":
+        return { sortBy: "price", sortOrder: "desc" as const };
+      case "newest":
+        return { sortBy: "createdAt", sortOrder: "desc" as const };
+      case "rating": // Not natively supported yet, mapping to createdAt
+        return { sortBy: "createdAt", sortOrder: "desc" as const };
+      case "popular": // Not natively supported yet, mapping to createdAt
+        return { sortBy: "createdAt", sortOrder: "desc" as const };
+      default:
+        return { sortBy: "createdAt", sortOrder: "desc" as const };
     }
+  }, [sortBy]);
 
-    if (subjects.length > 0 && !subjects.includes(course.subject)) return false;
+  // Fetch subjects for filter
+  const { data: subjectsResponse } = useGetAllSubjectsQuery();
+  const subjectsData = useMemo(
+    () => subjectsResponse?.data || [],
+    [subjectsResponse?.data],
+  );
+  const subjectNames = useMemo(
+    () => subjectsData.map((s) => s.name),
+    [subjectsData],
+  );
 
+  // Map selected subject names back to subject IDs for the API
+  const selectedSubjectIds = useMemo(() => {
+    if (!subjects || subjects.length === 0) return undefined;
+    return subjectsData
+      .filter((s) => subjects.includes(s.name))
+      .map((s) => s.id);
+  }, [subjects, subjectsData]);
+
+  // Query courses from API
+  const { data: coursesResponse, isFetching } = useGetAllCoursesQuery({
+    page: currentPage.toString(),
+    limit: "8",
+    search: debouncedSearch || undefined,
+    sortBy: apiSortParams.sortBy,
+    sortOrder: apiSortParams.sortOrder,
+    subjectIds: selectedSubjectIds,
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
+    status: undefined, 
+  });
+
+  const apiCourses = coursesResponse?.data || [];
+  const totalCount = coursesResponse?.meta?.total || 0;
+  const totalPages = coursesResponse?.meta?.totalPages || 0;
+
+  // Map API courses to UI components interface
+  let filteredCourses: Course[] = apiCourses.map((c) => ({
+    id: c.id,
+    title: c.title,
+    description: c.description || "",
+    subject: c.subjectName || "Khác",
+    level: c.level,
+    format: "online", // Mock since API doesn't support format yet
+    instructor: {
+      id: c.tutor?.id || c.tutorId,
+      name: c.tutor?.name || "Gia sư",
+      avatarUrl: c.tutor?.avatarUrl || "https://github.com/shadcn.png",
+      role: "Gia sư",
+    },
+    rating: 4.5, // Mock
+    reviewCount: 0,
+    studentCount: 0,
+    price: c.price || 0,
+    status: "suggested",
+  }));
+
+  // sau ni có rating sẽ đưa vào API filter luôn, tạm thời filter client ở đây
+  filteredCourses = filteredCourses.filter((course) => {
     if (formats.length > 0 && !formats.includes(course.format)) return false;
-
-    if (course.price < priceRange[0] || course.price > priceRange[1])
-      return false;
-
     if (rating > 0 && course.rating < rating) return false;
-
     return true;
   });
 
   return (
     <div className="flex flex-col gap-8">
       {/* Search hero */}
-      <CoursesSearchSection form={form} totalCount={filteredCourses.length} />
+      <CoursesSearchSection form={form} totalCount={totalCount} />
 
       {/* Filter sidebar + results grid */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
         <FilterSidebar
           subjects={{
-            items: SUBJECTS,
+            items: subjectNames,
             selected: subjects,
             onChange: (v) => form.setValue("subjects", v),
           }}
@@ -103,8 +151,8 @@ export function CoursesListContainer() {
           price={{
             label: "Khoảng học phí (VND)",
             current: priceRange,
-            sliderMin: 100000,
-            sliderMax: 2000000,
+            sliderMin: DEFAULT_PRICE_MIN,
+            sliderMax: DEFAULT_PRICE_MAX,
             step: 100000,
             onChange: (min, max) => form.setValue("priceRange", [min, max]),
           }}
@@ -125,9 +173,16 @@ export function CoursesListContainer() {
         />
         <CoursesGrid
           courses={filteredCourses}
-          totalCount={filteredCourses.length}
+          totalCount={totalCount}
+          totalPages={totalPages}
+          currentPage={currentPage}
           sortBy={sortBy}
-          onSortChange={(v) => form.setValue("sortBy", v)}
+          isLoading={isFetching}
+          onSortChange={(v) => {
+            form.setValue("sortBy", v);
+            setCurrentPage(1);
+          }}
+          onPageChange={setCurrentPage}
         />
       </div>
     </div>
