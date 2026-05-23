@@ -19,7 +19,7 @@ export default function CourseDetailPage() {
     <div className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
       <BreadcrumbNav
         items={[
-          { label: "Khóa học của tôi", href: "/student/courses" },
+          { label: "Khóa học của tôi", href: "/student/my-courses" },
           { label: course.title },
         ]}
       />
