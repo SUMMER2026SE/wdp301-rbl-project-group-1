@@ -54,10 +54,11 @@ export type CourseDelegate = {
 };
 
 export type EnrollmentWithStudentRecord = {
+  courseId: string;
   studentId: string;
   status: EnrollmentStatus;
   enrolledAt: Date;
-  student: {
+  student?: {
     id: string;
     school: string | null;
     learningGoal: string | null;
@@ -72,18 +73,9 @@ export type EnrollmentWithStudentRecord = {
 };
 
 export type EnrollmentDelegate = {
-  findMany(args: {
-    where: { courseId: string };
-    include: {
-      student: {
-        include: {
-          user: {
-            include: {
-              profile: boolean;
-            };
-          };
-        };
-      };
-    };
+  findMany(args?: {
+    where?: Record<string, unknown>;
+    include?: any;
+    select?: any;
   }): Promise<EnrollmentWithStudentRecord[]>;
 };

@@ -8,4 +8,6 @@ export interface IEnrollmentRepository {
     studentId: string,
     courseId: string,
   ): Promise<Enrollment | null>;
+  findById(id: string): Promise<Enrollment | null>;
+  update(enrollment: Enrollment): Promise<Enrollment>;
 }

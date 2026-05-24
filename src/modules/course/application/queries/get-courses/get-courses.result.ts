@@ -18,6 +18,7 @@ export interface CourseResultData {
     name: string | null;
     avatarUrl: string | null;
   };
+  isEnrolled?: boolean;
 }
 
 export type GetCoursesResult = QueryApiResponse<CourseResultData>;

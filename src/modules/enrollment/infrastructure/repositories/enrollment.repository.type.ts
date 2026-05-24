@@ -19,8 +19,12 @@ export type EnrollmentWriteData = Omit<
 export type EnrollmentDelegate = {
   create(args: { data: EnrollmentWriteData }): Promise<PrismaEnrollmentRecord>;
   findUnique(args: {
-    where: {
-      studentId_courseId: { studentId: string; courseId: string };
-    };
+    where:
+      | { id: string }
+      | { studentId_courseId: { studentId: string; courseId: string } };
   }): Promise<PrismaEnrollmentRecord | null>;
+  update(args: {
+    where: { id: string };
+    data: Partial<EnrollmentWriteData>;
+  }): Promise<PrismaEnrollmentRecord>;
 };

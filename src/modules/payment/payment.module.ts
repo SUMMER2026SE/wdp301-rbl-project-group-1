@@ -11,6 +11,7 @@ import { PayosGateway } from './infrastructure/gateways/payos/payos.gateway';
 import { MockPaymentGateway } from './infrastructure/gateways/mock/mock.gateway';
 import { IPaymentRepository } from './domain/repositories/payment.repository.interface';
 import { IPaymentGateway } from './domain/gateways/payment.gateway.interface';
+import { EnrollmentModule } from '../enrollment/enrollment.module';
 
 const CommandHandlers = [CreatePaymentHandler, ConfirmPaymentHandler];
 
@@ -36,7 +37,7 @@ const Gateways = [
 ];
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, EnrollmentModule],
   controllers: [PaymentController, WebhookController, MockPaymentController],
   providers: [...CommandHandlers, ...Repositories, ...Gateways],
   exports: [...Repositories],

@@ -14,6 +14,7 @@ export interface CoursePaginatedParams extends QueryParams {
   restrictStatus?: boolean;
   minPrice?: number;
   maxPrice?: number;
+  studentId?: string;
 }
 
 export const ICourseRepository = Symbol('ICourseRepository');
@@ -27,6 +28,7 @@ export interface CourseWithMeta {
     name: string | null;
     avatarUrl: string | null;
   };
+  isEnrolled?: boolean;
 }
 
 export interface JoinedStudent {

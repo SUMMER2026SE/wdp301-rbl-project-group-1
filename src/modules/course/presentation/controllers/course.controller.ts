@@ -95,6 +95,7 @@ export class CourseController {
 
   @Get()
   @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getAllCourses',
     summary: 'Get all courses',
@@ -106,6 +107,7 @@ export class CourseController {
   })
   async getCourses(
     @Query() dto: GetCoursesQueryDto,
+    @CurrentUser() user?: { userId: string },
   ): Promise<GetCoursesResult> {
     const query: GetCoursesQueryParams = dto;
     const page = query.page ?? 1;
@@ -128,7 +130,7 @@ export class CourseController {
     const result = await this.queryBus.execute<
       GetCoursesQuery,
       QueryResult<CourseResultData>
-    >(new GetCoursesQuery(params));
+    >(new GetCoursesQuery(params, user?.userId));
 
     return QueryResponse.query(result);
   }

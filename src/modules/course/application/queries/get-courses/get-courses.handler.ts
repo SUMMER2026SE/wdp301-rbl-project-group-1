@@ -23,7 +23,7 @@ export class GetCoursesQueryHandler
   async execute(
     query: GetCoursesQuery,
   ): Promise<QueryResult<CourseResultData>> {
-    const { params } = query;
+    const { params, userId } = query;
 
     const result = await this.courseRepository.findAll({
       page: params.page,
@@ -37,10 +37,11 @@ export class GetCoursesQueryHandler
       status: params.status,
       minPrice: params.minPrice,
       maxPrice: params.maxPrice,
+      studentId: userId,
     });
 
     const data: CourseResultData[] = result.data.map(
-      ({ course: c, subject, grade, tutor }) => ({
+      ({ course: c, subject, grade, tutor, isEnrolled }) => ({
         id: c.id,
         tutorId: c.tutorId,
         title: c.title,
@@ -52,6 +53,7 @@ export class GetCoursesQueryHandler
         status: c.status,
         createdAt: c.createdAt,
         tutor,
+        isEnrolled,
       }),
     );
 

@@ -132,6 +132,19 @@ export class PrismaCourseRepository implements ICourseRepository {
       }),
     ]);
 
+    let enrolledCourseIds = new Set<string>();
+    if (params.studentId) {
+      const enrollments = await this.enrollmentDelegate.findMany({
+        where: {
+          studentId: params.studentId,
+          courseId: { in: coursesPrisma.map((c) => c.id) },
+          status: 'ACTIVE',
+        },
+        select: { courseId: true },
+      });
+      enrolledCourseIds = new Set(enrollments.map((e) => e.courseId));
+    }
+
     const courses: CourseWithMeta[] = coursesPrisma.map((c) => ({
       course: this.mapper.toDomain(c),
       subject: { id: c.subjectId, name: c.subject?.name ?? null },
@@ -141,6 +154,7 @@ export class PrismaCourseRepository implements ICourseRepository {
         name: c.tutor?.user?.profile?.nickname ?? null,
         avatarUrl: c.tutor?.user?.profile?.avatarUrl ?? null,
       },
+      isEnrolled: enrolledCourseIds.has(c.id),
     }));
 
     return createQueryResult(courses, total, params);
@@ -173,11 +187,11 @@ export class PrismaCourseRepository implements ICourseRepository {
 
     return enrollments.map((e) => ({
       studentId: e.studentId,
-      email: e.student.user.email,
-      nickname: e.student.user.profile?.nickname ?? null,
-      avatarUrl: e.student.user.profile?.avatarUrl ?? null,
-      school: e.student.school ?? null,
-      learningGoal: e.student.learningGoal ?? null,
+      email: e.student!.user.email,
+      nickname: e.student!.user.profile?.nickname ?? null,
+      avatarUrl: e.student!.user.profile?.avatarUrl ?? null,
+      school: e.student!.school ?? null,
+      learningGoal: e.student!.learningGoal ?? null,
       status: e.status,
       enrolledAt: e.enrolledAt,
     }));

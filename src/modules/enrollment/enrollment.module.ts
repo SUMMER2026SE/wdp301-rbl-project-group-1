@@ -7,9 +7,13 @@ import { PrismaEnrollmentRepository } from './infrastructure/repositories/enroll
 import { EnrollmentController } from './presentation/controllers/enrollment.controller';
 
 import { SyncEnrollmentToRabbitMqHandler } from './application/events/sync-enrollment-to-rabbitmq.handler';
+import { PaymentConfirmedHandler } from './application/events/payment-confirmed.handler';
 
 const CommandHandlers = [EnrollCourseCommandHandler];
-const EventHandlers = [SyncEnrollmentToRabbitMqHandler];
+const EventHandlers = [
+  SyncEnrollmentToRabbitMqHandler,
+  PaymentConfirmedHandler,
+];
 
 @Module({
   imports: [CqrsModule, CourseModule],

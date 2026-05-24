@@ -45,10 +45,14 @@ export const CourseResponseSchema = z
       .nullable()
       .meta({ example: 'Khóa học toán 11 nâng cao...' }),
     price: z.number().nullable().meta({ example: 500000 }),
-    subjectId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
-    subjectName: z.string().nullable().meta({ example: 'Toán' }),
-    gradeId: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
-    gradeName: z.string().nullable().meta({ example: 'Lớp 11' }),
+    subject: z.object({
+      id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+      name: z.string().nullable().meta({ example: 'Toán' }),
+    }),
+    grade: z.object({
+      id: z.string().meta({ example: 'cm9x8v7w60000abc123def456' }),
+      name: z.string().nullable().meta({ example: 'Lớp 11' }),
+    }),
     level: z
       .enum(['BEGINNER', 'INTERMEDIATE', 'ADVANCED'])
       .meta({ example: 'INTERMEDIATE' }),
@@ -59,6 +63,7 @@ export const CourseResponseSchema = z
       .string()
       .datetime()
       .meta({ example: '2025-01-01T00:00:00.000Z' }),
+    isEnrolled: z.boolean().optional().meta({ example: true }),
   })
   .meta({ id: 'CourseResponseDto' });
 

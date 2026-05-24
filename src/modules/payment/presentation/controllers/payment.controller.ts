@@ -9,6 +9,7 @@ import {
 import { CreatePaymentDto } from '../schemas/create-payment.dto';
 import { CreatePaymentCommand } from '../../application/commands/create-payment/create-payment.command';
 import { CreatePaymentResult } from '../../application/commands/create-payment/create-payment.result';
+import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 
 @ApiTags('Payment')
 @Controller('payments')
@@ -21,10 +22,11 @@ export class PaymentController {
   @ApiOperation({ summary: 'Create a payment link' })
   @ApiResponse({ status: 201, description: 'Returns the checkoutUrl' })
   async createPayment(
+    @CurrentUser() user: { userId: string },
     @Body() dto: CreatePaymentDto,
   ): Promise<CreatePaymentResult> {
     const command = new CreatePaymentCommand(
-      dto.payerUserId,
+      user.userId,
       dto.referenceType,
       dto.referenceId,
       dto.amount,
