@@ -1,28 +1,22 @@
-from typing import List, Optional, Union, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel, Field
-from beanie import Document
+from sqlalchemy import String, DateTime, func
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.dialects.postgresql import JSONB
+from pgvector.sqlalchemy import Vector
+from src.models.base import Base
 
-class BasicInfo(BaseModel):
-    title: str
-    thumbnailUrl: Optional[str] = None
+class Item(Base):
+    __tablename__ = "items"
 
-class ItemMetrics(BaseModel):
-    rating: float = 0.0
-    reviewCount: int = 0
-    viewCount: int = 0
-    enrollmentCount: Optional[int] = None
-    studentCount: Optional[int] = None
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    itemType: Mapped[str] = mapped_column(String)  # "COURSE" or "TUTOR"
+    
+    basicInfo: Mapped[dict] = mapped_column(JSONB, default=dict)
+    features: Mapped[dict] = mapped_column(JSONB, default=dict)
+    metrics: Mapped[dict] = mapped_column(JSONB, default=dict)
+    
+    embeddingVector = mapped_column(Vector(384))
+    
+    createdAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updatedAt: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-class Item(Document):
-    id: str = Field(alias="_id")
-    itemType: str  # "COURSE" or "TUTOR"
-    basicInfo: BasicInfo
-    features: Dict[str, Any]  # Flexible schema for course vs tutor features
-    metrics: ItemMetrics
-    embeddingVector: List[float] = Field(default_factory=list)
-    createdAt: datetime = Field(default_factory=datetime.utcnow)
-    updatedAt: datetime = Field(default_factory=datetime.utcnow)
-
-    class Settings:
-        name = "items"

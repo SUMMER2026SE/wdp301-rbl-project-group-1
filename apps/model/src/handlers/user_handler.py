@@ -1,23 +1,25 @@
 from typing import Any
-
+from sqlalchemy import select
 from src.handlers.base import BaseEventHandler
-from src.models.user import User, UserProfile
-from src.models.item import Item, BasicInfo, ItemMetrics
+from src.models.user import User
+from src.models.item import Item
 from src.jobs.embedding_queue import push_to_embedding_queue
-
+from src.config.db import get_session_maker
 
 class UserCreatedHandler(BaseEventHandler):
-    """Persists a new user document to MongoDB when a user registers."""
+    """Initializes recommendation data for a new user."""
 
     async def handle(self, payload: dict[str, Any]) -> None:
-        user = User(
-            _id=payload.get("id"),
-            role=payload.get("role", "STUDENT"),
-            profile=UserProfile(
-                name=payload.get("name", "Unknown"),
-                avatarUrl=payload.get("avatarUrl"),
-            ),
-            recommendation={
+        async_session = get_session_maker()
+        async with async_session() as session:
+            result = await session.execute(select(User).filter_by(id=payload.get("id")))
+            user = result.scalar_one_or_none()
+            
+            if not user:
+                print(f"[!] User {payload.get('id')} not found in DB! Backend must insert first.")
+                return
+                
+            user.recommendation = {
                 "explicitPreferences": {
                     "subjectSlugs": payload.get("subjectSlugs", []),
                     "gradeSlugs": payload.get("gradeSlugs", []),
@@ -28,33 +30,41 @@ class UserCreatedHandler(BaseEventHandler):
                     "favoriteSubjects": [],
                 },
                 "embeddingVector": [],
-            },
-        )
-        await user.insert()
-        print(f"[*] User {user.id} saved to MongoDB.")
-        await push_to_embedding_queue({"type": "USER", "id": user.id})
-
+            }
+            
+            await session.commit()
+            print(f"[*] User {user.id} recommendation data initialized in Postgres.")
+            
+        await push_to_embedding_queue({"type": "USER", "id": payload.get("id")})
 
 class TutorCreatedHandler(BaseEventHandler):
-    """Persists a new tutor Item document to MongoDB when a tutor is approved."""
+    """Persists a new tutor Item document to Postgres when a tutor is approved."""
 
     async def handle(self, payload: dict[str, Any]) -> None:
-        item = Item(
-            _id=payload.get("id"),
-            itemType="TUTOR",
-            basicInfo=BasicInfo(
-                title=payload.get("name", "Unknown Tutor"),
-                thumbnailUrl=payload.get("avatarUrl"),
-            ),
-            features={
-                "specialization": payload.get("specialization"),
-                "experience": payload.get("experience", 0),
-                "education": payload.get("education"),
-                "pricePerHour": payload.get("pricePerHour", 0),
-                "subjectSlugs": payload.get("subjectSlugs", []),
-                "gradeSlugs": payload.get("gradeSlugs", []),
-            },
-            metrics=ItemMetrics(),
-        )
-        await item.insert()
-        print(f"[*] Tutor {item.id} saved to MongoDB.")
+        async_session = get_session_maker()
+        async with async_session() as session:
+            item = Item(
+                id=payload.get("id"),
+                itemType="TUTOR",
+                basicInfo={
+                    "title": payload.get("name", "Unknown Tutor"),
+                    "thumbnailUrl": payload.get("avatarUrl"),
+                },
+                features={
+                    "specialization": payload.get("specialization"),
+                    "experience": payload.get("experience", 0),
+                    "education": payload.get("education"),
+                    "pricePerHour": payload.get("pricePerHour", 0),
+                    "subjectSlugs": payload.get("subjectSlugs", []),
+                    "gradeSlugs": payload.get("gradeSlugs", []),
+                },
+                metrics={
+                    "rating": 0.0,
+                    "reviewCount": 0,
+                    "viewCount": 0
+                },
+            )
+            session.add(item)
+            await session.commit()
+            print(f"[*] Tutor {item.id} saved to Postgres.")
+
