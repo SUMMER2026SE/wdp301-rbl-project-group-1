@@ -1,8 +1,20 @@
 import { Injectable } from '@nestjs/common';
+import {
+  Prisma,
+  UserRole as PrismaUserRole,
+} from '../../../../../generated/prisma/client';
+import {
+  createQueryResult,
+  QueryResult,
+} from '../../../../shared/domain/common/query';
 import { PrismaTransactionContext } from '../../../../shared/infrastructure/database/prisma/prisma-transaction.context';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { Tutor } from '../../domain/entities/tutor.entity';
-import { ITutorRepository } from '../../domain/repositories/tutor.repository.interface';
+import {
+  ITutorRepository,
+  TutorPaginatedParams,
+  TutorWithProfile,
+} from '../../domain/repositories/tutor.repository.interface';
 
 @Injectable()
 export class PrismaTutorRepository implements ITutorRepository {
@@ -40,5 +52,105 @@ export class PrismaTutorRepository implements ITutorRepository {
         pricePerHour: tutor.pricePerHour ?? null,
       },
     });
+  }
+
+  async findAll(
+    params: TutorPaginatedParams,
+  ): Promise<QueryResult<TutorWithProfile>> {
+    const where: Prisma.UserWhereInput = {
+      role: PrismaUserRole.TUTOR,
+    };
+
+    const andConditions: Prisma.UserWhereInput[] = [];
+
+    if (params.search) {
+      const search = params.search;
+      andConditions.push({
+        OR: [
+          {
+            profile: {
+              nickname: { contains: search, mode: 'insensitive' },
+            },
+          },
+          {
+            tutor: {
+              specialization: { contains: search, mode: 'insensitive' },
+            },
+          },
+        ],
+      });
+    }
+
+    if (params.specialization) {
+      andConditions.push({
+        tutor: {
+          specialization: {
+            contains: params.specialization,
+            mode: 'insensitive',
+          },
+        },
+      });
+    }
+
+    if (params.minPrice !== undefined || params.maxPrice !== undefined) {
+      const priceFilter: Prisma.FloatFilter = {};
+      if (params.minPrice !== undefined) priceFilter.gte = params.minPrice;
+      if (params.maxPrice !== undefined) priceFilter.lte = params.maxPrice;
+      andConditions.push({
+        tutor: {
+          pricePerHour: priceFilter,
+        },
+      });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+
+    const sortOrder = params.sortOrder ?? 'asc';
+    const orderByMap: Record<string, Prisma.UserOrderByWithRelationInput> = {
+      createdAt: { createdAt: sortOrder },
+      nickname: { profile: { nickname: sortOrder } },
+      pricePerHour: { tutor: { pricePerHour: sortOrder } },
+      rating: { tutor: { rating: sortOrder } },
+      reviewCount: { tutor: { reviewCount: sortOrder } },
+      studentCount: { tutor: { studentCount: sortOrder } },
+    };
+
+    const orderBy =
+      params.sortBy && orderByMap[params.sortBy]
+        ? orderByMap[params.sortBy]
+        : { createdAt: 'desc' as const };
+
+    const [total, users] = await this.client.$transaction([
+      this.client.user.count({ where }),
+      this.client.user.findMany({
+        where,
+        orderBy,
+        skip: params.skip,
+        take: params.limit,
+        include: { profile: true, tutor: true },
+      }),
+    ]);
+
+    const data: TutorWithProfile[] = users.map((user) => ({
+      tutor: Tutor.create(user.id, {
+        userId: user.id,
+        bio: user.tutor?.bio ?? null,
+        specialization: user.tutor?.specialization ?? null,
+        experience: user.tutor?.experience ?? null,
+        education: user.tutor?.education ?? null,
+        pricePerHour: user.tutor?.pricePerHour ?? null,
+        rating: user.tutor?.rating ?? 0,
+        reviewCount: user.tutor?.reviewCount ?? 0,
+        studentCount: user.tutor?.studentCount ?? 0,
+      }),
+      profile: {
+        nickname: user.profile?.nickname ?? null,
+        avatarUrl: user.profile?.avatarUrl ?? null,
+      },
+    }));
+
+    return createQueryResult(data, total, params);
   }
 }

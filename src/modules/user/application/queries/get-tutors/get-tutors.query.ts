@@ -1,5 +1,5 @@
-import { QueryParams } from '../../../../../shared/domain/common/query';
+import { TutorPaginatedParams } from '../../../domain/repositories/tutor.repository.interface';
 
 export class GetTutorsQuery {
-  constructor(public readonly query: QueryParams) {}
+  constructor(public readonly params: TutorPaginatedParams) {}
 }
