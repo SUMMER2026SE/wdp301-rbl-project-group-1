@@ -95,6 +95,7 @@ export class CourseController {
 
   @Get()
   @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getAllCourses',
     summary: 'Get all courses',
@@ -106,6 +107,7 @@ export class CourseController {
   })
   async getCourses(
     @Query() dto: GetCoursesQueryDto,
+    @CurrentUser() user?: { userId: string },
   ): Promise<GetCoursesResult> {
     const query: GetCoursesQueryParams = dto;
     const page = query.page ?? 1;
@@ -118,14 +120,17 @@ export class CourseController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      gradeId: query.gradeId,
-      subjectId: query.subjectId,
+      gradeIds: query.gradeIds,
+      subjectIds: query.subjectIds,
+      status: query.status,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
     };
 
     const result = await this.queryBus.execute<
       GetCoursesQuery,
       QueryResult<CourseResultData>
-    >(new GetCoursesQuery(params));
+    >(new GetCoursesQuery(params, user?.userId));
 
     return QueryResponse.query(result);
   }
@@ -156,9 +161,11 @@ export class CourseController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      gradeId: query.gradeId,
-      subjectId: query.subjectId,
+      gradeIds: query.gradeIds,
+      subjectIds: query.subjectIds,
       status: query.status,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
     };
 
     const result = await this.queryBus.execute<
@@ -195,9 +202,11 @@ export class CourseController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      gradeId: query.gradeId,
-      subjectId: query.subjectId,
+      gradeIds: query.gradeIds,
+      subjectIds: query.subjectIds,
       status: query.status,
+      minPrice: query.minPrice,
+      maxPrice: query.maxPrice,
     };
 
     const result = await this.queryBus.execute<
@@ -210,6 +219,7 @@ export class CourseController {
 
   @Get(':id')
   @Public()
+  @ApiBearerAuth()
   @ApiOperation({
     operationId: 'getCourseById',
     summary: 'Get a course by ID',
@@ -217,11 +227,14 @@ export class CourseController {
   @ApiOkResponseWrapped(CourseResponseDto, {
     description: 'Course returned successfully.',
   })
-  async getCourseById(@Param('id') id: string) {
+  async getCourseById(
+    @Param('id') id: string,
+    @CurrentUser() user?: { userId: string },
+  ) {
     const result = await this.queryBus.execute<
       GetCourseByIdQuery,
       GetCourseByIdResult
-    >(new GetCourseByIdQuery(id));
+    >(new GetCourseByIdQuery(id, user?.userId));
     return BaseResponse.ok(result);
   }
 

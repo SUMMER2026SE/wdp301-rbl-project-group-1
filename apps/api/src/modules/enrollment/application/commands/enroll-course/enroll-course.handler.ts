@@ -1,10 +1,8 @@
 import { Inject } from '@nestjs/common';
+import { ConflictException as NestConflictException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
-import {
-  ConflictException,
-  EntityNotFoundException,
-} from '../../../../../shared/domain/exceptions/domain-exception';
+import { EntityNotFoundException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { EnrollmentStatus } from '../../../../../shared/domain/enums/enums';
 import { ICourseRepository } from '../../../../course/domain/repositories/course.repository.interface';
 import { Enrollment } from '../../../domain/entities/enrollment.entity';
@@ -36,19 +34,34 @@ export class EnrollCourseCommandHandler
       throw new EntityNotFoundException('Course', command.courseId);
     }
 
-    // Check for duplicate enrollment
+    // Idempotent: check existing enrollment
     const existing = await this.enrollmentRepository.findByStudentAndCourse(
       command.studentId,
       command.courseId,
     );
+
     if (existing) {
-      throw new ConflictException('Student is already enrolled in this course');
+      if (existing.status === EnrollmentStatus.ACTIVE) {
+        // Đã học rồi → throw 409 đúng HTTP status
+        throw new NestConflictException(
+          'Bạn đã đăng ký và đang học khóa học này.',
+        );
+      }
+      // PENDING: trả về enrollment cũ để tiếp tục luồng thanh toán
+      return new EnrollCourseResult(
+        existing.id,
+        existing.status,
+        existing.enrolledAt,
+      );
     }
+
+    const isFree = !course.price || course.price === 0;
+    const status = isFree ? EnrollmentStatus.ACTIVE : EnrollmentStatus.PENDING;
 
     const enrollment = Enrollment.create('', {
       studentId: command.studentId,
       courseId: command.courseId,
-      status: EnrollmentStatus.PENDING,
+      status: status,
       enrolledAt: new Date(),
     });
 

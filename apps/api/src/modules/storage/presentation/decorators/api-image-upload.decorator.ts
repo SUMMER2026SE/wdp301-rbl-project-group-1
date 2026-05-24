@@ -1,10 +1,8 @@
-import { applyDecorators, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes } from '@nestjs/swagger';
 
 export function ApiImageUpload(fieldName = 'file') {
   return applyDecorators(
-    UseInterceptors(FileInterceptor(fieldName)),
     ApiConsumes('multipart/form-data'),
     ApiBody({
       schema: {

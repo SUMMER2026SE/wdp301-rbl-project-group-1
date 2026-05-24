@@ -35,4 +35,8 @@ export class Enrollment extends AggregateRoot<string> {
   get enrolledAt(): Date {
     return this.props.enrolledAt;
   }
+
+  changeStatus(status: EnrollmentStatus): void {
+    this.props.status = status;
+  }
 }

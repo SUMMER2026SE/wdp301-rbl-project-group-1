@@ -1,10 +1,17 @@
-import { Body, Controller, Get, Patch, UseInterceptors } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Patch,
+  Param,
+  Req,
+} from '@nestjs/common';
+import type { MultipartFile } from '@fastify/multipart';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { FastifyRequest } from 'fastify';
 import { ApiImageUpload } from '../../../../modules/storage/presentation/decorators/api-image-upload.decorator';
-import { UploadedImage } from '../../../../modules/storage/presentation/decorators/uploaded-image.decorator';
-import { UploadedImageDto } from '../../../../modules/storage/presentation/schemas/upload-image.dto';
 import {
   QueryParams,
   QueryResult,
@@ -19,6 +26,7 @@ import { BaseResponse } from '../../../../shared/presentation/responses/base-res
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
+import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { ChangeAvatarCommand } from '../../application/commands/change-avatar/change-avatar.command';
 import { ChangeAvatarResult } from '../../application/commands/change-avatar/change-avatar.result';
 import { UpdateProfileCommand } from '../../application/commands/update-profile/update-profile.command';
@@ -31,6 +39,8 @@ import { UpgradeTutorCommand } from '../../application/commands/upgrade-tutor/up
 import { UpgradeTutorResult } from '../../application/commands/upgrade-tutor/upgrade-tutor.result';
 import { GetProfileQuery } from '../../application/queries/get-profile/get-profile.query';
 import { GetProfileResult } from '../../application/queries/get-profile/get-profile.result';
+import { GetUserProfileByIdQuery } from '../../application/queries/get-user-profile-by-id/get-user-profile-by-id.query';
+import { GetUserProfileByIdResult } from '../../application/queries/get-user-profile-by-id/get-user-profile-by-id.result';
 import { GetUsersQuery } from '../../application/queries/get-users/get-users.query';
 import {
   GetUsersResult,
@@ -38,12 +48,30 @@ import {
 } from '../../application/queries/get-users/get-users.result';
 import { ChangeAvatarResultDto } from '../schemas/change-avatar-response.dto';
 import { GetProfileResponseDto } from '../schemas/get-profile-response.dto';
+import { GetUserProfileByIdResponseDto } from '../schemas/get-user-profile-by-id-response.dto';
 import { UpdateProfileResultDto } from '../schemas/profile-response.dto';
 import { UpdateProfileDto } from '../schemas/update-profile.dto';
 import { UpdateStudentProfileDto } from '../schemas/update-student-profile.dto';
 import { UpdateTutorProfileDto } from '../schemas/update-tutor-profile.dto';
 import { UpgradeTutorResultDto } from '../schemas/upgrade-tutor-response.dto';
 import { UserResponseDto } from '../schemas/user-response.dto';
+
+const ALLOWED_AVATAR_MIME_TYPES = new Set([
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp',
+]);
+
+const ALLOWED_AVATAR_FIELD_NAMES = new Set(['avatar', 'file']);
+
+const streamToBuffer = async (stream: NodeJS.ReadableStream) => {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
+};
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
@@ -89,6 +117,28 @@ export class UserController {
     return BaseResponse.ok(result);
   }
 
+  @Get(':id')
+  @Public()
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getUserProfileById',
+    summary: 'Get public user profile by ID',
+  })
+  @ApiOkResponseWrapped(GetUserProfileByIdResponseDto, {
+    description: 'User profile returned successfully.',
+  })
+  async getUserProfileById(
+    @Param('id') id: string,
+    @CurrentUser() viewer?: { userId: string },
+  ): Promise<BaseResponse<GetUserProfileByIdResult>> {
+    const result = await this.queryBus.execute<
+      GetUserProfileByIdQuery,
+      GetUserProfileByIdResult
+    >(new GetUserProfileByIdQuery(id, viewer?.userId));
+
+    return BaseResponse.ok(result);
+  }
+
   @Patch('profile')
   @ApiBearerAuth()
   @ApiOperation({
@@ -125,15 +175,34 @@ export class UserController {
   @ApiOkResponseWrapped(ChangeAvatarResultDto, {
     description: 'Avatar updated successfully.',
   })
-  @UseInterceptors(FileInterceptor('avatar'))
   async changeAvatar(
     @CurrentUser() user: { userId: string },
-    @UploadedImage() file: UploadedImageDto,
+    @Req() req: FastifyRequest,
   ): Promise<BaseResponse<ChangeAvatarResult>> {
+    if (!req.isMultipart()) {
+      throw new BadRequestException('Request is not multipart');
+    }
+
+    const data: MultipartFile | undefined = await req.file();
+
+    if (!data) {
+      throw new BadRequestException('File is missing');
+    }
+
+    if (!ALLOWED_AVATAR_FIELD_NAMES.has(data.fieldname)) {
+      throw new BadRequestException('Invalid file field name');
+    }
+
+    if (!ALLOWED_AVATAR_MIME_TYPES.has(data.mimetype)) {
+      throw new BadRequestException('Invalid image type');
+    }
+
+    const buffer = await streamToBuffer(data.file);
+
     const result = await this.commandBus.execute<
       ChangeAvatarCommand,
       ChangeAvatarResult
-    >(new ChangeAvatarCommand(user.userId, file.buffer, file.mimetype));
+    >(new ChangeAvatarCommand(user.userId, buffer, data.mimetype));
 
     return BaseResponse.ok(result);
   }

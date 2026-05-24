@@ -79,6 +79,10 @@ export class User extends AggregateRoot<string> {
     this.props.password = hashedPassword;
   }
 
+  updateEmail(email: string): void {
+    this.props.email = email;
+  }
+
   activate(): void {
     this.props.isActive = true;
   }

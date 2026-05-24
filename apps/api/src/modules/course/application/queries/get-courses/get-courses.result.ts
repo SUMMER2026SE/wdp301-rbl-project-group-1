@@ -13,6 +13,12 @@ export interface CourseResultData {
   level: CourseLevelType;
   status: CourseStatus;
   createdAt: Date;
+  tutor: {
+    id: string;
+    name: string | null;
+    avatarUrl: string | null;
+  };
+  isEnrolled?: boolean;
 }
 
 export type GetCoursesResult = QueryApiResponse<CourseResultData>;

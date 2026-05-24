@@ -4,6 +4,11 @@ import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 
 export const UpdateProfileSchema = z
   .object({
+    email: z
+      .string()
+      .email()
+      .optional()
+      .meta({ example: 'user@example.com', description: 'New email address' }),
     nickname: z
       .string()
       .min(1)

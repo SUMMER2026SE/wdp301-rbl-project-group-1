@@ -35,7 +35,7 @@ export class PayosGateway implements IPaymentGateway {
   ): Promise<PaymentGatewayResponse> {
     const body = {
       orderCode: params.orderCode,
-      amount: params.amount,
+      amount: Math.round(params.amount), // PayOS requires integer (VND has no decimal)
       description: params.description.substring(0, 25),
       returnUrl: params.returnUrl,
       cancelUrl: params.cancelUrl,

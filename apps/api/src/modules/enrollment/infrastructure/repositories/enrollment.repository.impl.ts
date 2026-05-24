@@ -31,4 +31,21 @@ export class PrismaEnrollmentRepository implements IEnrollmentRepository {
     if (!record) return null;
     return this.mapper.toDomain(record);
   }
+
+  async findById(id: string): Promise<Enrollment | null> {
+    const record = await this.enrollmentDelegate.findUnique({
+      where: { id },
+    });
+    if (!record) return null;
+    return this.mapper.toDomain(record);
+  }
+
+  async update(enrollment: Enrollment): Promise<Enrollment> {
+    const data = this.mapper.toPersistence(enrollment);
+    const updated = await this.enrollmentDelegate.update({
+      where: { id: enrollment.id },
+      data,
+    });
+    return this.mapper.toDomain(updated);
+  }
 }

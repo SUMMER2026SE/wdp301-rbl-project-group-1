@@ -4,16 +4,12 @@ import { PaymentReferenceType } from 'src/shared/domain/enums/enums';
 
 export const CreatePaymentSchema = z
   .object({
-    payerUserId: z.string().meta({
-      example: 'user-id-123',
-      description: 'The ID of the user making the payment',
-    }),
     referenceType: z.nativeEnum(PaymentReferenceType).meta({
       example: PaymentReferenceType.COURSE_ENROLLMENT,
       description: 'The reference type for the payment',
     }),
     referenceId: z.string().meta({
-      example: 'course-id-123',
+      example: 'enrollment-id-123',
       description: 'The ID of the reference entity',
     }),
     amount: z.number().positive().meta({

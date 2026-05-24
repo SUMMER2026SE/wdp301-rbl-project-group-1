@@ -1,11 +1,16 @@
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { Inject, BadRequestException } from '@nestjs/common';
+import { Inject, BadRequestException, ConflictException } from '@nestjs/common';
 import { CreatePaymentCommand } from './create-payment.command';
 import { IPaymentRepository } from '../../../domain/repositories/payment.repository.interface';
 import { IPaymentGateway } from '../../../domain/gateways/payment.gateway.interface';
 import { PaymentEntity } from '../../../domain/entities/payment.entity';
-import { PaymentStatus } from 'src/shared/domain/enums/enums';
+import {
+  PaymentReferenceType,
+  PaymentStatus,
+  EnrollmentStatus,
+} from 'src/shared/domain/enums/enums';
 import { CreatePaymentResult } from './create-payment.result';
+import { IEnrollmentRepository } from '../../../../enrollment/domain/repositories/enrollment.repository.interface';
 
 const ALLOWED_DOMAINS = ['localhost:3000', 'app.edura.com'];
 
@@ -16,6 +21,8 @@ export class CreatePaymentHandler implements ICommandHandler<CreatePaymentComman
     private readonly paymentRepository: IPaymentRepository,
     @Inject(IPaymentGateway)
     private readonly paymentGateway: IPaymentGateway,
+    @Inject(IEnrollmentRepository)
+    private readonly enrollmentRepository: IEnrollmentRepository,
   ) {}
 
   private validateUrl(url: string): void {
@@ -35,6 +42,23 @@ export class CreatePaymentHandler implements ICommandHandler<CreatePaymentComman
   async execute(command: CreatePaymentCommand): Promise<CreatePaymentResult> {
     this.validateUrl(command.returnUrl);
     this.validateUrl(command.cancelUrl);
+
+    // Validate enrollment status before creating payment
+    if (command.referenceType === PaymentReferenceType.COURSE_ENROLLMENT) {
+      const enrollment = await this.enrollmentRepository.findById(
+        command.referenceId,
+      );
+      if (!enrollment) {
+        throw new BadRequestException(
+          `Enrollment ${command.referenceId} not found`,
+        );
+      }
+      if (enrollment.status === EnrollmentStatus.ACTIVE) {
+        throw new ConflictException(
+          'Bạn đã tham gia khóa học này rồi, không cần thanh toán thêm.',
+        );
+      }
+    }
 
     const payment = new PaymentEntity(
       '',

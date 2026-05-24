@@ -33,15 +33,17 @@ export class GetTutorCoursesQueryHandler
       search: params.search,
       sortBy: params.sortBy,
       sortOrder: params.sortOrder,
-      gradeId: params.gradeId,
-      subjectId: params.subjectId,
+      gradeIds: params.gradeIds,
+      subjectIds: params.subjectIds,
       status: params.status,
+      minPrice: params.minPrice,
+      maxPrice: params.maxPrice,
       tutorId,
       restrictStatus: false,
     });
 
     const data: TutorCourseResultData[] = result.data.map(
-      ({ course: c, subject, grade }) => ({
+      ({ course: c, subject, grade, tutor }) => ({
         id: c.id,
         tutorId: c.tutorId,
         title: c.title,
@@ -52,6 +54,7 @@ export class GetTutorCoursesQueryHandler
         level: c.level.getValue(),
         status: c.status,
         createdAt: c.createdAt,
+        tutor,
       }),
     );
 

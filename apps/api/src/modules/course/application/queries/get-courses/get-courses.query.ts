@@ -1,5 +1,8 @@
 import { CoursePaginatedParams } from 'src/modules/course/domain/repositories/course.repository.interface';
 
 export class GetCoursesQuery {
-  constructor(public readonly params: CoursePaginatedParams) {}
+  constructor(
+    public readonly params: CoursePaginatedParams,
+    public readonly userId?: string,
+  ) {}
 }
