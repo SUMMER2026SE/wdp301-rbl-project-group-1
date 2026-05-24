@@ -8,6 +8,7 @@ import { UpdateTutorProfileHandler } from './application/commands/update-tutor-p
 import { UpgradeTutorCommandHandler } from './application/commands/upgrade-tutor/upgrade-tutor.handler';
 
 import { GetProfileQueryHandler } from './application/queries/get-profile/get-profile.handler';
+import { GetTutorByIdQueryHandler } from './application/queries/get-tutor-by-id/get-tutor-by-id.handler';
 import { GetTutorsQueryHandler } from './application/queries/get-tutors/get-tutors.handler';
 import { GetUserProfileByIdQueryHandler } from './application/queries/get-user-profile-by-id/get-user-profile-by-id.handler';
 import { GetUsersQueryHandler } from './application/queries/get-users/get-users.handler';
@@ -33,6 +34,7 @@ import { UserController } from './presentation/controllers/user.controller';
   controllers: [UserController, TutorController],
   providers: [
     GetProfileQueryHandler,
+    GetTutorByIdQueryHandler,
     GetTutorsQueryHandler,
     GetUsersQueryHandler,
     GetUserProfileByIdQueryHandler,

@@ -1,10 +1,17 @@
-import { Controller, Get, Query } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { QueryBus } from '@nestjs/cqrs';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { QueryResult } from '../../../../shared/domain/common/query';
-import { ApiOkResponseQueryWrapped } from '../../../../shared/presentation/decorators/api-response.decorator';
+import {
+  ApiOkResponseQueryWrapped,
+  ApiOkResponseWrapped,
+} from '../../../../shared/presentation/decorators/api-response.decorator';
+
+import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { QueryResponse } from '../../../../shared/presentation/responses/query-response';
 import { Public } from '../../../auth/presentation/decorators/public.decorator';
+import { GetTutorByIdQuery } from '../../application/queries/get-tutor-by-id/get-tutor-by-id.query';
+import { GetTutorByIdResult } from '../../application/queries/get-tutor-by-id/get-tutor-by-id.result';
 import { GetTutorsQuery } from '../../application/queries/get-tutors/get-tutors.query';
 import {
   GetTutorsResult,
@@ -56,5 +63,20 @@ export class TutorController {
     >(new GetTutorsQuery(params));
 
     return QueryResponse.query(result);
+  }
+
+  @Get(':id')
+  @Public()
+  @ApiOperation({ operationId: 'getTutorById', summary: 'Get tutor by ID' })
+  @ApiOkResponseWrapped(TutorResponseDto, {
+    description: 'Tutor detail returned successfully.',
+  })
+  async getTutorById(@Param('id') id: string) {
+    const result = await this.queryBus.execute<
+      GetTutorByIdQuery,
+      GetTutorByIdResult
+    >(new GetTutorByIdQuery(id));
+
+    return BaseResponse.ok(result);
   }
 }
