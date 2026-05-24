@@ -22,4 +22,5 @@ export interface Course {
   studentCount: number;
   price: number;
   status?: CourseStatus;
+  isEnrolled?: boolean;
 }

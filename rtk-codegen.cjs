@@ -31,7 +31,15 @@ const config = {
     "./src/features/course/courseApi.ts": {
       filterEndpoints: (_, { path }) => path.startsWith("/api/courses"),
       exportName: "courseApi",
-    }
+    },
+    "./src/features/enrollment/enrollmentApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/enrollments"),
+      exportName: "enrollmentApi",
+    },
+    "./src/features/payment/paymentApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/payments"),
+      exportName: "paymentApi",
+    },
   },
 
   hooks: true,

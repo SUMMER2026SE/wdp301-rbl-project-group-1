@@ -274,13 +274,18 @@ export type CourseResponseDto = {
   title: string;
   description: string | null;
   price: number | null;
-  subjectId: string;
-  subjectName: string | null;
-  gradeId: string;
-  gradeName: string | null;
+  subject: {
+    id: string;
+    name: string | null;
+  };
+  grade: {
+    id: string;
+    name: string | null;
+  };
   level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
   status: "DRAFT" | "PUBLISHED" | "ONGOING" | "CLOSED";
   createdAt: string;
+  isEnrolled?: boolean;
 };
 export type UpdateCourseResultDto = {
   /** The ID of the updated course */

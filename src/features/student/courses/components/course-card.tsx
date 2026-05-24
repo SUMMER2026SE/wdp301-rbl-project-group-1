@@ -1,5 +1,6 @@
 "use client";
 
+import PaymentModal from "@/src/features/payment/components/payment-modal";
 import { Badge } from "@/src/shared/components/ui/badge";
 import { Button } from "@/src/shared/components/ui/button";
 import { cn } from "@/src/shared/lib/utils";
@@ -130,6 +131,8 @@ export function CourseCard({
               src={course.instructor.avatarUrl}
               alt={course.instructor.name}
               fill
+              sizes="24px"
+              priority
               className="object-cover"
             />
           </div>
@@ -181,12 +184,31 @@ export function CourseCard({
             >
               <Link href={`/student/courses/${course.id}`}>Xem chi tiết</Link>
             </Button>
-            <Button
-              size="sm"
-              className="flex-1 text-xs h-8 bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              Đăng ký ngay
-            </Button>
+            {course.isEnrolled ? (
+              <Button
+                asChild
+                size="sm"
+                className="flex-1 text-xs h-8 bg-success text-success-foreground hover:bg-success/90"
+              >
+                <Link href={`/student/my-courses`}>Vào khóa học</Link>
+              </Button>
+            ) : (
+              <PaymentModal
+                trigger={
+                  <Button
+                    size="sm"
+                    className="flex-1 text-xs h-8 bg-primary text-primary-foreground hover:bg-primary/90"
+                  >
+                    Đăng ký ngay
+                  </Button>
+                }
+                courseId={course.id}
+                courseTitle={course.title}
+                courseSubject={course.subject}
+                tutorName={course.instructor.name}
+                price={course.price}
+              />
+            )}
           </div>
         )}
       </div>

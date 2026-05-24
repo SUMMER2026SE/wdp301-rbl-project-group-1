@@ -4,7 +4,8 @@ import { useGetAllCoursesQuery } from "@/src/features/course/courseApi";
 import { FilterSidebar } from "@/src/shared/components/organisms/filter-sidebar";
 import { useDebounce } from "@/src/shared/hooks/use-debounce";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useAppSelector } from "@/src/shared/store/hooks";
+import { useMemo, useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   coursesFilterSchema,
@@ -84,8 +85,13 @@ export function CoursesListContainer() {
       .map((s) => s.id);
   }, [subjects, subjectsData]);
 
+  const isInitializing = useAppSelector((state) => state.auth.isInitializing);
+
   // Query courses from API
-  const { data: coursesResponse, isFetching } = useGetAllCoursesQuery({
+  const {
+    data: coursesResponse,
+    isFetching,
+  } = useGetAllCoursesQuery({
     page: currentPage.toString(),
     limit: "8",
     search: debouncedSearch || undefined,
@@ -95,7 +101,11 @@ export function CoursesListContainer() {
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
     status: undefined, 
+  }, {
+    skip: isInitializing
   });
+
+  // Debug removed
 
   const apiCourses = coursesResponse?.data || [];
   const totalCount = coursesResponse?.meta?.total || 0;
@@ -106,13 +116,13 @@ export function CoursesListContainer() {
     id: c.id,
     title: c.title,
     description: c.description || "",
-    subject: c.subjectName || "Khác",
+    subject: c.subject.name || "Khác",
     level: c.level,
     format: "online", // Mock since API doesn't support format yet
     instructor: {
-      id: c.tutor?.id || c.tutorId,
-      name: c.tutor?.name || "Gia sư",
-      avatarUrl: c.tutor?.avatarUrl || "https://github.com/shadcn.png",
+      id: c.tutor.id || c.tutorId,
+      name: c.tutor.name || "Gia sư",
+      avatarUrl: c.tutor.avatarUrl || "https://github.com/shadcn.png",
       role: "Gia sư",
     },
     rating: 4.5, // Mock
@@ -120,6 +130,7 @@ export function CoursesListContainer() {
     studentCount: 0,
     price: c.price || 0,
     status: "suggested",
+    isEnrolled: c.isEnrolled,
   }));
 
   // sau ni có rating sẽ đưa vào API filter luôn, tạm thời filter client ở đây
