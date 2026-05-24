@@ -1,6 +1,6 @@
 "use client";
 
-import { Breadcrumb } from "@/src/shared/components/molecules/breadcrumb";
+import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { DocumentViewer } from "@/src/shared/components/organisms/document-viewer";
 import { FileText, Hash } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -36,7 +36,7 @@ export function ResourceDetailPage({}: ResourceDetailPageProps) {
       <div className="mx-auto max-w-[1440px] px-4 py-8 md:px-10">
         {/* Breadcrumb */}
         <div className="mb-6">
-          <Breadcrumb
+          <BreadcrumbNav
             items={[
               { label: "Thư viện Tài liệu", href: "/student/resources" },
               {

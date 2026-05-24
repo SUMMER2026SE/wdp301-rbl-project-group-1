@@ -1,19 +1,31 @@
-import { ArrowRight } from "lucide-react";
+"use client";
+
+import { useGetProfileQuery } from "@/src/features/user/userApi";
 import { Button } from "@/src/shared/components/ui/button";
+import { useAppSelector } from "@/src/shared/store/hooks";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 export const WelcomeBanner = () => {
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { data } = useGetProfileQuery(undefined, { skip: !isAuthenticated });
+  const displayName = data?.data?.profile?.nickname || "bạn";
+
   return (
     <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-info to-primary p-8 md:p-12 text-white">
       <div className="relative z-10 max-w-2xl space-y-4">
         <h1 className="text-3xl font-black md:text-5xl tracking-tight">
-          Chào Minh Hoàng, 👋
+          Chào {displayName}, 👋
         </h1>
         <p className="text-white/80 text-lg md:text-xl font-medium max-w-lg">
-          Hôm nay bạn có 2 buổi học sắp tới. Đừng quên hoàn thành bài tập về nhà nhé!
+          Hôm nay bạn có 2 buổi học sắp tới. Đừng quên hoàn thành bài tập về nhà
+          nhé!
         </p>
         <div className="pt-4">
-          <Button asChild className="bg-white text-info hover:bg-info-soft font-bold px-8 h-12 rounded-xl transition-all active:scale-[0.98]">
+          <Button
+            asChild
+            className="bg-white text-info hover:bg-info-soft font-bold px-8 h-12 rounded-xl transition-all active:scale-[0.98]"
+          >
             <Link href="/student/schedule">
               Xem lịch học
               <ArrowRight className="ml-2 size-5" />

@@ -1,6 +1,6 @@
 "use client";
 
-import { Pagination } from "@/src/shared/components/molecules/pagination";
+import { Pagination } from "@/src/shared/components/molecules/pagination/pagination";
 import { TutorGridHeader } from "@/src/shared/components/molecules/tutor-grid-header";
 import { useState } from "react";
 import type { Tutor } from "../types";

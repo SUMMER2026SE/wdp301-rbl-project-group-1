@@ -1,6 +1,6 @@
 "use client";
 
-import { SearchInput } from "@/src/shared/components/molecules/search-input";
+import { SearchBox } from "@/src/shared/components/molecules/search-box/search-box";
 import { Button } from "@/src/shared/components/ui/button";
 import { useState } from "react";
 
@@ -33,7 +33,7 @@ export function SearchBar({
         </p>
         <div className="w-full max-w-3xl flex flex-col sm:flex-row gap-4 mt-4">
           <div className="flex-1">
-            <SearchInput
+            <SearchBox
               placeholder="Tên gia sư, môn học, kỹ năng..."
               value={search}
               onChange={(e) => handleChange(e.target.value)}
@@ -41,7 +41,7 @@ export function SearchBar({
           </div>
           <Button
             onClick={handleSearch}
-            className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-2.5 font-bold h-auto"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-1 font-bold h-auto"
           >
             Tìm kiếm
           </Button>

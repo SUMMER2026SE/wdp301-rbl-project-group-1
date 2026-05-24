@@ -1,7 +1,7 @@
 "use client";
 
 import { authApi } from "@/src/features/auth/authApi";
-import { setAuth } from "@/src/features/auth/authSlice";
+import { setAuth, setAuthInitialized } from "@/src/features/auth/authSlice";
 import { useAppDispatch } from "@/src/shared/store/hooks";
 import { useEffect } from "react";
 
@@ -27,7 +27,7 @@ export default function AuthProvider({
           }),
         );
       } catch {
-        // chưa login
+        dispatch(setAuthInitialized());
       }
     };
 

@@ -3,16 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { useGetMeQuery } from "@/src/features/auth/authApi";
 import { clearAuth } from "@/src/features/auth/authSlice";
+import { useGetProfileQuery } from "@/src/features/user/userApi";
 import { useAppDispatch, useAppSelector } from "@/src/shared/store/hooks";
 import { USER_MENU_ITEMS } from "./user-popover.constants";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/shared/components/ui/avatar";
+import { Avatar } from "@/src/shared/components/atoms/avatar/avatar";
 import { Button } from "@/src/shared/components/ui/button";
 import {
   Popover,
@@ -92,12 +88,14 @@ export function UserPopover() {
   const dispatch = useAppDispatch();
   const router = useRouter();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
-  const { data: getMeResponse } = useGetMeQuery(undefined, {
+  const { data: profileResponse } = useGetProfileQuery(undefined, {
     skip: !isAuthenticated,
   });
-  const user = getMeResponse?.data;
-
-  const initials = getSummaryName(user?.nickname || "User");
+  const userProfile = profileResponse?.data?.profile;
+  const displayName = userProfile?.nickname || "User";
+  const avatarUrl = userProfile?.avatarUrl || undefined;
+  const email = profileResponse?.data?.email;
+  const initials = getSummaryName(displayName);
 
   const handleLogout = () => {
     dispatch(clearAuth());
@@ -113,25 +111,30 @@ export function UserPopover() {
           className="size-9 rounded-full p-0 ring-offset-background transition-all hover:ring-2 hover:ring-primary/30"
           aria-label="Mở menu người dùng"
         >
-          <Avatar className="size-9">
-            <AvatarImage alt={user?.nickname || "User"} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+          <Avatar
+            src={avatarUrl}
+            alt={displayName}
+            fallback={displayName}
+            size="sm"
+            className="size-9"
+          />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-72 p-0">
         <div className="flex items-center gap-3 p-4">
-          <Avatar className="size-10 shrink-0">
-            <AvatarImage alt={user?.nickname || "User"} />
-            <AvatarFallback>{initials}</AvatarFallback>
-          </Avatar>
+          <Avatar
+            src={avatarUrl}
+            alt={displayName}
+            fallback={displayName}
+            size="md"
+          />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">
-              {user?.nickname || "User"}
+              {displayName}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              {user?.email ?? "Chưa có email"}
+              {email ?? "Chưa có email"}
             </p>
           </div>
         </div>

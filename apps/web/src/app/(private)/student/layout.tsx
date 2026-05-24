@@ -1,6 +1,6 @@
 import { STUDENT_NAV_LINKS } from "@/src/app/(private)/student/constants/constants";
+import { StudentHeaderUserInfo } from "@/src/features/student/layout/components/student-header-user-info";
 import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
-import SearchBox from "@/src/shared/components/molecules/search-box/search-box";
 import { UserPopover } from "@/src/shared/components/molecules/user-popover/user-popover";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
 import { GraduationCap } from "lucide-react";
@@ -33,23 +33,16 @@ export default function StudentLayout({
 
           {/* Search, Notifications, User profile - Right side */}
           <div className="ml-auto hidden shrink-0 items-center gap-6 md:flex">
-            <div className="relative min-w-40">
+            {/* <div className="relative min-w-40">
               <SearchBox />
-            </div>
+            </div> */}
 
             {/* Notifications */}
             <NotificationPopover />
 
             {/* User profile */}
             <div className="flex items-center gap-4 border-l border-border pl-6 dark:border-border">
-              <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-foreground dark:text-foreground">
-                  Minh Hoàng
-                </p>
-                <p className="text-xs text-muted-foreground dark:text-muted-foreground">
-                  Học sinh lớp 12
-                </p>
-              </div>
+              <StudentHeaderUserInfo />
               <UserPopover />
             </div>
           </div>

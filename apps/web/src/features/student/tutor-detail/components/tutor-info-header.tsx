@@ -1,8 +1,8 @@
 "use client";
 
-import { StatBadge } from "@/src/shared/components/atoms/stat-badge";
-import { TutorAvatar } from "@/src/shared/components/atoms/tutor-avatar";
-import { SkillsBadges } from "@/src/shared/components/molecules/skills-badges";
+import { Avatar } from "@/src/shared/components/atoms/avatar/avatar";
+import { SkillsBadges } from "@/src/shared/components/atoms/skills-badge/skills-badges";
+import { StatBadge } from "@/src/shared/components/molecules/stat-badge/stat-badge";
 import { Calendar, Check, Star, Users } from "lucide-react";
 import type { Tutor } from "../types";
 
@@ -16,7 +16,14 @@ export function TutorInfoHeader({ tutor }: TutorInfoHeaderProps) {
       <div className="flex flex-col md:flex-row gap-6 items-start">
         {/* Avatar */}
         <div className="shrink-0">
-          <TutorAvatar src={tutor.avatar} isOnline={tutor.isOnline} />
+          <Avatar
+            src={tutor.avatar}
+            alt={tutor.name}
+            fallback={tutor.name}
+            size="2xl"
+            showStatus={true}
+            status={tutor.isOnline ? "online" : "offline"}
+          />
         </div>
 
         {/* Info section */}

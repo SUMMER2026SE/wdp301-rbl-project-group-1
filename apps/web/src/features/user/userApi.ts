@@ -23,6 +23,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.body,
       }),
+      invalidatesTags: ["User"],
     }),
     upgradeTutor: build.mutation<UpgradeTutorApiResponse, UpgradeTutorApiArg>({
       query: () => ({ url: `/api/users/me/upgrade-tutor`, method: "PATCH" }),
@@ -87,9 +88,7 @@ export type ChangeAvatarApiResponse =
     data: ChangeAvatarResultDto;
   };
 export type ChangeAvatarApiArg = {
-  body: {
-    avatar?: Blob;
-  };
+  body: FormData;
 };
 export type UpgradeTutorApiResponse =
   /** status 200 User successfully upgraded to tutor. */ {
@@ -189,6 +188,8 @@ export type UpdateProfileResultDto = {
   message: string;
 };
 export type UpdateProfileDto = {
+  /** New email address */
+  email?: string;
   /** Nickname */
   nickname?: string;
   /** Avatar URL */

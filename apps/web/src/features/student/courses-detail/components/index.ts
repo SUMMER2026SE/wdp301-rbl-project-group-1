@@ -1,7 +1,6 @@
-export { BreadcrumbNav } from "../../../../shared/components/atoms/breadcrumb-nav/breadcrumb-nav"
-export { CourseHeader } from "./course-header"
-export { CourseContent } from "./course-content"
-export { ProgressCircle } from "../../../../shared/components/atoms/progress-circle/progress-circle"
-export { OnlineClassInfo } from "./online-class-info"
-export { RelatedDocuments } from "./related-documents"
-export { LessonItem } from "./lesson-item"
+export { ProgressCircle } from "../../../../shared/components/atoms/progress-circle/progress-circle";
+export { CourseContent } from "./course-content";
+export { CourseHeader } from "./course-header";
+export { LessonItem } from "./lesson-item";
+export { OnlineClassInfo } from "./online-class-info";
+export { RelatedDocuments } from "./related-documents";

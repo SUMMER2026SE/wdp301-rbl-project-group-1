@@ -1,14 +1,34 @@
-export { BreadcrumbSection } from './breadcrumb-section';
-export { HeaderSection } from './header-section';
-export { TabsSection } from './tabs-section';
-export { DocumentCard } from './document-card';
-export { DocumentsSection } from './documents-section';
-export { AssignmentCard } from './assignment-card';
-export { AssignmentsSection } from './assignments-section';
-export { ScoreStatsSection } from './score-stats-section';
-export { StudentManagementSection } from './student-management-section';
-export { StartSessionButton } from './start-session-button';
-export { AttendanceStatsSection } from './attendance-stats-section';
-export { TopScoresSection } from './top-scores-section';
-export { ClassResourcesSection } from './class-resources-section';
-export { ClassNotesSection } from './class-notes-section';
+// Layout-level (used across multiple sections)
+export { HeaderSection } from "./header-section";
+export { TabsSection } from "./tabs-section";
+export type { TabsItemProps, TabsSectionProps } from "./tabs-section";
+
+// Tổng quan
+export {
+  ClassNotesSection,
+  ClassResourcesSection,
+  StartSessionButton,
+  TopScoresSection,
+} from "./overview";
+export type { ClassResource, TopStudent } from "./overview";
+
+// Học sinh
+export { StudentManagementSection } from "./students";
+export type { Student } from "./students";
+
+// Lịch học
+export { Schedule } from "./schedule";
+export type { FixedSchedule, ScheduleEvent, UpcomingEvent } from "./schedule";
+
+// Tài liệu & Bài Tập
+export {
+  AssignmentCard,
+  AssignmentsSection,
+  DocumentCard,
+  DocumentsSection,
+  ScoreStatsSection,
+} from "./resources";
+export type { DocumentCardProps, DocumentIconType } from "./resources";
+
+// Điểm danh
+export { AttendanceStatsSection } from "./attendance";
