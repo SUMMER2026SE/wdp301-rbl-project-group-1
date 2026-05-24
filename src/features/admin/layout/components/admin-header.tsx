@@ -15,6 +15,10 @@ const ADMIN_PAGE_TITLES: Record<string, { title: string; description: string }> 
     title: "Phê duyệt Gia sư",
     description: "Duyệt hồ sơ, chứng chỉ và thông tin chuyên môn của gia sư",
   },
+  "/admin/reports": {
+    title: "Quản lý Báo cáo & Khiếu nại",
+    description: "Theo dõi, phân loại và xử lý các khiếu nại trong hệ thống",
+  },
 };
 
 export function AdminHeader() {
