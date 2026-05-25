@@ -10,10 +10,14 @@ const config = {
     //   filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
     //   exportName: "authApi",
     // },
-    // "./src/features/user/userApi.ts": {
-    //   filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
-    //   exportName: "userApi",
-    // },
+    "./src/features/user/userApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
+      exportName: "userApi",
+    },
+    "./src/features/student/tutors/tutorApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/tutors"),
+      exportName: "tutorApi",
+    },
     // "./src/features/tutor-application/tutorApplicationApi.ts": {
     //   filterEndpoints: (_, { path }) =>
     //     path.startsWith("/api/tutor-application"),

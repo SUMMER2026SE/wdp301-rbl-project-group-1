@@ -47,17 +47,7 @@ export function ProfileSidebar() {
   const gradeLabel = studentInfo?.grades?.[0]?.name ?? "Lớp 12";
 
   const uploadAvatar = async (file: File) => {
-    const buildFormData = (fieldName: "avatar" | "file") => {
-      const formData = new FormData();
-      formData.append(fieldName, file, file.name);
-      return formData;
-    };
-
-    try {
-      await changeAvatar({ body: buildFormData("avatar") }).unwrap();
-    } catch {
-      await changeAvatar({ body: buildFormData("file") }).unwrap();
-    }
+    await changeAvatar({ body: { avatar: file } }).unwrap();
   };
 
   const handleAvatarSave = async () => {

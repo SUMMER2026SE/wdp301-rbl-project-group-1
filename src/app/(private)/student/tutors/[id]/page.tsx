@@ -1,3 +1,5 @@
+"use client";
+
 import {
   TutorAvailabilityCard,
   TutorBio,
@@ -7,18 +9,58 @@ import {
   TutorInfoHeader,
   TutorReviews,
 } from "@/src/features/student/tutor-detail/components";
-import { TUTORS_DETAIL_DATA } from "@/src/features/student/tutor-detail/mock-data";
+import { useGetTutorsQuery } from "@/src/features/student/tutors/tutorApi";
+import { mapTutorResponseToTutor } from "@/src/features/student/tutors/utils/map-tutor";
 import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { Button } from "@/src/shared/components/ui/button";
+import { Spinner } from "@/src/shared/components/ui/spinner";
 import Link from "next/link";
+import { useMemo } from "react";
 
-export default async function TutorDetailPage({
+export default function TutorDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>;
+  params: { id: string };
 }) {
-  const { id } = await params;
-  const tutor = TUTORS_DETAIL_DATA[id];
+  const { data, isFetching, isError, refetch } = useGetTutorsQuery({
+    page: "1",
+    limit: "100",
+  });
+
+  const tutor = useMemo(() => {
+    const mappedTutors = (data?.data ?? []).map(mapTutorResponseToTutor);
+    return mappedTutors.find((item) => item.id === params.id);
+  }, [data, params.id]);
+
+  if (isFetching) {
+    return (
+      <main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
+        <div className="flex items-center justify-center py-20">
+          <Spinner className="size-8" />
+        </div>
+      </main>
+    );
+  }
+
+  if (isError) {
+    return (
+      <main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground text-lg">
+            Không thể tải thông tin gia sư. Vui lòng thử lại.
+          </p>
+          <div className="mt-4 flex items-center justify-center gap-3">
+            <Button variant="outline" onClick={() => refetch()}>
+              Thử lại
+            </Button>
+            <Link href="/student/tutors">
+              <Button>Quay lại danh sách</Button>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   if (!tutor) {
     return (

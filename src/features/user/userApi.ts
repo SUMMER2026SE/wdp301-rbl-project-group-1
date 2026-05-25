@@ -17,13 +17,18 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.updateProfileDto,
       }),
     }),
+    getUserProfileById: build.query<
+      GetUserProfileByIdApiResponse,
+      GetUserProfileByIdApiArg
+    >({
+      query: (queryArg) => ({ url: `/api/users/${queryArg.id}` }),
+    }),
     changeAvatar: build.mutation<ChangeAvatarApiResponse, ChangeAvatarApiArg>({
       query: (queryArg) => ({
         url: `/api/users/avatar`,
         method: "PATCH",
         body: queryArg.body,
       }),
-      invalidatesTags: ["User"],
     }),
     upgradeTutor: build.mutation<UpgradeTutorApiResponse, UpgradeTutorApiArg>({
       query: () => ({ url: `/api/users/me/upgrade-tutor`, method: "PATCH" }),
@@ -81,6 +86,15 @@ export type UpdateProfileApiResponse =
 export type UpdateProfileApiArg = {
   updateProfileDto: UpdateProfileDto;
 };
+export type GetUserProfileByIdApiResponse =
+  /** status 200 User profile returned successfully. */ {
+    success: boolean;
+    message: string;
+    data: GetUserProfileByIdResponseDto;
+  };
+export type GetUserProfileByIdApiArg = {
+  id: string;
+};
 export type ChangeAvatarApiResponse =
   /** status 200 Avatar updated successfully. */ {
     success: boolean;
@@ -88,7 +102,9 @@ export type ChangeAvatarApiResponse =
     data: ChangeAvatarResultDto;
   };
 export type ChangeAvatarApiArg = {
-  body: FormData;
+  body: {
+    avatar?: Blob;
+  };
 };
 export type UpgradeTutorApiResponse =
   /** status 200 User successfully upgraded to tutor. */ {
@@ -203,6 +219,49 @@ export type UpdateProfileDto = {
   /** Address */
   address?: string;
 };
+export type PublicProfileDto = {
+  nickname: string;
+  avatarUrl: string | null;
+  dateOfBirth: string;
+  gender: ("MALE" | "FEMALE" | "OTHER") | null;
+};
+export type PublicTutorInfoDto = {
+  bio: string | null;
+  specialization: string | null;
+  experience: number | null;
+  education: string | null;
+  pricePerHour: number | null;
+  rating: number;
+  reviewCount: number;
+  studentCount: number;
+};
+export type PublicSubjectRefDto = {
+  id: string;
+  name: string;
+  slug: string;
+};
+export type PublicGradeRefDto = {
+  id: string;
+  name: string;
+  slug: string;
+  order: number;
+};
+export type PublicStudentInfoDto = {
+  school: string | null;
+  learningGoal: string | null;
+  /** Enrolled subjects */
+  subjects: PublicSubjectRefDto[];
+  /** Grade levels */
+  grades: PublicGradeRefDto[];
+};
+export type GetUserProfileByIdResponseDto = {
+  id: string;
+  role: "ADMIN" | "TUTOR" | "STUDENT" | "PARENT";
+  createdAt: string;
+  profile: PublicProfileDto | null;
+  tutor: PublicTutorInfoDto | null;
+  student: PublicStudentInfoDto | null;
+};
 export type ChangeAvatarResultDto = {
   /** User Id */
   userId: string;
@@ -239,6 +298,7 @@ export const {
   useGetUsersQuery,
   useGetProfileQuery,
   useUpdateProfileMutation,
+  useGetUserProfileByIdQuery,
   useChangeAvatarMutation,
   useUpgradeTutorMutation,
   useUpdateTutorProfileMutation,
