@@ -77,3 +77,27 @@ export enum ResourceType {
   LINK = 'LINK',
   DOCUMENT = 'DOCUMENT',
 }
+
+export enum AssessmentType {
+  QUIZ = 'QUIZ',
+  EXAM = 'EXAM',
+}
+
+export enum QuestionType {
+  MULTIPLE_CHOICE = 'MULTIPLE_CHOICE',
+  SINGLE_CHOICE = 'SINGLE_CHOICE',
+  TRUE_FALSE = 'TRUE_FALSE',
+  TEXT_ANSWER = 'TEXT_ANSWER',
+}
+
+export enum QuestionDifficulty {
+  EASY = 'EASY',
+  MEDIUM = 'MEDIUM',
+  HARD = 'HARD',
+}
+
+export enum GradingPolicy {
+  HIGHEST = 'HIGHEST',
+  AVERAGE = 'AVERAGE',
+  LATEST = 'LATEST',
+}

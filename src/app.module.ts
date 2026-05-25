@@ -5,6 +5,7 @@ import { AcademicCatalogModule } from 'src/modules/academic-catalog/academic-cat
 import { CourseModule } from 'src/modules/course/course.module';
 import { EnrollmentModule } from 'src/modules/enrollment/enrollment.module';
 import { HealthModule } from 'src/modules/health/health.module';
+import { AssessmentModule } from 'src/modules/assessment/assessment.module';
 import { LessonModule } from 'src/modules/lesson/lesson.module';
 import { NotificationModule } from 'src/modules/notification/notification.module';
 import { TutorApplicationModule } from 'src/modules/tutor-application/tutor-application.module';
@@ -37,6 +38,7 @@ import { RecommendationModule } from './modules/recommendation/recommendation.mo
     CourseModule,
     EnrollmentModule,
     LessonModule,
+    AssessmentModule,
     TutorApplicationModule,
     PaymentModule,
     ResourceModule,

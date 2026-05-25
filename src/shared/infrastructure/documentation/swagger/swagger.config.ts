@@ -14,4 +14,5 @@ export const swaggerConfig = new DocumentBuilder()
   .addTag('Lesson', 'Lesson management endpoints')
   .addTag('Resource', 'Resource management endpoints')
   .addTag('Enrollment', 'Enrollment management endpoints')
+  .addTag('Assessment', 'Quiz, Exam & Question Bank endpoints')
   .build();
