@@ -1,1 +1,1 @@
-export { TutorApprovalsBoard } from "./tutor-approvals-board";
+export { TutorApprovalTable } from "./tutor-approval-table";
