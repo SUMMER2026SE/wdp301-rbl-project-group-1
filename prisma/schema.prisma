@@ -637,6 +637,8 @@ model Lesson {
   resources   LessonResource[]
   assessments Assessment[]
 
+  @@index([courseId])
+  @@index([startTime])
   @@map("lesson")
 }
 

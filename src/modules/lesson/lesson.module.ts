@@ -9,6 +9,8 @@ import { GetAttendanceByLessonQueryHandler } from './application/queries/get-att
 import { GetLessonByIdQueryHandler } from './application/queries/get-lesson-by-id/get-lesson-by-id.handler';
 import { GetLessonDetailsQueryHandler } from './application/queries/get-lesson-details/get-lesson-details.handler';
 import { GetLessonsByCourseQueryHandler } from './application/queries/get-lessons-by-course/get-lessons-by-course.handler';
+import { GetStudentScheduleQueryHandler } from './application/queries/get-student-schedule/get-student-schedule.handler';
+import { GetTutorScheduleQueryHandler } from './application/queries/get-tutor-schedule/get-tutor-schedule.handler';
 import { ILessonMeetingService } from './domain/interfaces/meeting-service.interface';
 import { ILessonAttendanceRepository } from './domain/repositories/lesson-attendance.repository.interface';
 import { ILessonRepository } from './domain/repositories/lesson.repository.interface';
@@ -27,6 +29,8 @@ const QueryHandlers = [
   GetLessonsByCourseQueryHandler,
   GetLessonDetailsQueryHandler,
   GetAttendanceByLessonQueryHandler,
+  GetStudentScheduleQueryHandler,
+  GetTutorScheduleQueryHandler,
 ];
 
 @Module({

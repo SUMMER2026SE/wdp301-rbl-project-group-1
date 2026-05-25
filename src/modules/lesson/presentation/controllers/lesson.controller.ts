@@ -39,6 +39,10 @@ import { GetLessonDetailsQuery } from '../../application/queries/get-lesson-deta
 import { GetLessonDetailsResult } from '../../application/queries/get-lesson-details/get-lesson-details.result';
 import { GetLessonsByCourseQuery } from '../../application/queries/get-lessons-by-course/get-lessons-by-course.query';
 import { LessonByCourseResultData } from '../../application/queries/get-lessons-by-course/get-lessons-by-course.result';
+import { GetStudentScheduleQuery } from '../../application/queries/get-student-schedule/get-student-schedule.query';
+import { StudentScheduleResultData } from '../../application/queries/get-student-schedule/get-student-schedule.result';
+import { GetTutorScheduleQuery } from '../../application/queries/get-tutor-schedule/get-tutor-schedule.query';
+import { TutorScheduleResultData } from '../../application/queries/get-tutor-schedule/get-tutor-schedule.result';
 import { LessonPaginatedParams } from '../../domain/repositories/lesson.repository.interface';
 import {
   MarkAttendanceDto,
@@ -49,10 +53,13 @@ import {
   GetLessonsByCourseQueryDto,
   GetLessonsByCourseQueryParams,
 } from '../schemas/get-lessons-by-course-query.dto';
+import { GetUserScheduleQueryDto } from '../schemas/get-user-schedule-query.dto';
 import {
   CreateLessonResultDto,
   LessonDetailsResponseDto,
   LessonResponseDto,
+  StudentScheduleItemDto,
+  TutorScheduleItemDto,
   UpdateLessonResultDto,
 } from '../schemas/lesson-response.dto';
 import { UpdateLessonDto } from '../schemas/update-lesson.dto';
@@ -129,6 +136,69 @@ export class LessonController {
     >(new GetLessonsByCourseQuery(params));
 
     return QueryResponse.query(result);
+  }
+
+  @Get('schedule/student')
+  @Roles(UserRole.STUDENT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getStudentSchedule',
+    summary: 'Get weekly schedule for the logged-in student',
+  })
+  @ApiOkResponseWrapped(StudentScheduleItemDto, {
+    description: 'Returns the weekly lesson schedule for the student, including attendance status.',
+    isArray: true,
+  })
+  async getStudentSchedule(
+    @CurrentUser() user: { userId: string },
+    @Query() dto: GetUserScheduleQueryDto,
+  ) {
+    const { startDate, endDate } = this.resolveWeekRange(dto.date);
+
+    const result = await this.queryBus.execute<
+      GetStudentScheduleQuery,
+      StudentScheduleResultData[]
+    >(new GetStudentScheduleQuery({ studentId: user.userId, startDate, endDate }));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Get('schedule/tutor')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getTutorSchedule',
+    summary: 'Get weekly schedule for the logged-in tutor',
+  })
+  @ApiOkResponseWrapped(TutorScheduleItemDto, {
+    description: 'Returns the weekly lesson schedule for the tutor, including enrolled student count and attendance status.',
+    isArray: true,
+  })
+  async getTutorSchedule(
+    @CurrentUser() user: { userId: string },
+    @Query() dto: GetUserScheduleQueryDto,
+  ) {
+    const { startDate, endDate } = this.resolveWeekRange(dto.date);
+
+    const result = await this.queryBus.execute<
+      GetTutorScheduleQuery,
+      TutorScheduleResultData[]
+    >(new GetTutorScheduleQuery({ tutorId: user.userId, startDate, endDate }));
+
+    return BaseResponse.ok(result);
+  }
+
+  /** Calculates the Monday–Sunday range for a given ISO-8601 date string */
+  private resolveWeekRange(dateStr: string): { startDate: Date; endDate: Date } {
+    const targetDate = new Date(dateStr);
+    const day = targetDate.getDay(); // 0 (Sun) – 6 (Sat)
+    const diff = targetDate.getDate() - day + (day === 0 ? -6 : 1);
+    const startDate = new Date(targetDate.setDate(diff));
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 6);
+    endDate.setHours(23, 59, 59, 999);
+    return { startDate, endDate };
   }
 
   @Get(':id/details')

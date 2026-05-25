@@ -128,3 +128,96 @@ export const LessonDetailsResponseSchema = z
 export class LessonDetailsResponseDto extends createZodDto(
   LessonDetailsResponseSchema,
 ) {}
+
+export const StudentScheduleItemSchema = z
+  .object({
+    id: z.string().meta({ example: 'clhg12345' }),
+    courseId: z.string().meta({ example: 'clhg12345000008l4f1h5g6i7' }),
+    courseTitle: z.string().meta({ example: 'Toán nâng cao lớp 11' }),
+    tutorNickname: z.string().nullable().meta({ example: 'Thầy Minh' }),
+    tutorAvatarUrl: z
+      .string()
+      .nullable()
+      .meta({ example: 'https://example.com/avatar.jpg' }),
+    title: z.string().meta({ example: 'Buổi học 1' }),
+    meetingUrl: z
+      .string()
+      .nullable()
+      .optional()
+      .meta({ example: 'https://meet.example/abc' }),
+    videoUrl: z
+      .string()
+      .nullable()
+      .optional()
+      .meta({ example: 'https://video.example/abc' }),
+    startTime: z
+      .string()
+      .datetime()
+      .meta({ example: '2026-05-08T10:00:00.000Z' }),
+    endTime: z
+      .string()
+      .datetime()
+      .nullable()
+      .optional()
+      .meta({ example: '2026-05-08T11:00:00.000Z' }),
+    status: z
+      .enum(['SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLED'])
+      .meta({ example: 'SCHEDULED' }),
+    attendance: z
+      .object({
+        status: z
+          .enum(['PRESENT', 'ABSENT', 'LATE'])
+          .meta({ example: 'PRESENT' }),
+        note: z.string().nullable().meta({ example: null }),
+      })
+      .nullable()
+      .meta({ description: 'Attendance record of the student for this lesson' }),
+  })
+  .meta({ id: 'StudentScheduleItemDto' });
+
+export class StudentScheduleItemDto extends createZodDto(
+  StudentScheduleItemSchema,
+) {}
+
+export const TutorScheduleItemSchema = z
+  .object({
+    id: z.string().meta({ example: 'clhg12345' }),
+    courseId: z.string().meta({ example: 'clhg12345000008l4f1h5g6i7' }),
+    courseTitle: z.string().meta({ example: 'Toán nâng cao lớp 11' }),
+    title: z.string().meta({ example: 'Buổi học 1' }),
+    meetingUrl: z
+      .string()
+      .nullable()
+      .optional()
+      .meta({ example: 'https://meet.example/abc' }),
+    videoUrl: z
+      .string()
+      .nullable()
+      .optional()
+      .meta({ example: 'https://video.example/abc' }),
+    startTime: z
+      .string()
+      .datetime()
+      .meta({ example: '2026-05-08T10:00:00.000Z' }),
+    endTime: z
+      .string()
+      .datetime()
+      .nullable()
+      .optional()
+      .meta({ example: '2026-05-08T11:00:00.000Z' }),
+    status: z
+      .enum(['SCHEDULED', 'ONGOING', 'COMPLETED', 'CANCELLED'])
+      .meta({ example: 'SCHEDULED' }),
+    enrolledStudentCount: z
+      .number()
+      .meta({ description: 'Number of active students enrolled', example: 12 }),
+    attendanceMarked: z
+      .boolean()
+      .meta({ description: 'Whether attendance has been marked for this lesson', example: false }),
+  })
+  .meta({ id: 'TutorScheduleItemDto' });
+
+export class TutorScheduleItemDto extends createZodDto(
+  TutorScheduleItemSchema,
+) {}
+
