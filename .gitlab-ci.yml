@@ -1,0 +1,67 @@
+default:
+  tags:
+    - edura-runner
+
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  DOCKER_IMAGE_NAME: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
+  DOCKER_IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+
+# Job kiểm tra code cơ bản
+test:
+  image: python:3.10-slim
+  stage: test
+  script:
+    # Cài bản PyTorch CPU trước để tránh tải bản CUDA nặng 2.5GB giống như bên Dockerfile
+    - pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
+    - pip install -r requirements.txt
+    # Nếu sau này có test (ví dụ pytest), bạn có thể thêm lệnh chạy test ở đây
+    - python -m py_compile main.py
+  only:
+    - merge_requests
+    - main
+
+# Job build Docker image và đẩy lên GitLab Container Registry
+build_docker:
+  image: docker:24.0.5
+  stage: build
+  services:
+    - docker:24.0.5-dind
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - echo "Kéo image cũ về để tận dụng cache..."
+    - docker pull $DOCKER_IMAGE_LATEST || true
+    - echo "Build Docker image (sử dụng cache)..."
+    - docker build --cache-from $DOCKER_IMAGE_LATEST -t $DOCKER_IMAGE_NAME .
+    - docker push $DOCKER_IMAGE_NAME
+    # Nếu đang ở nhánh main, tag thêm latest
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]; then
+        docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_LATEST
+        docker push $DOCKER_IMAGE_LATEST
+      fi
+  only:
+    - main
+    - tags
+
+# Deploy lên Azure Container Apps
+deploy_to_azure_container_app:
+  stage: deploy
+  image: mcr.microsoft.com/azure-cli
+  script:
+    - echo "Đăng nhập vào Azure..."
+    - az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
+    
+    - echo "Cấu hình Container App kéo image từ GitLab Registry bằng Deploy Token..."
+    - az containerapp registry set -n $ACA_APP_NAME -g $AZURE_RESOURCE_GROUP --server $CI_REGISTRY --username $DEPLOY_TOKEN_USER --password $DEPLOY_TOKEN_PASSWORD
+    
+    - echo "Cập nhật Container App với Docker Image mới nhất..."
+    - az containerapp update -n $ACA_APP_NAME -g $AZURE_RESOURCE_GROUP --image $DOCKER_IMAGE_LATEST
+  only:
+    - main
+  environment:
+    name: production
