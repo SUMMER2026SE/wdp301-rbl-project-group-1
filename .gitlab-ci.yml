@@ -52,6 +52,8 @@ build_docker:
 deploy_to_azure_container_app:
   stage: deploy
   image: mcr.microsoft.com/azure-cli
+  variables:
+    AZURE_CLI_DISABLE_CONNECTION_VERIFICATION: 1
   script:
     - echo "Đăng nhập vào Azure..."
     - az login --service-principal -u $AZURE_CLIENT_ID -p $AZURE_CLIENT_SECRET --tenant $AZURE_TENANT_ID
