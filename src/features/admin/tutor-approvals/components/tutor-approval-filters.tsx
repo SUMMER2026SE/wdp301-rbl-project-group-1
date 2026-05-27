@@ -1,7 +1,7 @@
 import { SearchBox } from "@/src/shared/components/molecules/search-box/search-box";
 import { SortSelect } from "@/src/shared/components/molecules/sort-select/sort-select";
 import { Table } from "@tanstack/react-table";
-import { TutorApplication } from "./tutor-approvals.types";
+import type { TutorApplication } from "./tutor-approvals.types";
 
 interface TutorApprovalFiltersProps {
   table?: Table<TutorApplication>;
@@ -12,10 +12,10 @@ export function TutorApprovalFilters({ table }: TutorApprovalFiltersProps) {
     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pb-4">
       <div className="w-full md:max-w-96">
         <SearchBox
-          placeholder="Tìm kiếm theo tên gia sư..."
-          value={(table?.getColumn("name")?.getFilterValue() as string) ?? ""}
+          placeholder="Tìm kiếm theo email gia sư..."
+          value={(table?.getColumn("email")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
-            table?.getColumn("name")?.setFilterValue(event.target.value)
+            table?.getColumn("email")?.setFilterValue(event.target.value)
           }
         />
       </div>

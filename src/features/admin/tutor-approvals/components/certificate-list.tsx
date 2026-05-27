@@ -1,27 +1,28 @@
 import { Button } from "@/src/shared/components/ui/button";
+import { FileText } from "lucide-react";
 
-import { certificateMeta } from "./tutor-approvals.constants";
-import type { TutorApplication } from "./tutor-approvals.types";
-
-type CertificateListProps = {
-  certificates: TutorApplication["certificates"];
+type FileListProps = {
+  files?: string[];
 };
 
-export function CertificateList({ certificates }: CertificateListProps) {
+/**
+ * Renders a list of file links attached to a tutor application.
+ * Can be used in a detail view or expanded row.
+ */
+export function CertificateList({ files }: FileListProps) {
+  if (!files || files.length === 0) {
+    return <span className="text-xs text-muted-foreground">Không có</span>;
+  }
+
   return (
     <div className="flex items-center gap-2">
-      {certificates.map((certificate) => {
-        const meta = certificateMeta[certificate];
-        const Icon = meta.icon;
-
-        return (
-          <Icon
-            key={certificate}
-            aria-label={meta.label}
-            className={`size-5 ${meta.className}`}
-          />
-        );
-      })}
+      {files.map((file, index) => (
+        <FileText
+          key={index}
+          aria-label={`File ${index + 1}`}
+          className="size-5 text-info"
+        />
+      ))}
       <Button variant="link" size="sm" className="h-auto px-0 text-xs">
         Xem
       </Button>

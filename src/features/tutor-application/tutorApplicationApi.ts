@@ -26,6 +26,7 @@ const injectedRtkApi = api.injectEndpoints({
           status: queryArg.status,
         },
       }),
+      providesTags: ["TutorApplication"],
     }),
     approveTutorApplication: build.mutation<
       ApproveTutorApplicationApiResponse,
@@ -35,6 +36,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/tutor-applications/${queryArg.id}/approve`,
         method: "PATCH",
       }),
+      invalidatesTags: ["TutorApplication"],
     }),
     rejectTutorApplication: build.mutation<
       RejectTutorApplicationApiResponse,
@@ -44,6 +46,7 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/tutor-applications/${queryArg.id}/reject`,
         method: "PATCH",
       }),
+      invalidatesTags: ["TutorApplication"],
     }),
   }),
   overrideExisting: false,
