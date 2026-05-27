@@ -1,5 +1,7 @@
 "use client";
 
+import { toast } from "sonner";
+
 import type { MultiStepFormStepConfig } from "@/src/shared/components/organisms/multi-step-form/multi-step-form-container";
 import { MultiStepFormContainer } from "@/src/shared/components/organisms/multi-step-form/multi-step-form-container";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -119,13 +121,13 @@ export default function TutorRegistrationContainer() {
         },
       }).unwrap();
 
-      alert(
-        "Hồ sơ đã được gửi thành công! Chúng tôi sẽ liên hệ với bạn trong vòng 24-48 giờ.",
+      toast.success(
+        "Hồ sơ đã được gửi thành công! Vui lòng xác thực email.",
       );
-      router.push("/");
+      router.push(`/verify-otp?email=${encodeURIComponent(data.email)}&type=verify-email`);
     } catch (error) {
       console.error(error);
-      alert("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
+      toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau.");
     }
   };
 

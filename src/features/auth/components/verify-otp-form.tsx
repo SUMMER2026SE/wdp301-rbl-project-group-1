@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ArrowLeft, MailCheck } from 'lucide-react';
+import { ArrowLeft, MailCheck, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller } from 'react-hook-form';
@@ -12,6 +12,8 @@ import { Controller } from 'react-hook-form';
 import {
   useVerifyOtpMutation,
   useForgotPasswordMutation,
+  useVerifyEmailMutation,
+  useSendVerifyEmailOtpMutation,
 } from '@/src/features/auth/authApi';
 import {
   verifyOtpFormSchema,
@@ -29,15 +31,25 @@ import InputForm from '@/src/shared/components/organisms/input-form/input-form';
 
 const RESEND_COOLDOWN = 60;
 
+type OtpMode = 'reset-password' | 'verify-email';
+
 export default function VerifyOtpForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const email = searchParams.get('email') ?? '';
+  const type = (searchParams.get('type') as OtpMode) ?? 'reset-password';
+
+  const isVerifyEmail = type === 'verify-email';
 
   const [countdown, setCountdown] = useState(RESEND_COOLDOWN);
 
-  const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
-  const [forgotPassword, { isLoading: isResending }] = useForgotPasswordMutation();
+  const [verifyOtp, { isLoading: isVerifyingOtp }] = useVerifyOtpMutation();
+  const [forgotPassword, { isLoading: isResendingForgot }] = useForgotPasswordMutation();
+  const [verifyEmail, { isLoading: isVerifyingEmail }] = useVerifyEmailMutation();
+  const [sendVerifyEmailOtp, { isLoading: isResendingVerify }] = useSendVerifyEmailOtpMutation();
+
+  const isVerifying = isVerifyEmail ? isVerifyingEmail : isVerifyingOtp;
+  const isResending = isVerifyEmail ? isResendingVerify : isResendingForgot;
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -51,33 +63,63 @@ export default function VerifyOtpForm() {
     if (countdown > 0 || !email || isResending) return;
 
     try {
-      await forgotPassword({ forgotPasswordDto: { email } }).unwrap();
+      if (isVerifyEmail) {
+        await sendVerifyEmailOtp({ sendVerifyEmailOtpDto: { email } }).unwrap();
+      } else {
+        await forgotPassword({ forgotPasswordDto: { email } }).unwrap();
+      }
       setCountdown(RESEND_COOLDOWN);
       toast.success('Mã OTP mới đã được gửi đến email của bạn.');
     } catch {
       toast.error('Gửi lại mã thất bại. Vui lòng thử lại.');
     }
-  }, [countdown, email, isResending, forgotPassword]);
+  }, [countdown, email, isResending, isVerifyEmail, forgotPassword, sendVerifyEmailOtp]);
 
   const handleSubmit = useCallback(
     async (data: VerifyOtpFormData) => {
       if (!email) return;
 
       try {
-        const response = await verifyOtp({
-          verifyOtpDto: { email, code: data.otp },
-        }).unwrap();
+        if (isVerifyEmail) {
+          await verifyEmail({
+            verifyEmailDto: { email, code: data.otp },
+          }).unwrap();
 
-        toast.success('Xác thực OTP thành công!');
-        router.push(
-          `/reset-password?token=${encodeURIComponent(response.data.resetToken)}`,
-        );
+          toast.success('Xác thực email thành công! Bạn có thể đăng nhập ngay.');
+          router.push('/login');
+        } else {
+          const response = await verifyOtp({
+            verifyOtpDto: { email, code: data.otp },
+          }).unwrap();
+
+          toast.success('Xác thực OTP thành công!');
+          router.push(
+            `/reset-password?token=${encodeURIComponent(response.data.resetToken)}`,
+          );
+        }
       } catch {
         toast.error('Mã OTP không hợp lệ hoặc đã hết hạn.');
       }
     },
-    [email, verifyOtp, router],
+    [email, isVerifyEmail, verifyOtp, verifyEmail, router],
   );
+
+  const content = useMemo(() => ({
+    backHref: isVerifyEmail ? '/register' : '/login',
+    backLabel: isVerifyEmail ? 'Quay lại đăng ký' : 'Quay lại đăng nhập',
+    icon: isVerifyEmail ? ShieldCheck : MailCheck,
+    title: isVerifyEmail ? 'Xác thực email' : 'Xác minh mã OTP',
+    description: isVerifyEmail
+      ? 'Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi đến'
+      : 'Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi đến',
+    heroTitle: isVerifyEmail
+      ? 'Xác thực email của bạn.'
+      : 'Bảo mật tài khoản của bạn.',
+    heroDescription: isVerifyEmail
+      ? 'Hoàn tất xác thực email để bắt đầu sử dụng nền tảng học tập của chúng tôi.'
+      : 'Xác minh danh tính bằng mã OTP để đảm bảo an toàn cho tài khoản của bạn trên nền tảng học tập.',
+    submitLabel: isVerifyEmail ? 'Xác thực email' : 'Xác nhận',
+  }), [isVerifyEmail]);
 
   const formattedCountdown = `${String(Math.floor(countdown / 60)).padStart(2, '0')}:${String(countdown % 60).padStart(2, '0')}`;
 
@@ -93,6 +135,8 @@ export default function VerifyOtpForm() {
       </main>
     );
   }
+
+  const IconComponent = content.icon;
 
   return (
     <main className="flex min-h-screen w-full bg-background">
@@ -114,11 +158,10 @@ export default function VerifyOtpForm() {
             <h2 className="text-2xl font-bold">Tutor Connect</h2>
           </div>
           <h1 className="mb-6 text-5xl font-black leading-tight">
-            Bảo mật tài khoản của bạn.
+            {content.heroTitle}
           </h1>
           <p className="text-lg leading-relaxed text-primary-foreground/85">
-            Xác minh danh tính bằng mã OTP để đảm bảo an toàn cho tài khoản của
-            bạn trên nền tảng học tập.
+            {content.heroDescription}
           </p>
         </div>
       </section>
@@ -128,23 +171,23 @@ export default function VerifyOtpForm() {
         <div className="w-full max-w-md space-y-8">
           {/* Back link */}
           <Link
-            href="/login"
+            href={content.backHref}
             className="group inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
           >
             <ArrowLeft className="size-4 transition-transform group-hover:-translate-x-1" />
-            Quay lại đăng nhập
+            {content.backLabel}
           </Link>
 
           {/* Header */}
           <div>
             <div className="mb-6 flex size-14 items-center justify-center rounded-xl bg-secondary text-primary">
-              <MailCheck className="size-7" />
+              <IconComponent className="size-7" />
             </div>
             <h2 className="text-3xl font-bold tracking-tight text-foreground">
-              Xác minh mã OTP
+              {content.title}
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              Vui lòng nhập mã OTP gồm 6 chữ số đã được gửi đến{' '}
+              {content.description}{' '}
               <span className="font-semibold text-foreground">{email}</span>.
             </p>
           </div>
@@ -181,7 +224,7 @@ export default function VerifyOtpForm() {
             />
 
             <div className="flex flex-col gap-4">
-              <SubmitButton isLoading={isVerifying}>Xác nhận</SubmitButton>
+              <SubmitButton isLoading={isVerifying}>{content.submitLabel}</SubmitButton>
 
               <p className="text-center text-sm text-muted-foreground">
                 Chưa nhận được mã?{' '}

@@ -26,8 +26,8 @@ export function useRegisterForm() {
         },
       }).unwrap();
 
-      toast.success("Đăng ký thành công! Vui lòng đăng nhập.");
-      router.push("/login");
+      toast.success("Đăng ký thành công! Vui lòng xác thực email.");
+      router.push(`/verify-otp?email=${encodeURIComponent(data.email)}&type=verify-email`);
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(

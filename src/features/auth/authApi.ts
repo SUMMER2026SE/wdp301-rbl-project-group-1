@@ -61,6 +61,23 @@ const injectedRtkApi = api.injectEndpoints({
         },
       }),
     }),
+    sendVerifyEmailOtp: build.mutation<
+      SendVerifyEmailOtpApiResponse,
+      SendVerifyEmailOtpApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/auth/send-verify-email-otp`,
+        method: "POST",
+        body: queryArg.sendVerifyEmailOtpDto,
+      }),
+    }),
+    verifyEmail: build.mutation<VerifyEmailApiResponse, VerifyEmailApiArg>({
+      query: (queryArg) => ({
+        url: `/api/auth/verify-email`,
+        method: "POST",
+        body: queryArg.verifyEmailDto,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -239,6 +256,42 @@ export type ResetPasswordDto = {
   /** The new password for the user */
   newPassword: string;
 };
+export type SendVerifyEmailOtpApiResponse =
+  /** status 200 Verification OTP sent to email successfully. */ {
+    success: boolean;
+    message: string;
+    data: SendVerifyEmailOtpResultDto;
+  };
+export type SendVerifyEmailOtpApiArg = {
+  sendVerifyEmailOtpDto: SendVerifyEmailOtpDto;
+};
+export type SendVerifyEmailOtpResultDto = {
+  message: string;
+  expiresAt: string;
+};
+export type SendVerifyEmailOtpDto = {
+  /** The email address of the user to verify */
+  email: string;
+};
+export type VerifyEmailApiResponse =
+  /** status 200 Email verified successfully. */ {
+    success: boolean;
+    message: string;
+    data: VerifyEmailResultDto;
+  };
+export type VerifyEmailApiArg = {
+  verifyEmailDto: VerifyEmailDto;
+};
+export type VerifyEmailResultDto = {
+  message: string;
+  success: boolean;
+};
+export type VerifyEmailDto = {
+  /** The email address of the user */
+  email: string;
+  /** The 6-digit OTP code */
+  code: string;
+};
 export const {
   useRegisterMutation,
   useLoginMutation,
@@ -249,4 +302,6 @@ export const {
   useForgotPasswordMutation,
   useVerifyOtpMutation,
   useResetPasswordMutation,
+  useSendVerifyEmailOtpMutation,
+  useVerifyEmailMutation,
 } = injectedRtkApi;
