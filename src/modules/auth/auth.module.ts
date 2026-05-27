@@ -12,6 +12,8 @@ import { LogoutCommandHandler } from './application/commands/logout/logout.handl
 import { RefreshTokenCommandHandler } from './application/commands/refresh-token/refresh-token.handler';
 import { RegisterCommandHandler } from './application/commands/register/register.handler';
 import { ResetPasswordCommandHandler } from './application/commands/reset-password/reset-password.handler';
+import { SendVerifyEmailOtpCommandHandler } from './application/commands/send-verify-email-otp/send-verify-email-otp.handler';
+import { VerifyEmailCommandHandler } from './application/commands/verify-email/verify-email.handler';
 import { VerifyOtpCommandHandler } from './application/commands/verify-otp/verify-otp.handler';
 import { GetMeQueryHandler } from './application/queries/get-me/get-me.handler';
 import { IAuthRepository } from './domain/repositories/auth.repository.interface';
@@ -43,6 +45,8 @@ const CommandHandlers = [
   ForgotPasswordCommandHandler,
   VerifyOtpCommandHandler,
   ResetPasswordCommandHandler,
+  SendVerifyEmailOtpCommandHandler,
+  VerifyEmailCommandHandler,
 ];
 
 const QueryHandlers = [GetMeQueryHandler];

@@ -84,6 +84,33 @@ export const VerifyOtpResultSchema = z
 
 export class VerifyOtpResultDto extends createZodDto(VerifyOtpResultSchema) {}
 
+export const SendVerifyEmailOtpResultSchema = z
+  .object({
+    message: z
+      .string()
+      .meta({ example: 'An OTP has been sent to your email address.' }),
+    expiresAt: z
+      .string()
+      .datetime()
+      .meta({ example: '2023-01-01T00:00:00.000Z' }),
+  })
+  .meta({ id: 'SendVerifyEmailOtpResultDto' });
+
+export class SendVerifyEmailOtpResultDto extends createZodDto(
+  SendVerifyEmailOtpResultSchema,
+) {}
+
+export const VerifyEmailResultSchema = z
+  .object({
+    message: z.string().meta({ example: 'Email verified successfully.' }),
+    success: z.boolean().meta({ example: true }),
+  })
+  .meta({ id: 'VerifyEmailResultDto' });
+
+export class VerifyEmailResultDto extends createZodDto(
+  VerifyEmailResultSchema,
+) {}
+
 export const ResetPasswordResultSchema = z
   .object({
     message: z

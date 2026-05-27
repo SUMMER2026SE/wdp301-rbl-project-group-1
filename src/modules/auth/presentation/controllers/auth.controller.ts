@@ -37,6 +37,10 @@ import { RefreshTokenResult } from '../../application/commands/refresh-token/ref
 import { RegisterCommand } from '../../application/commands/register/register.command';
 import { ResetPasswordCommand } from '../../application/commands/reset-password/reset-password.command';
 import { ResetPasswordResult } from '../../application/commands/reset-password/reset-password.result';
+import { SendVerifyEmailOtpCommand } from '../../application/commands/send-verify-email-otp/send-verify-email-otp.command';
+import { SendVerifyEmailOtpResult } from '../../application/commands/send-verify-email-otp/send-verify-email-otp.result';
+import { VerifyEmailCommand } from '../../application/commands/verify-email/verify-email.command';
+import { VerifyEmailResult } from '../../application/commands/verify-email/verify-email.result';
 import { VerifyOtpCommand } from '../../application/commands/verify-otp/verify-otp.command';
 import { VerifyOtpResult } from '../../application/commands/verify-otp/verify-otp.result';
 import { GetMeQuery } from '../../application/queries/get-me/get-me.query';
@@ -51,6 +55,8 @@ import {
   MeUserDto,
   RegisterResultDto,
   ResetPasswordResultDto,
+  SendVerifyEmailOtpResultDto,
+  VerifyEmailResultDto,
   VerifyOtpResultDto,
 } from '../schemas/auth-response.dto';
 import { ForgotPasswordDto } from '../schemas/forgot-password.dto';
@@ -58,6 +64,8 @@ import { LoginGoogleDto } from '../schemas/login-google.dto';
 import { LoginDto } from '../schemas/login.dto';
 import { RegisterDto } from '../schemas/register.dto';
 import { ResetPasswordDto } from '../schemas/reset-password.dto';
+import { SendVerifyEmailOtpDto } from '../schemas/send-verify-email-otp.dto';
+import { VerifyEmailDto } from '../schemas/verify-email.dto';
 import { VerifyOtpDto } from '../schemas/verify-otp.dto';
 
 @ApiTags('Auth')
@@ -103,6 +111,17 @@ export class AuthController {
           : undefined,
       ),
     );
+
+    // Automatically send verification OTP after registration
+    try {
+      await this.commandBus.execute<
+        SendVerifyEmailOtpCommand,
+        SendVerifyEmailOtpResult
+      >(new SendVerifyEmailOtpCommand(dto.email));
+    } catch {
+      // Don't fail registration if OTP sending fails
+    }
+
     return BaseResponse.ok(result);
   }
 
@@ -300,6 +319,55 @@ export class AuthController {
       VerifyOtpCommand,
       VerifyOtpResult
     >(new VerifyOtpCommand(dto.email, dto.code));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Public()
+  @Post('send-verify-email-otp')
+  @RateLimit(3, 60)
+  @ApiOperation({
+    operationId: 'sendVerifyEmailOtp',
+    summary: 'Send an OTP to verify user email address',
+  })
+  @ApiOkResponseWrapped(SendVerifyEmailOtpResultDto, {
+    description: 'Verification OTP sent to email successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'User not found or email already verified.',
+  })
+  async sendVerifyEmailOtp(
+    @Body() dto: SendVerifyEmailOtpDto,
+  ): Promise<BaseResponse<SendVerifyEmailOtpResult>> {
+    const result = await this.commandBus.execute<
+      SendVerifyEmailOtpCommand,
+      SendVerifyEmailOtpResult
+    >(new SendVerifyEmailOtpCommand(dto.email));
+
+    return BaseResponse.ok(result);
+  }
+
+  @Public()
+  @Post('verify-email')
+  @ApiOperation({
+    operationId: 'verifyEmail',
+    summary: 'Verify email address using OTP code',
+  })
+  @ApiOkResponseWrapped(VerifyEmailResultDto, {
+    description: 'Email verified successfully.',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid OTP or expired.',
+  })
+  async verifyEmail(
+    @Body() dto: VerifyEmailDto,
+  ): Promise<BaseResponse<VerifyEmailResult>> {
+    const result = await this.commandBus.execute<
+      VerifyEmailCommand,
+      VerifyEmailResult
+    >(new VerifyEmailCommand(dto.email, dto.code));
 
     return BaseResponse.ok(result);
   }
