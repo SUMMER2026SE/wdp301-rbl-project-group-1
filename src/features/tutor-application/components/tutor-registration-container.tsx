@@ -44,6 +44,7 @@ export default function TutorRegistrationContainer() {
       fullName: "",
       email: "",
       phone: "",
+      address: "",
       bio: "",
       subjectIds: [],
       gradeIds: [],
@@ -109,6 +110,8 @@ export default function TutorRegistrationContainer() {
       await createApplication({
         createTutorApplicationDto: {
           email: data.email,
+          phone: data.phone,
+          address: data.address || undefined,
           specialization: data.fullName, 
           bio: data.bio || undefined,
           experience: data.experience ? 1 : undefined, 

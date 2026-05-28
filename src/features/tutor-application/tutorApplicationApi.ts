@@ -116,6 +116,10 @@ export type CreateTutorApplicationResponseDto = {
 export type CreateTutorApplicationDto = {
   /** Applicant email address */
   email: string;
+  /** Tutor phone number */
+  phone: string;
+  /** Tutor address */
+  address?: string;
   /** Tutor main specialization */
   specialization: string;
   /** Tutor introduction */

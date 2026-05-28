@@ -1,7 +1,7 @@
 // Tutor Menu Items
 export const TUTOR_MENU_ITEMS = [
   {
-    href: "/tutor/profile",
+    href: "/tutor/profile/information",
     label: "Hồ sơ cá nhân",
   },
   {

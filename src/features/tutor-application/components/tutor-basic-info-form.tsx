@@ -37,6 +37,7 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
       "fullName",
       "email",
       "phone",
+      "address",
       "bio",
       "subjectIds",
       "gradeIds",
@@ -155,6 +156,26 @@ export function TutorBasicInfoForm({ onNext }: TutorBasicInfoFormProps) {
             {errors.phone && (
               <p className="text-xs text-destructive mt-1">
                 {errors.phone.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <Label
+              htmlFor="address"
+              className="text-sm font-bold text-foreground mb-2"
+            >
+              Địa chỉ liên hệ
+            </Label>
+            <Input
+              id="address"
+              type="text"
+              placeholder="123 Nguyễn Huệ, TP.HCM"
+              className="h-12 rounded-xl"
+              {...register("address")}
+            />
+            {errors.address && (
+              <p className="text-xs text-destructive mt-1">
+                {errors.address.message}
               </p>
             )}
           </div>

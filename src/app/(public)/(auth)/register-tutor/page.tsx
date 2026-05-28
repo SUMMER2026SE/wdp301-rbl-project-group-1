@@ -1,3 +1,4 @@
+import Header from "@/src/features/landing/components/header";
 import TutorRegistrationContainer from "@/src/features/tutor-application/components/tutor-registration-container";
 
 export const metadata = {
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function RegisterTutorPage() {
-  return <TutorRegistrationContainer />;
+  return (
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
+      <Header />
+      <TutorRegistrationContainer />
+    </div>
+  );
 }

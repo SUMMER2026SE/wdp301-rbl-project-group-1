@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
 import { TutorPopover } from "@/src/shared/components/molecules/tutor-popover/tutor-popover";
+import { TutorHeaderUserInfo } from "@/src/features/tutor/layout/components/tutor-header-user-info";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
 import SearchBox from "@/src/shared/components/molecules/search-box/search-box";
 import { GraduationCap } from "lucide-react";
@@ -43,10 +44,7 @@ export default function TutorLayout({
             </div>
             <NotificationPopover />
             <div className="flex items-center gap-4 border-l border-border pl-6">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-bold text-foreground">Thầy Minh</p>
-                <p className="text-xs text-muted-foreground">Gia sư toán học</p>
-              </div>
+              <TutorHeaderUserInfo />
               <TutorPopover />
             </div>
           </div>

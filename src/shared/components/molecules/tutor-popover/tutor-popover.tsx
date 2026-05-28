@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
+import { clearAuth } from "@/src/features/auth/authSlice";
+import { useLogoutMutation } from "@/src/features/auth/authApi";
+import { useGetProfileQuery } from "@/src/features/user/userApi";
+import { useAppDispatch, useAppSelector } from "@/src/shared/store/hooks";
 import { TUTOR_MENU_ITEMS } from "./tutor-popover.constants";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/src/shared/components/ui/avatar";
+import { Avatar } from "@/src/shared/components/atoms/avatar/avatar";
 import { Button } from "@/src/shared/components/ui/button";
 import {
   Popover,
@@ -16,6 +17,7 @@ import {
   PopoverTrigger,
 } from "@/src/shared/components/ui/popover";
 import { Separator } from "@/src/shared/components/ui/separator";
+import { getSummaryName } from "@/src/shared/utils/common";
 
 const getMenuItemWithIcon = (
   item: (typeof TUTOR_MENU_ITEMS)[0],
@@ -84,6 +86,32 @@ const menuItemsWithIcons = [
 ];
 
 export function TutorPopover() {
+  const dispatch = useAppDispatch();
+  const router = useRouter();
+  const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const { data: profileResponse } = useGetProfileQuery(undefined, {
+    skip: !isAuthenticated,
+  });
+  
+  const userProfile = profileResponse?.data?.profile;
+  const displayName = userProfile?.nickname || "Gia sư";
+  const avatarUrl = userProfile?.avatarUrl || undefined;
+  const email = profileResponse?.data?.email;
+  const initials = getSummaryName(displayName);
+
+  const [logout] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+    } catch (e) {
+      console.error("Logout API error:", e);
+    } finally {
+      dispatch(clearAuth());
+      router.push("/login");
+    }
+  };
+
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -91,33 +119,32 @@ export function TutorPopover() {
           variant="ghost"
           size="icon"
           className="size-9 rounded-full p-0 ring-offset-background transition-all hover:ring-2 hover:ring-primary/30"
-          aria-label="Mở menu người dùng"
+          aria-label="Mở menu gia sư"
         >
-          <Avatar className="size-9">
-            <AvatarImage
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD8Sulrh2EkvNYXoDEU12zH3PGEI2k-Re-3XMxq_V7PQjk7oCQpBGyFf8pxKmMDsDQNFYe8J_XThu2aKkITb8JKr1gOAIxsGLINmwcBsYW8JQJC7Hetcrpg8yZhThwH0t0Z9tp8qoGmqkYNXrcaH9zhF9BKunDUE9CYX9opUtBnwUyE83g73thD33cyKwf6Bmo-XH_5ND0TUD1VXKiApgz7W4Dl5uQp37hPyhAy8s2KnsA4I9RejtihW931AykDvwvp9besb6YDLo"
-              alt="Nguyễn Minh Tuấn"
-            />
-            <AvatarFallback>NT</AvatarFallback>
-          </Avatar>
+          <Avatar
+            src={avatarUrl}
+            alt={displayName}
+            fallback={initials}
+            size="sm"
+            className="size-9"
+          />
         </Button>
       </PopoverTrigger>
 
       <PopoverContent align="end" className="w-72 p-0">
         <div className="flex items-center gap-3 p-4">
-          <Avatar className="size-10 shrink-0">
-            <AvatarImage
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD8Sulrh2EkvNYXoDEU12zH3PGEI2k-Re-3XMxq_V7PQjk7oCQpBGyFf8pxKmMDsDQNFYe8J_XThu2aKkITb8JKr1gOAIxsGLINmwcBsYW8JQJC7Hetcrpg8yZhThwH0t0Z9tp8qoGmqkYNXrcaH9zhF9BKunDUE9CYX9opUtBnwUyE83g73thD33cyKwf6Bmo-XH_5ND0TUD1VXKiApgz7W4Dl5uQp37hPyhAy8s2KnsA4I9RejtihW931AykDvwvp9besb6YDLo"
-              alt="Nguyễn Minh Tuấn"
-            />
-            <AvatarFallback>NT</AvatarFallback>
-          </Avatar>
+          <Avatar
+            src={avatarUrl}
+            alt={displayName}
+            fallback={initials}
+            size="md"
+          />
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">
-              Nguyễn Minh Tuấn
+              {displayName}
             </p>
             <p className="truncate text-xs text-muted-foreground">
-              tutor.minh@email.com
+              {email ?? "Chưa có email"}
             </p>
           </div>
         </div>
@@ -143,9 +170,7 @@ export function TutorPopover() {
           <Button
             variant="ghost"
             className="w-full justify-start gap-3 px-4 text-sm text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => {
-              // Handle logout here
-            }}
+            onClick={handleLogout}
           >
             <svg
               className="size-5 shrink-0"

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { clearAuth } from "@/src/features/auth/authSlice";
+import { useLogoutMutation } from "@/src/features/auth/authApi";
 import { useGetProfileQuery } from "@/src/features/user/userApi";
 import { useAppDispatch, useAppSelector } from "@/src/shared/store/hooks";
 import { USER_MENU_ITEMS } from "./user-popover.constants";
@@ -97,9 +98,17 @@ export function UserPopover() {
   const email = profileResponse?.data?.email;
   const initials = getSummaryName(displayName);
 
-  const handleLogout = () => {
-    dispatch(clearAuth());
-    router.push("/login");
+  const [logout] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+    } catch (e) {
+      console.error("Logout API error:", e);
+    } finally {
+      dispatch(clearAuth());
+      router.push("/login");
+    }
   };
 
   return (
@@ -114,7 +123,7 @@ export function UserPopover() {
           <Avatar
             src={avatarUrl}
             alt={displayName}
-            fallback={displayName}
+            fallback={initials}
             size="sm"
             className="size-9"
           />
@@ -126,7 +135,7 @@ export function UserPopover() {
           <Avatar
             src={avatarUrl}
             alt={displayName}
-            fallback={displayName}
+            fallback={initials}
             size="md"
           />
           <div className="min-w-0 flex-1">

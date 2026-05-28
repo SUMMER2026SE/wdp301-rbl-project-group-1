@@ -6,18 +6,18 @@ const config = {
   apiImport: "baseApi",
 
   outputFiles: {
-    // "./src/features/auth/authApi.ts": {
-    //   filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
-    //   exportName: "authApi",
+    "./src/features/auth/authApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
+      exportName: "authApi",
+    },
+    // "./src/features/user/userApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
+    //   exportName: "userApi",
     // },
-    "./src/features/user/userApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
-      exportName: "userApi",
-    },
-    "./src/features/student/tutors/tutorApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/tutors"),
-      exportName: "tutorApi",
-    },
+    // "./src/features/student/tutors/tutorApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/tutors"),
+    //   exportName: "tutorApi",
+    // },
     // "./src/features/tutor-application/tutorApplicationApi.ts": {
     //   filterEndpoints: (_, { path }) =>
     //     path.startsWith("/api/tutor-application"),
@@ -32,18 +32,18 @@ const config = {
     //   filterEndpoints: (_, { path }) => path.startsWith("/api/storage"),
     //   exportName: "storageApi",
     // },
-    "./src/features/course/courseApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/courses"),
-      exportName: "courseApi",
-    },
+    // "./src/features/course/courseApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/courses"),
+    //   exportName: "courseApi",
+    // },
     "./src/features/enrollment/enrollmentApi.ts": {
       filterEndpoints: (_, { path }) => path.startsWith("/api/enrollments"),
       exportName: "enrollmentApi",
     },
-    "./src/features/payment/paymentApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/payments"),
-      exportName: "paymentApi",
-    },
+    // "./src/features/payment/paymentApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/payments"),
+    //   exportName: "paymentApi",
+    // },
   },
 
   hooks: true,

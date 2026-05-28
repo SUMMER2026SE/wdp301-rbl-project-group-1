@@ -24,11 +24,17 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({ url: `/api/users/${queryArg.id}` }),
     }),
     changeAvatar: build.mutation<ChangeAvatarApiResponse, ChangeAvatarApiArg>({
-      query: (queryArg) => ({
-        url: `/api/users/avatar`,
-        method: "PATCH",
-        body: queryArg.body,
-      }),
+      query: (queryArg) => {
+        const formData = new FormData();
+        if (queryArg.body.avatar) {
+          formData.append("avatar", queryArg.body.avatar);
+        }
+        return {
+          url: `/api/users/avatar`,
+          method: "PATCH",
+          body: formData,
+        };
+      },
     }),
     upgradeTutor: build.mutation<UpgradeTutorApiResponse, UpgradeTutorApiArg>({
       query: () => ({ url: `/api/users/me/upgrade-tutor`, method: "PATCH" }),
