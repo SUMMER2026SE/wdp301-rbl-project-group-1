@@ -4,6 +4,8 @@ export class CreateTutorApplicationCommand {
     public readonly specialization: string,
     public readonly subjectIds: string[],
     public readonly gradeIds: string[],
+    public readonly phone: string,
+    public readonly address?: string,
     public readonly bio?: string,
     public readonly experience?: number,
     public readonly education?: string,

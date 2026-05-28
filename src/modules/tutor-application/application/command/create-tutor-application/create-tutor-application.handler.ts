@@ -40,6 +40,8 @@ export class CreateTutorApplicationHandler implements ICommandHandler<
 
     const applicationEntity = TutorApplication.create('', {
       email: command.email,
+      phone: command.phone,
+      address: command.address,
       bio: command.bio,
       specialization: command.specialization,
       subjectIds: command.subjectIds,

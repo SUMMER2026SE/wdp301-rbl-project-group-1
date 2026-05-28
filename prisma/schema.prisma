@@ -317,6 +317,9 @@ model TutorApplication {
   email  String  @unique
   userId String? @unique @map("user_id")
 
+  phone   String
+  address String?
+
   bio            String?
   specialization String
   experience     Int?

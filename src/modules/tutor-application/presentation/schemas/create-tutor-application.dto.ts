@@ -11,6 +11,14 @@ export const CreateTutorApplicationSchema = z
       example: 'Mathematics',
       description: 'Tutor main specialization',
     }),
+    phone: z.string().min(1).meta({
+      example: '0901234567',
+      description: 'Tutor phone number',
+    }),
+    address: z.string().optional().meta({
+      example: '123 Nguyen Hue, Ho Chi Minh',
+      description: 'Tutor address',
+    }),
     bio: z.string().optional().meta({
       example: 'I have 5 years of teaching experience',
       description: 'Tutor introduction',

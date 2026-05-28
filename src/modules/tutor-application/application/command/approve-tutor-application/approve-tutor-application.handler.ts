@@ -12,6 +12,8 @@ import { IUnitOfWork } from '../../../../../shared/application/interfaces/unit-o
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { User } from '../../../../user/domain/entities/user.entity';
 import { Tutor } from '../../../../user/domain/entities/tutor.entity';
+import { Profile } from '../../../../user/domain/entities/profile.entity';
+import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { TutorApplicationRepository } from '../../../domain/repositories/tutor-application.repository';
 import { ApproveTutorApplicationCommand } from './approve-tutor-application.command';
 import { ApproveTutorApplicationResult } from './approve-tutor-application.result';
@@ -33,6 +35,8 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
     private readonly tutorApplicationRepository: TutorApplicationRepository,
     @Inject(IUserRepository)
     private readonly userRepository: IUserRepository,
+    @Inject(IProfileRepository)
+    private readonly profileRepository: IProfileRepository,
     @Inject(IHashService)
     private readonly hashService: IHashService,
     @Inject(IUnitOfWork)
@@ -103,6 +107,16 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
       newUser.setTutor(tutorProfile);
 
       const savedUser = await this.userRepository.save(newUser);
+
+      const profileToSave = Profile.create('', {
+        userId: savedUser.id,
+        nickname: application.email.split('@')[0],
+        phone: application.phone,
+        address: application.address ?? undefined,
+        avatarUrl: application.avatarUrl ?? undefined,
+        dateOfBirth: new Date(1990, 0, 1), // Default DOB for now
+      });
+      await this.profileRepository.save(profileToSave);
 
       const tx = PrismaTransactionContext.getClient() ?? this.prisma;
       if (application.subjectIds && application.subjectIds.length > 0) {

@@ -70,6 +70,8 @@ export class TutorApplicationController {
         dto.specialization,
         dto.subjectIds,
         dto.gradeIds,
+        dto.phone,
+        dto.address,
         dto.bio,
         dto.experience,
         dto.education,

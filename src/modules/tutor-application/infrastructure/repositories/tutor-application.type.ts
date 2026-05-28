@@ -32,6 +32,8 @@ export type PrismaTutorApplicationRecord = {
   id: string;
   email: string;
   userId: string | null;
+  phone: string;
+  address: string | null;
   bio: string | null;
   specialization: string;
   experience: number | null;

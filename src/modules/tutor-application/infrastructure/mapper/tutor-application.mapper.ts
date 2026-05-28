@@ -22,6 +22,8 @@ export class TutorApplicationMapper implements IMapper<
     return TutorApplication.create(record.id, {
       userId: record.userId,
       email: record.email,
+      phone: record.phone,
+      address: record.address ?? undefined,
       bio: record.bio ?? undefined,
       specialization: record.specialization,
       subjects,
@@ -45,6 +47,8 @@ export class TutorApplicationMapper implements IMapper<
       ...(application.id && { id: application.id }),
       userId: application.userId ?? null,
       email: application.email,
+      phone: application.phone,
+      address: application.address ?? null,
       bio: application.bio ?? null,
       specialization: application.specialization,
       experience: application.experience ?? null,

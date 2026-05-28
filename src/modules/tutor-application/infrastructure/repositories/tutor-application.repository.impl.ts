@@ -32,11 +32,12 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
   }
 
   async create(application: TutorApplication): Promise<TutorApplication> {
-    const data = this.mapper.toPersistence(application);
+    const { userId, ...data } = this.mapper.toPersistence(application);
 
     const savedApplication = await this.tutorApplicationDelegate.create({
       data: {
         ...data,
+        ...(userId ? { user: { connect: { id: userId } } } : {}),
         subjects: {
           create:
             application.subjectIds?.map((id) => ({ subjectId: id })) || [],
@@ -87,11 +88,14 @@ export class PrismaTutorApplicationRepository extends TutorApplicationRepository
   }
 
   async update(application: TutorApplication): Promise<TutorApplication> {
-    const data = this.mapper.toPersistence(application);
+    const { userId, ...data } = this.mapper.toPersistence(application);
 
     const updated = await this.tutorApplicationDelegate.update({
       where: { id: application.id },
-      data,
+      data: {
+        ...data,
+        ...(userId ? { user: { connect: { id: userId } } } : {}),
+      },
       include: {
         subjects: { include: { subject: true } },
         grades: { include: { grade: true } },
