@@ -21,6 +21,8 @@ import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateTutorApplicationCommand } from '../../application/command/create-tutor-application/create-tutor-application.command';
 import { CreateTutorApplicationResult } from '../../application/command/create-tutor-application/create-tutor-application.result';
+import { SendVerifyEmailOtpCommand } from '../../../auth/application/commands/send-verify-email-otp/send-verify-email-otp.command';
+import { SendVerifyEmailOtpResult } from '../../../auth/application/commands/send-verify-email-otp/send-verify-email-otp.result';
 import { GetTutorApplicationQuery } from '../../application/query/get-tutor-application/get-tutor-application.query';
 import { GetTutorApplicationResult } from '../../application/query/get-tutor-application/get-tutor-application.result';
 import { TutorApplicationStatus } from '../../domain/enums/tutor-application';
@@ -80,6 +82,16 @@ export class TutorApplicationController {
         dto.files,
       ),
     );
+
+    // Automatically send verification OTP after creating tutor application
+    try {
+      await this.commandBus.execute<
+        SendVerifyEmailOtpCommand,
+        SendVerifyEmailOtpResult
+      >(new SendVerifyEmailOtpCommand(dto.email));
+    } catch {
+      // Don't fail application creation if OTP sending fails
+    }
 
     return BaseResponse.created(
       CreateTutorApplicationResponseDto.fromResult(result),

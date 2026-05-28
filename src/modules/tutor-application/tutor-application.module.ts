@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { AuthModule } from '../auth/auth.module';
 import { UserModule } from '../user/user.module';
@@ -21,7 +21,7 @@ const QueryHandlers = [GetTutorApplicationHandler];
 const EventHandlers = [SyncTutorToRabbitMqHandler];
 
 @Module({
-  imports: [CqrsModule, UserModule, AuthModule],
+  imports: [CqrsModule, UserModule, forwardRef(() => AuthModule)],
   controllers: [TutorApplicationController],
   providers: [
     ...CommandHandlers,

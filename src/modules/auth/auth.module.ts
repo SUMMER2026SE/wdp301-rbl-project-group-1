@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtModule } from '@nestjs/jwt';
@@ -33,6 +33,7 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
 import { ResetTokenStrategy } from './presentation/strategies/reset-token.strategy';
 
 import { UserModule } from '../user/user.module';
+import { TutorApplicationModule } from '../tutor-application/tutor-application.module';
 
 import { SyncUserToRabbitMqHandler } from './application/events/sync-user-to-rabbitmq.handler';
 
@@ -58,6 +59,7 @@ const EventHandlers = [SyncUserToRabbitMqHandler];
     CqrsModule,
     PassportModule,
     UserModule,
+    forwardRef(() => TutorApplicationModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
