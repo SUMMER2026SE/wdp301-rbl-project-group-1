@@ -17,7 +17,7 @@ const baseQuery = fetchBaseQuery({
       getState() as { auth?: { accessToken?: string | null } }
     ).auth?.accessToken;
 
-    if (accessToken) {
+    if (accessToken && !headers.has("authorization")) {
       headers.set("authorization", `Bearer ${accessToken}`);
     }
 
