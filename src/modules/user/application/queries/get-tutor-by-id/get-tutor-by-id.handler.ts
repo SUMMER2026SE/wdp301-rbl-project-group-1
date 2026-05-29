@@ -17,7 +17,7 @@ export class GetTutorByIdQueryHandler
   async execute(query: GetTutorByIdQuery): Promise<GetTutorByIdResult> {
     const user = await this.prisma.user.findUnique({
       where: { id: query.tutorId, role: PrismaUserRole.TUTOR },
-      include: { profile: true, tutor: true },
+      include: { tutor: true },
     });
 
     if (!user || !user.tutor) {
@@ -26,8 +26,8 @@ export class GetTutorByIdQueryHandler
 
     return {
       id: user.id,
-      nickname: user.profile?.nickname ?? null,
-      avatarUrl: user.profile?.avatarUrl ?? null,
+      nickname: user.nickname ?? null,
+      avatarUrl: user.avatarUrl ?? null,
       bio: user.tutor.bio,
       specialization: user.tutor.specialization,
       experience: user.tutor.experience,

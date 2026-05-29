@@ -39,8 +39,9 @@ export class VerifyEmailCommandHandler
 
       // If no User but a TutorApplication exists, OTP was validated successfully.
       // No entity update needed — User.isVerified will be set when admin approves.
-      const application =
-        await this.tutorApplicationRepository.findByEmail(command.email);
+      const application = await this.tutorApplicationRepository.findByEmail(
+        command.email,
+      );
       if (application) {
         return new VerifyEmailResult('Email verified successfully.', true);
       }

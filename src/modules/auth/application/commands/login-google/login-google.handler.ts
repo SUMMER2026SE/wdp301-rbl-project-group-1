@@ -7,7 +7,6 @@ import { ICommand } from '../../../../../shared/application/interfaces/use-case.
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { UserIdentity } from '../../../../user/domain/entities/user-identity.entity';
 
-import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
 import { IUserIdentityRepository } from '../../../../user/domain/repositories/user-identity.repository.interface';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
@@ -30,8 +29,6 @@ export class LoginGoogleCommandHandler
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
     @Inject(IUserIdentityRepository)
     private readonly userIdentityRepository: IUserIdentityRepository,
-    @Inject(IProfileRepository)
-    private readonly profileRepository: IProfileRepository,
     @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
     @Inject(IHashService) private readonly hashService: IHashService,
     @Inject(IJwtService) private readonly jwtService: IJwtService,
@@ -99,8 +96,6 @@ export class LoginGoogleCommandHandler
       role: user.role,
     };
 
-    const profile = await this.profileRepository.findByUserId(user.id);
-
     const accessToken = await jwtService.sign(payload);
     const refreshToken = await jwtService.signRefresh(payload);
 
@@ -129,7 +124,8 @@ export class LoginGoogleCommandHandler
         id: user.id,
         email: user.email,
         role: user.role,
-        nickname: profile?.nickname ?? '',
+        // nickname is now directly on User (merged from Profile)
+        nickname: user.nickname ?? '',
         isActive: user.isActive,
         isVerified: user.isVerified,
         isFlag: user.isFlag,

@@ -68,9 +68,8 @@ export class PrismaTutorRepository implements ITutorRepository {
       andConditions.push({
         OR: [
           {
-            profile: {
-              nickname: { contains: search, mode: 'insensitive' },
-            },
+            // nickname is now directly on User (merged from Profile)
+            nickname: { contains: search, mode: 'insensitive' },
           },
           {
             tutor: {
@@ -110,7 +109,7 @@ export class PrismaTutorRepository implements ITutorRepository {
     const sortOrder = params.sortOrder ?? 'asc';
     const orderByMap: Record<string, Prisma.UserOrderByWithRelationInput> = {
       createdAt: { createdAt: sortOrder },
-      nickname: { profile: { nickname: sortOrder } },
+      nickname: { nickname: sortOrder },
       pricePerHour: { tutor: { pricePerHour: sortOrder } },
       rating: { tutor: { rating: sortOrder } },
       reviewCount: { tutor: { reviewCount: sortOrder } },
@@ -129,7 +128,7 @@ export class PrismaTutorRepository implements ITutorRepository {
         orderBy,
         skip: params.skip,
         take: params.limit,
-        include: { profile: true, tutor: true },
+        include: { tutor: true },
       }),
     ]);
 
@@ -146,8 +145,9 @@ export class PrismaTutorRepository implements ITutorRepository {
         studentCount: user.tutor?.studentCount ?? 0,
       }),
       profile: {
-        nickname: user.profile?.nickname ?? null,
-        avatarUrl: user.profile?.avatarUrl ?? null,
+        // nickname and avatarUrl are now directly on User
+        nickname: user.nickname ?? null,
+        avatarUrl: user.avatarUrl ?? null,
       },
     }));
 

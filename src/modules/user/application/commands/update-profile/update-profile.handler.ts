@@ -1,7 +1,6 @@
 import { ConflictException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
-import { IProfileRepository } from '../../../domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { UpdateProfileCommand } from './update-profile.command';
 import { UpdateProfileResult } from './update-profile.result';
@@ -14,8 +13,6 @@ export class UpdateProfileHandler
 {
   constructor(
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
-    @Inject(IProfileRepository)
-    private readonly profileRepository: IProfileRepository,
   ) {}
 
   async execute(command: UpdateProfileCommand): Promise<UpdateProfileResult> {
@@ -23,12 +20,6 @@ export class UpdateProfileHandler
 
     if (!user) {
       throw new NotFoundException('User not found');
-    }
-
-    const profile = await this.profileRepository.findByUserId(command.userId);
-
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
     }
 
     if (command.profileData.email && command.profileData.email !== user.email) {
@@ -39,10 +30,9 @@ export class UpdateProfileHandler
         throw new ConflictException('Email already in use');
       }
       user.updateEmail(command.profileData.email);
-      await this.userRepository.save(user);
     }
 
-    profile.update({
+    user.updateProfile({
       nickname: command.profileData.nickname,
       avatarUrl: command.profileData.avatarUrl,
       phone: command.profileData.phone,
@@ -51,7 +41,7 @@ export class UpdateProfileHandler
       address: command.profileData.address,
     });
 
-    await this.profileRepository.save(profile);
+    await this.userRepository.save(user);
 
     return new UpdateProfileResult(user.id, 'Profile updated successfully');
   }

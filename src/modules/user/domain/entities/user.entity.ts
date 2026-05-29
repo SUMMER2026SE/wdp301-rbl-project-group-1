@@ -1,7 +1,5 @@
 import { AggregateRoot } from '../../../../shared/domain/entities/aggregate-root';
-import { UserRole } from '../../../../shared/domain/enums/enums';
-import { Parent } from './parent.entity';
-import { Student } from './student.entity';
+import { Gender, UserRole } from '../../../../shared/domain/enums/enums';
 import { Tutor } from './tutor.entity';
 
 export interface UserProps {
@@ -14,9 +12,19 @@ export interface UserProps {
   reportCount: number;
   createdAt: Date;
 
+  // Profile fields (merged from Profile model)
+  nickname?: string | null;
+  avatarUrl?: string | null;
+  phone?: string | null;
+  dateOfBirth?: Date | null;
+  gender?: Gender | null;
+  address?: string | null;
+
+  // Student fields (merged from Student model)
+  school?: string | null;
+  learningGoal?: string | null;
+
   tutor?: Tutor | null;
-  student?: Student | null;
-  parent?: Parent | null;
 }
 
 export class User extends AggregateRoot<string> {
@@ -63,17 +71,49 @@ export class User extends AggregateRoot<string> {
     return this.props.createdAt;
   }
 
+  // --- Profile getters ---
+
+  get nickname(): string | null | undefined {
+    return this.props.nickname;
+  }
+
+  get avatarUrl(): string | null | undefined {
+    return this.props.avatarUrl;
+  }
+
+  get phone(): string | null | undefined {
+    return this.props.phone;
+  }
+
+  get dateOfBirth(): Date | null | undefined {
+    return this.props.dateOfBirth;
+  }
+
+  get gender(): Gender | null | undefined {
+    return this.props.gender;
+  }
+
+  get address(): string | null | undefined {
+    return this.props.address;
+  }
+
+  // --- Student getters ---
+
+  get school(): string | null | undefined {
+    return this.props.school;
+  }
+
+  get learningGoal(): string | null | undefined {
+    return this.props.learningGoal;
+  }
+
+  // --- Relations ---
+
   get tutor(): Tutor | null | undefined {
     return this.props.tutor;
   }
 
-  get student(): Student | null | undefined {
-    return this.props.student;
-  }
-
-  get parent(): Parent | null | undefined {
-    return this.props.parent;
-  }
+  // --- Mutations ---
 
   updatePassword(hashedPassword: string): void {
     this.props.password = hashedPassword;
@@ -111,15 +151,34 @@ export class User extends AggregateRoot<string> {
     this.props.tutor = tutor;
   }
 
-  setStudent(student: Student): void {
-    this.props.student = student;
-  }
-
-  setParent(parent: Parent): void {
-    this.props.parent = parent;
-  }
-
   upgradeToTutor(): void {
     this.props.role = UserRole.TUTOR;
+  }
+
+  /** Update profile fields (nickname, avatar, phone, etc.) */
+  updateProfile(params: {
+    nickname?: string;
+    avatarUrl?: string;
+    phone?: string;
+    dateOfBirth?: Date;
+    gender?: Gender;
+    address?: string;
+  }): void {
+    if (params.nickname !== undefined) this.props.nickname = params.nickname;
+    if (params.avatarUrl !== undefined) this.props.avatarUrl = params.avatarUrl;
+    if (params.phone !== undefined) this.props.phone = params.phone;
+    if (params.dateOfBirth !== undefined)
+      this.props.dateOfBirth = params.dateOfBirth;
+    if (params.gender !== undefined) this.props.gender = params.gender;
+    if (params.address !== undefined) this.props.address = params.address;
+  }
+
+  /** Update student-specific fields */
+  updateStudentProfile(
+    school: string | null,
+    learningGoal: string | null,
+  ): void {
+    this.props.school = school;
+    this.props.learningGoal = learningGoal;
   }
 }

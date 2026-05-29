@@ -16,24 +16,10 @@ export type PrismaGradeRecord = {
   createdAt: Date;
 };
 
-export type PrismaTutorApplicationSubjectRecord = {
-  tutorApplicationId: string;
-  subjectId: string;
-  subject: PrismaSubjectRecord;
-};
-
-export type PrismaTutorApplicationGradeRecord = {
-  tutorApplicationId: string;
-  gradeId: string;
-  grade: PrismaGradeRecord;
-};
-
 export type PrismaTutorApplicationRecord = {
   id: string;
   email: string;
   userId: string | null;
-  phone: string;
-  address: string | null;
   bio: string | null;
   specialization: string;
   experience: number | null;
@@ -44,8 +30,8 @@ export type PrismaTutorApplicationRecord = {
   status: TutorApplicationStatus;
   createdAt: Date;
   updatedAt: Date;
-  subjects?: PrismaTutorApplicationSubjectRecord[];
-  grades?: PrismaTutorApplicationGradeRecord[];
+  subjects?: PrismaSubjectRecord[];
+  grades?: PrismaGradeRecord[];
 };
 
 export type TutorApplicationWriteData = Omit<

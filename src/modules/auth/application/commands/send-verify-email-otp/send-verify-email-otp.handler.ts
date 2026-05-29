@@ -56,8 +56,9 @@ export class SendVerifyEmailOtpCommandHandler
     }
 
     // If no User, check TutorApplication
-    const application =
-      await this.tutorApplicationRepository.findByEmail(command.email);
+    const application = await this.tutorApplicationRepository.findByEmail(
+      command.email,
+    );
 
     if (application) {
       const { code, expiresAt } = await this.otpService.generateOtp(
@@ -80,6 +81,8 @@ export class SendVerifyEmailOtpCommandHandler
       );
     }
 
-    throw new BadRequestException('No account or application found for this email.');
+    throw new BadRequestException(
+      'No account or application found for this email.',
+    );
   }
 }

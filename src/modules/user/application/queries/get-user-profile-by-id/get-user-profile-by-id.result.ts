@@ -1,10 +1,12 @@
 import { Gender, UserRole } from '../../../../../shared/domain/enums/enums';
 
 export interface PublicProfileResult {
-  nickname: string;
+  nickname: string | null;
   avatarUrl: string | null;
-  dateOfBirth: string; // ISO date string "YYYY-MM-DD"
+  phone: string | null;
+  dateOfBirth: string | null; // ISO date string "YYYY-MM-DD"
   gender: Gender | null;
+  address: string | null;
 }
 
 export interface TutorProfileResult {
@@ -40,9 +42,15 @@ export interface StudentProfileResult {
 
 export interface GetUserProfileByIdResult {
   id: string;
+  email: string;
   role: UserRole;
+  isActive: boolean;
+  isVerified: boolean;
+  isFlag: boolean;
+  reportCount: number;
   createdAt: Date;
   profile: PublicProfileResult | null;
   tutor: TutorProfileResult | null;
   student: StudentProfileResult | null;
+  parent: null;
 }

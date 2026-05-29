@@ -3,7 +3,6 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { Readable } from 'node:stream';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { IImageStorage } from '../../../../storage/domain/interfaces/image-storage.service.interface';
-import { IProfileRepository } from '../../../domain/repositories/profile.repository.interface';
 import { IUserRepository } from '../../../domain/repositories/user.repository.interface';
 import { ChangeAvatarCommand } from './change-avatar.command';
 import { ChangeAvatarResult } from './change-avatar.result';
@@ -16,8 +15,6 @@ export class ChangeAvatarHandler
 {
   constructor(
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
-    @Inject(IProfileRepository)
-    private readonly profileRepository: IProfileRepository,
     @Inject(IImageStorage)
     private readonly imageStorage: IImageStorage,
   ) {}
@@ -29,12 +26,6 @@ export class ChangeAvatarHandler
       throw new NotFoundException('User not found');
     }
 
-    const profile = await this.profileRepository.findByUserId(command.userId);
-
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
-
     const stream = Readable.from(command.fileBuffer);
 
     // Cloudinary expects true for the image parameter when uploading an image
@@ -44,9 +35,9 @@ export class ChangeAvatarHandler
       true,
     );
 
-    profile.update({ avatarUrl: secureUrl });
+    user.updateProfile({ avatarUrl: secureUrl });
 
-    await this.profileRepository.save(profile);
+    await this.userRepository.save(user);
 
     return new ChangeAvatarResult(user.id, secureUrl);
   }

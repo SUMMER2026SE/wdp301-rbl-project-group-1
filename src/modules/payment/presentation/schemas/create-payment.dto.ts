@@ -5,7 +5,7 @@ import { PaymentReferenceType } from 'src/shared/domain/enums/enums';
 export const CreatePaymentSchema = z
   .object({
     referenceType: z.nativeEnum(PaymentReferenceType).meta({
-      example: PaymentReferenceType.COURSE_ENROLLMENT,
+      example: PaymentReferenceType.TUTOR_BOOKING,
       description: 'The reference type for the payment',
     }),
     referenceId: z.string().meta({

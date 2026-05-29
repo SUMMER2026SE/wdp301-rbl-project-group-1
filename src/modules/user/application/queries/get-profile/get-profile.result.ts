@@ -2,10 +2,10 @@ import { Gender, UserRole } from '../../../../../shared/domain/enums/enums';
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
 export interface UserProfileResult {
-  nickname: string;
+  nickname: string | null;
   avatarUrl: string | null;
-  phone: string;
-  dateOfBirth: string; // ISO date string "YYYY-MM-DD"
+  phone: string | null;
+  dateOfBirth: string | null; // ISO date string "YYYY-MM-DD"
   gender: Gender | null;
   address: string | null;
 }

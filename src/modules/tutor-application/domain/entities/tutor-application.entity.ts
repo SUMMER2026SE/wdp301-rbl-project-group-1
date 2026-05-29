@@ -19,8 +19,6 @@ export interface GradeInfo {
 export interface TutorApplicationProps {
   email: string;
   userId?: string | null;
-  phone: string;
-  address?: string | null;
   bio?: string;
   specialization: string;
   subjectIds?: string[];
@@ -55,14 +53,6 @@ export class TutorApplication extends AggregateRoot<string> {
 
   get userId(): string | null | undefined {
     return this.props.userId;
-  }
-
-  get phone(): string {
-    return this.props.phone;
-  }
-
-  get address(): string | null | undefined {
-    return this.props.address;
   }
 
   get bio(): string | undefined {
