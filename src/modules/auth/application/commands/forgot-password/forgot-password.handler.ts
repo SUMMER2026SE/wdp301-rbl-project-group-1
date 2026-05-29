@@ -30,7 +30,6 @@ export class ForgotPasswordCommandHandler
     const { code, expiresAt } = await this.otpService.generateOtp(
       command.email,
       OtpType.RESET_PASSWORD,
-      user.id,
     );
 
     await this.commandBus.execute(

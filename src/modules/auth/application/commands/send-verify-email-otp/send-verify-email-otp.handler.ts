@@ -37,7 +37,6 @@ export class SendVerifyEmailOtpCommandHandler
       const { code, expiresAt } = await this.otpService.generateOtp(
         command.email,
         OtpType.VERIFY_EMAIL,
-        user.id,
       );
 
       await this.commandBus.execute(

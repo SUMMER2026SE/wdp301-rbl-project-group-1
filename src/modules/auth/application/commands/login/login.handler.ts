@@ -40,6 +40,12 @@ export class LoginCommandHandler
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isVerified) {
+      throw new UnauthorizedException(
+        'Email is not verified. Please verify your email first.',
+      );
+    }
+
     const payload: AuthTokenPayload = {
       sub: String(user.id),
       email: user.email,

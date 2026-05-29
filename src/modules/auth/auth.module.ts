@@ -23,8 +23,6 @@ import { AuthController } from './presentation/controllers/auth.controller';
 import { IHashService } from './application/services/hash.service';
 import { IJwtService } from './application/services/jwt.service';
 import { IOtpService } from './application/services/otp.service';
-import { IOtpRepository } from './domain/repositories/otp.repository';
-import { PrismaOtpRepository } from './infrastructure/repositories/otp.repository.impl';
 import { GoogleOAuthService } from './infrastructure/services/google-auth.service';
 import { BcryptService } from './infrastructure/services/hash.service';
 import { JwtServiceImpl } from './infrastructure/services/jwt.service';
@@ -94,10 +92,6 @@ const EventHandlers = [SyncUserToRabbitMqHandler];
     {
       provide: IAuthRepository,
       useClass: PrismaAuthRepository,
-    },
-    {
-      provide: IOtpRepository,
-      useClass: PrismaOtpRepository,
     },
     {
       provide: IOtpService,

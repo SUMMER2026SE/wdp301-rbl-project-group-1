@@ -84,12 +84,6 @@ enum Gender {
   @@map("gender")
 }
 
-enum OtpType {
-  RESET_PASSWORD
-  TWO_FACTOR
-  VERIFY_EMAIL
-}
-
 enum PaymentStatus {
   PENDING
   PAID
@@ -235,6 +229,7 @@ model User {
   messages      Message[]
 
   sessionAttendances SessionAttendance[]
+  availabilities     UserAvailability[]
 
   @@map("user")
 }
@@ -276,12 +271,10 @@ model Tutor {
   studentCount   Int     @default(0) @map("student_count")
 
   // Implicit many-to-many (replaces TutorSubject/TutorGrade)
-  subjects Subject[] @relation("TutorSubjects")
-  grades   Grade[]   @relation("TutorGrades")
-
-  tutorAvailabilities TutorAvailability[]
-  bookings            Booking[]
-  tutorBids           TutorBid[]
+  subjects  Subject[]  @relation("TutorSubjects")
+  grades    Grade[]    @relation("TutorGrades")
+  bookings  Booking[]
+  tutorBids TutorBid[]
 
   @@map("tutor")
 }
@@ -331,33 +324,6 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_token")
-}
-
-model Otp {
-  id String @id @default(cuid())
-
-  email  String
-  userId String? @map("user_id") // optional nếu user đã tồn tại
-
-  codeHash String  @map("code_hash") // hash OTP (không lưu plain text)
-  type     OtpType
-
-  expiresAt DateTime @map("expires_at")
-  isUsed    Boolean  @default(false) @map("is_used")
-
-  attempts    Int @default(0)
-  maxAttempts Int @default(5) @map("max_attempts")
-
-  lastSentAt DateTime? @map("last_sent_at")
-  ipAddress  String?   @map("ip_address")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([email, type])
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("otp")
 }
 
 //////////////////////////////////////////////////
@@ -656,6 +622,7 @@ model Item {
   createdAt       DateTime                    @default(now()) @map("createdAt")
   updatedAt       DateTime                    @updatedAt @map("updatedAt")
 
+  @@index([itemType])
   @@map("items")
 }
 
@@ -669,6 +636,9 @@ model Interaction {
   context   Json?
   createdAt DateTime @default(now()) @map("createdAt")
 
+  @@index([userId])
+  @@index([itemId])
+  @@index([type])
   @@map("interactions")
 }
 
@@ -728,9 +698,9 @@ model TutorBid {
   @@map("tutor_bid")
 }
 
-model TutorAvailability {
+model UserAvailability {
   id        String   @id @default(cuid())
-  tutorId   String   @map("tutor_id")
+  userId    String   @map("user_id")
   startTime DateTime @map("start_time")
   endTime   DateTime @map("end_time")
   isBooked  Boolean  @default(false) @map("is_booked")
@@ -738,11 +708,11 @@ model TutorAvailability {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  tutor Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([tutorId])
+  @@index([userId])
   @@index([startTime])
-  @@map("tutor_availability")
+  @@map("user_availability")
 }
 
 model ScheduleRule {
