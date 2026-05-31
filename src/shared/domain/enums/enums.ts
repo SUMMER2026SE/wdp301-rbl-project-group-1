@@ -23,6 +23,18 @@ export enum PaymentStatus {
   FAILED = 'FAILED',
 }
 
+export enum TutoringMode {
+  ONLINE = 'ONLINE',
+  AT_HOME = 'AT_HOME',
+}
+
+export enum BookingStatus {
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
 export enum NotificationType {
   SYSTEM = 'SYSTEM',
   FORUM = 'FORUM',

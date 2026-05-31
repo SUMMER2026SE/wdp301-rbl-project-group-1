@@ -20,6 +20,7 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { ScheduleAvailabilityModule } from './modules/schedule-availability/schedule-availability.module';
+import { BookingModule } from './modules/booking/booking.module';
 // import { ResourceModule } from './modules/resource/resource.module';
 import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
 // import { RecommendationModule } from './modules/recommendation/recommendation.module';
@@ -43,6 +44,7 @@ import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbi
     TutorApplicationModule,
     PaymentModule,
     ScheduleAvailabilityModule,
+    BookingModule,
     // ResourceModule,
     // RecommendationModule,
   ],
