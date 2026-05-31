@@ -1,4 +1,4 @@
-import { Body, Controller, Param, Post } from '@nestjs/common';
+import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
 import { CommandBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../../../shared/domain/enums/enums';
@@ -9,6 +9,8 @@ import {
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
+import { AcceptTutorBidCommand } from '../../application/commands/accept-tutor-bid/accept-tutor-bid.command';
+import { AcceptTutorBidResult } from '../../application/commands/accept-tutor-bid/accept-tutor-bid.result';
 import { CreateTutorRequestCommand } from '../../application/commands/create-tutor-request/create-tutor-request.command';
 import { CreateTutorRequestResult } from '../../application/commands/create-tutor-request/create-tutor-request.result';
 import { SetTutorBidCommand } from '../../application/commands/set-tutor-bid/set-tutor-bid.command';
@@ -18,6 +20,7 @@ import {
   SetTutorBidDto,
 } from '../schemas/tutor-request.dto';
 import {
+  AcceptTutorBidResponseDto,
   TutorBidResponseDto,
   TutorRequestResponseDto,
 } from '../schemas/tutor-request-response.dto';
@@ -80,5 +83,28 @@ export class TutorRequestController {
     >(new SetTutorBidCommand(id, user.userId, dto.proposedPrice, dto.message));
 
     return BaseResponse.ok(TutorBidResponseDto.fromResult(result));
+  }
+
+  @Patch(':requestId/bids/:bidId/accept')
+  @Roles(UserRole.STUDENT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'acceptTutorBid',
+    summary: 'Accept a tutor bid and close the request',
+  })
+  @ApiOkResponseWrapped(AcceptTutorBidResponseDto, {
+    description: 'Tutor bid accepted and request closed successfully.',
+  })
+  async acceptTutorBid(
+    @CurrentUser() user: { userId: string },
+    @Param('requestId') requestId: string,
+    @Param('bidId') bidId: string,
+  ): Promise<BaseResponse<AcceptTutorBidResponseDto>> {
+    const result = await this.commandBus.execute<
+      AcceptTutorBidCommand,
+      AcceptTutorBidResult
+    >(new AcceptTutorBidCommand(requestId, bidId, user.userId));
+
+    return BaseResponse.ok(AcceptTutorBidResponseDto.fromResult(result));
   }
 }

@@ -1,4 +1,7 @@
-import { TutoringMode } from '../../../../shared/domain/enums/enums';
+import {
+  RequestStatus,
+  TutoringMode,
+} from '../../../../shared/domain/enums/enums';
 import {
   ScheduleRuleInput,
   TutorRequest,
@@ -22,10 +25,22 @@ export type SetTutorBidData = {
   message?: string;
 };
 
+export type AcceptTutorBidData = {
+  requestId: string;
+  bidId: string;
+  studentId: string;
+};
+
+export type AcceptedTutorBid = {
+  bid: TutorBid;
+  requestStatus: RequestStatus;
+};
+
 export const ITutorRequestRepository = Symbol('ITutorRequestRepository');
 
 export interface ITutorRequestRepository {
   createRequest(data: CreateTutorRequestData): Promise<TutorRequest>;
   findOpenRequestById(id: string): Promise<TutorRequest | null>;
   setBid(data: SetTutorBidData): Promise<TutorBid>;
+  acceptBid(data: AcceptTutorBidData): Promise<AcceptedTutorBid | null>;
 }

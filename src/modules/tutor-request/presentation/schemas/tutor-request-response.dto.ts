@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
+import { AcceptTutorBidResult } from '../../application/commands/accept-tutor-bid/accept-tutor-bid.result';
 import { CreateTutorRequestResult } from '../../application/commands/create-tutor-request/create-tutor-request.result';
 import { SetTutorBidResult } from '../../application/commands/set-tutor-bid/set-tutor-bid.result';
 
@@ -75,6 +76,31 @@ export class TutorBidResponseDto extends createZodDto(
     dto.proposedPrice = result.proposedPrice;
     dto.message = result.message;
     dto.status = result.status;
+    dto.createdAt = result.createdAt.toISOString();
+    dto.updatedAt = result.updatedAt.toISOString();
+    return dto;
+  }
+}
+
+export const AcceptTutorBidResponseSchema = TutorBidResponseSchema.extend({
+  requestStatus: z.enum(['OPEN', 'CLOSED', 'CANCELLED']).meta({
+    example: 'CLOSED',
+    description: 'Updated request status after accepting the bid',
+  }),
+}).meta({ id: 'AcceptTutorBidResponseDto' });
+
+export class AcceptTutorBidResponseDto extends createZodDto(
+  AcceptTutorBidResponseSchema,
+) {
+  static fromResult(result: AcceptTutorBidResult): AcceptTutorBidResponseDto {
+    const dto = new AcceptTutorBidResponseDto();
+    dto.id = result.id;
+    dto.requestId = result.requestId;
+    dto.tutorId = result.tutorId;
+    dto.proposedPrice = result.proposedPrice;
+    dto.message = result.message;
+    dto.status = result.status;
+    dto.requestStatus = result.requestStatus;
     dto.createdAt = result.createdAt.toISOString();
     dto.updatedAt = result.updatedAt.toISOString();
     return dto;

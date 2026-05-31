@@ -9,6 +9,8 @@ import { PrismaService } from '../../../../shared/infrastructure/database/prisma
 import { TutorBid } from '../../domain/entities/tutor-bid.entity';
 import { TutorRequest } from '../../domain/entities/tutor-request.entity';
 import {
+  AcceptedTutorBid,
+  AcceptTutorBidData,
   CreateTutorRequestData,
   ITutorRequestRepository,
   SetTutorBidData,
@@ -75,6 +77,52 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
     });
 
     return this.toBidDomain(bid);
+  }
+
+  async acceptBid(
+    data: AcceptTutorBidData,
+  ): Promise<AcceptedTutorBid | null> {
+    return this.prisma.$transaction(async (tx) => {
+      const bid = await tx.tutorBid.findFirst({
+        where: {
+          id: data.bidId,
+          requestId: data.requestId,
+          status: BidStatus.PENDING,
+          request: {
+            studentId: data.studentId,
+            status: RequestStatus.OPEN,
+          },
+        },
+      });
+
+      if (!bid) {
+        return null;
+      }
+
+      await tx.tutorRequest.update({
+        where: { id: data.requestId },
+        data: { status: RequestStatus.CLOSED },
+      });
+
+      await tx.tutorBid.updateMany({
+        where: {
+          requestId: data.requestId,
+          id: { not: data.bidId },
+          status: BidStatus.PENDING,
+        },
+        data: { status: BidStatus.REJECTED },
+      });
+
+      const acceptedBid = await tx.tutorBid.update({
+        where: { id: data.bidId },
+        data: { status: BidStatus.ACCEPTED },
+      });
+
+      return {
+        bid: this.toBidDomain(acceptedBid),
+        requestStatus: RequestStatus.CLOSED,
+      };
+    });
   }
 
   private toRequestDomain(record: TutorRequestRecord): TutorRequest {
