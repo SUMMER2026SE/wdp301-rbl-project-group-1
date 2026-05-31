@@ -699,11 +699,12 @@ model TutorBid {
 }
 
 model UserAvailability {
-  id        String   @id @default(cuid())
-  userId    String   @map("user_id")
-  startTime DateTime @map("start_time")
-  endTime   DateTime @map("end_time")
-  isBooked  Boolean  @default(false) @map("is_booked")
+  id        String @id @default(cuid())
+  userId    String @map("user_id")
+
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -711,7 +712,7 @@ model UserAvailability {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([startTime])
+  @@index([userId, dayOfWeek])
   @@map("user_availability")
 }
 
