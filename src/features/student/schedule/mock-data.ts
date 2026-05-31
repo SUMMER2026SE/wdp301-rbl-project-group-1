@@ -162,3 +162,23 @@ export const getClassesForDate = (
   };
   return classDistribution[day] || [];
 };
+
+// Mock data mapper for fixed mode - maps day of week to classes
+export const getFixedClassesForDate = (
+  date: Date,
+  allClasses: ScheduleClass[],
+): ScheduleClass[] => {
+  const jsDay = date.getDay();
+  const dayIndex = jsDay === 0 ? 6 : jsDay - 1; // 0=Mon, 6=Sun
+  
+  const fixedDistribution: Record<number, ScheduleClass[]> = {
+    0: [allClasses[0]], // Mon
+    1: [allClasses[1]], // Tue
+    3: [allClasses[2]], // Thu
+    4: [allClasses[3]], // Fri
+  };
+  
+  return fixedDistribution[dayIndex] || [];
+};
+
+export const mockFixedAvailableSlots: Record<string, boolean> = {};

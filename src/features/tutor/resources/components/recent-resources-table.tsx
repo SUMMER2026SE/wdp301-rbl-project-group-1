@@ -102,7 +102,7 @@ export function RecentResourcesTable({ resources }: RecentResourcesTableProps) {
     {
       id: "actions",
       header: () => <div className="text-right">Thao tác</div>,
-      cell: ({ row }) => (
+      cell: () => (
         <div className="flex justify-end gap-2 items-center">
           <Button
             variant="outline"

@@ -1,0 +1,60 @@
+"use client";
+
+import { Skeleton } from "@/src/shared/components/ui/skeleton";
+import { TutorRequestCard } from "./tutor-request-card";
+import { TutorRequest } from "../mocks/tutor-requests.mock";
+import { Frown } from "lucide-react";
+
+interface TutorRequestListProps {
+  requests: TutorRequest[];
+  isLoading?: boolean;
+}
+
+export function TutorRequestList({ requests, isLoading }: TutorRequestListProps) {
+  if (isLoading) {
+    return (
+      <div className="flex-1 space-y-4">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="rounded-2xl border border-border p-6 shadow-sm bg-card">
+            <div className="flex gap-5">
+              <Skeleton className="h-14 w-14 rounded-full" />
+              <div className="flex-1 space-y-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-1/3" />
+                  <Skeleton className="h-4 w-1/4" />
+                </div>
+                <Skeleton className="h-10 w-full" />
+                <div className="flex justify-between pt-2">
+                  <Skeleton className="h-5 w-1/2" />
+                  <Skeleton className="h-10 w-32" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (requests.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 text-center border border-border border-dashed rounded-2xl bg-card/50">
+        <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mb-6">
+          <Frown className="h-10 w-10 text-muted-foreground opacity-50" />
+        </div>
+        <h3 className="text-xl font-bold text-foreground mb-2">Không tìm thấy yêu cầu nào</h3>
+        <p className="text-muted-foreground max-w-md">
+          Hiện tại không có yêu cầu tìm gia sư nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh lại các tiêu chí tìm kiếm.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col gap-5">
+      {requests.map((request) => (
+        <TutorRequestCard key={request.id} request={request} />
+      ))}
+    </div>
+  );
+}

@@ -5,7 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/src/shared/components/ui/
 import { Card } from "@/src/shared/components/ui/card";
 import { Skeleton } from "@/src/shared/components/ui/skeleton";
 import { getSummaryName } from "@/src/shared/utils/common";
-import { GraduationCap, MapPin, Star, Users, Briefcase, Clock } from "lucide-react";
+import { GraduationCap, MapPin, Star, Briefcase, Clock } from "lucide-react";
 import Link from "next/link";
 import { use } from "react";
 

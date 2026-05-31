@@ -11,6 +11,9 @@ export interface ModalPresenterProps {
   open: boolean;
   isSubmitting?: boolean;
   onOpenChange: (open: boolean) => void;
+  contentClassName?: string;
+  hideDefaultFooter?: boolean;
+  customHeader?: ReactNode;
 }
 
 export interface ModalContainerProps {
@@ -21,4 +24,7 @@ export interface ModalContainerProps {
   confirmText?: string;
   cancelText?: string;
   formId?: string;
+  contentClassName?: string;
+  hideDefaultFooter?: boolean;
+  customHeader?: ReactNode;
 }

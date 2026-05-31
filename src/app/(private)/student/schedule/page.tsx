@@ -7,16 +7,22 @@ import {
   UpcomingClasses,
 } from "@/src/features/student/schedule/components";
 import {
+  mockFixedAvailableSlots,
   scheduleClasses,
   todayClasses,
   upcomingClasses,
 } from "@/src/features/student/schedule/mock-data";
 import { ClassFilter } from "@/src/features/student/schedule/types";
-import { ChevronRight, Info } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/shared/components/ui/tabs";
+import { Button } from "@/src/shared/components/ui/button";
+import { toast } from "sonner";
+import { ChevronRight, Info, Save } from "lucide-react";
 import { useState } from "react";
 
 export default function StudentSchedulePage() {
   const [selectedFilter, setSelectedFilter] = useState<ClassFilter>("all");
+  const [initialFixedSlots, setInitialFixedSlots] = useState<Record<string, boolean>>(mockFixedAvailableSlots);
+  const [fixedSlots, setFixedSlots] = useState<Record<string, boolean>>(mockFixedAvailableSlots);
 
   return (
     <main className="flex flex-1 justify-center py-8 px-4 md:px-10">
@@ -45,11 +51,58 @@ export default function StudentSchedulePage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Side - Calendar */}
           <div className="lg:col-span-2 flex flex-col gap-8">
-            <ScheduleCalendar
-              classes={scheduleClasses}
-              selectedFilter={selectedFilter}
-              onClassClick={() => {}}
-            />
+            <Tabs defaultValue="weekly" className="w-full flex flex-col gap-6">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">Lịch học</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Quản lý lịch học hàng tuần và thiết lập thời gian rảnh cố định.</p>
+                </div>
+                <div className="flex flex-col items-end gap-3">
+                  <TabsList>
+                    <TabsTrigger value="weekly">Tuần này</TabsTrigger>
+                    <TabsTrigger value="fixed">Cố định</TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
+
+              <TabsContent value="weekly" className="m-0">
+                <ScheduleCalendar
+                  mode="weekly"
+                  classes={scheduleClasses}
+                  selectedFilter={selectedFilter}
+                  onClassClick={() => {}}
+                />
+              </TabsContent>
+
+              <TabsContent value="fixed" className="m-0 flex flex-col gap-4">
+                <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg border border-border">
+                  <p className="text-sm text-muted-foreground">
+                    Nhấn vào các ô thời gian để bật/tắt lịch rảnh cố định. Các lớp học cố định sẽ được hiển thị để bạn tiện theo dõi.
+                  </p>
+                  <Button 
+                    onClick={() => {
+                      setInitialFixedSlots(fixedSlots);
+                      toast.success("Đã lưu lịch rảnh cố định thành công!");
+                    }}
+                    disabled={
+                      JSON.stringify(Object.entries(initialFixedSlots).filter(([, v]) => v).sort()) === 
+                      JSON.stringify(Object.entries(fixedSlots).filter(([, v]) => v).sort())
+                    }
+                  >
+                    <Save className="size-4 mr-2" />
+                    Lưu thay đổi
+                  </Button>
+                </div>
+                <ScheduleCalendar
+                  mode="fixed"
+                  classes={scheduleClasses}
+                  selectedFilter="all"
+                  onClassClick={() => { }}
+                  initialAvailableSlots={initialFixedSlots}
+                  onAvailableSlotsChange={(slots) => setFixedSlots(slots)}
+                />
+              </TabsContent>
+            </Tabs>
 
             {/* Info Banner */}
             <div className="rounded-xl border border-border bg-schedule-blue-light/50 p-4 flex gap-3">

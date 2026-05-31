@@ -12,6 +12,7 @@ import {
   useRejectTutorApplicationMutation,
 } from "@/src/features/tutor-application/tutorApplicationApi";
 import type { TutorApplication } from "./tutor-approvals.types";
+import { TutorApprovalDetailModal } from "./tutor-approval-detail-modal";
 
 /** Status label/style mapping */
 const statusMap: Record<
@@ -74,14 +75,19 @@ function ActionCell({ application }: { application: TutorApplication }) {
 
   return (
     <div className="flex items-center justify-center gap-2">
-      <Button
-        variant="secondary"
-        size="icon-sm"
-        className="bg-info-soft text-info hover:bg-info-soft/80"
-        title="Xem chi tiết"
-      >
-        <Eye className="size-4" />
-      </Button>
+      <TutorApprovalDetailModal 
+        application={application}
+        trigger={
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            className="bg-info-soft text-info hover:bg-info-soft/80"
+            title="Xem chi tiết"
+          >
+            <Eye className="size-4" />
+          </Button>
+        }
+      />
 
       {isActionable && (
         <>
