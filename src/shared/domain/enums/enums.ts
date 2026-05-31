@@ -35,6 +35,18 @@ export enum BookingStatus {
   CANCELLED = 'CANCELLED',
 }
 
+export enum RequestStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum BidStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
+
 export enum NotificationType {
   SYSTEM = 'SYSTEM',
   FORUM = 'FORUM',
