@@ -4,6 +4,7 @@ import { AcceptTutorBidHandler } from './application/commands/accept-tutor-bid/a
 import { CreateTutorRequestHandler } from './application/commands/create-tutor-request/create-tutor-request.handler';
 import { SetTutorBidHandler } from './application/commands/set-tutor-bid/set-tutor-bid.handler';
 import { GetTutorRequestQueryHandler } from './application/queries/get-tutor-request/get-tutor-request.handler';
+import { GetTutorRequestsQueryHandler } from './application/queries/get-tutor-requests/get-tutor-requests.handler';
 import { ITutorRequestRepository } from './domain/repositories/tutor-request.repository.interface';
 import { PrismaTutorRequestRepository } from './infrastructure/repositories/tutor-request.repository.impl';
 import { TutorRequestController } from './presentation/controllers/tutor-request.controller';
@@ -14,7 +15,10 @@ const CommandHandlers = [
   AcceptTutorBidHandler,
 ];
 
-const QueryHandlers = [GetTutorRequestQueryHandler];
+const QueryHandlers = [
+  GetTutorRequestQueryHandler,
+  GetTutorRequestsQueryHandler,
+];
 
 @Module({
   imports: [CqrsModule],
