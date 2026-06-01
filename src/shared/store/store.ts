@@ -3,6 +3,12 @@ import { configureStore } from "@reduxjs/toolkit";
 import { setupListeners } from "@reduxjs/toolkit/query";
 import { baseApi } from "./baseApi";
 
+import "@/src/features/auth/authEnhance";
+import "@/src/features/user/userEnhance";
+import "@/src/features/student/tutors/tutorEnhance";
+import "@/src/features/tutor-application/tutorApplicationEnhance";
+import "@/src/features/payment/paymentEnhance";
+
 export const store = configureStore({
   reducer: {
     auth: authReducer,

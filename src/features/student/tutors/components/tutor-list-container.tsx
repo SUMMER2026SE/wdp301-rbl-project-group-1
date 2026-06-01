@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { LEVELS, SUBJECTS } from "../constants/filter.constants";
 import { filterSchema, type FilterFormData } from "../schemas/filter.schema";
-import { useGetTutorsQuery } from "../tutorApi";
+import { useGetTutorsQuery } from "../tutorEnhance";
 import { mapTutorResponseToTutor } from "../utils/map-tutor";
 import { SearchBar } from "./search-bar";
 import { TutorGrid } from "./tutor-grid";

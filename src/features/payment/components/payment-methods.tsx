@@ -3,7 +3,7 @@
 import { Button } from "@/src/shared/components/ui/button";
 import { Card } from "@/src/shared/components/ui/card";
 import { Alert, AlertDescription } from "@/src/shared/components/ui/alert";
-import { usePaymentControllerCreatePaymentMutation } from "@/src/features/payment/paymentApi";
+import { usePaymentControllerCreatePaymentMutation } from "@/src/features/payment/paymentEnhance";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { BankTransferDetails } from "./bank-transfer-details";

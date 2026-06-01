@@ -48,19 +48,6 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.verifyOtpDto,
       }),
     }),
-    resetPassword: build.mutation<
-      ResetPasswordApiResponse,
-      ResetPasswordApiArg
-    >({
-      query: (queryArg) => ({
-        url: `/api/auth/reset-password`,
-        method: "POST",
-        body: queryArg.resetPasswordDto,
-        headers: {
-          authorization: `Bearer ${queryArg.resetToken}`,
-        },
-      }),
-    }),
     sendVerifyEmailOtp: build.mutation<
       SendVerifyEmailOtpApiResponse,
       SendVerifyEmailOtpApiArg
@@ -76,6 +63,16 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/auth/verify-email`,
         method: "POST",
         body: queryArg.verifyEmailDto,
+      }),
+    }),
+    resetPassword: build.mutation<
+      ResetPasswordApiResponse,
+      ResetPasswordApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/auth/reset-password`,
+        method: "POST",
+        body: queryArg.resetPasswordDto,
       }),
     }),
   }),
@@ -146,6 +143,24 @@ export type VerifyOtpApiResponse =
 export type VerifyOtpApiArg = {
   verifyOtpDto: VerifyOtpDto;
 };
+export type SendVerifyEmailOtpApiResponse =
+  /** status 200 Verification OTP sent to email successfully. */ {
+    success: boolean;
+    message: string;
+    data: SendVerifyEmailOtpResultDto;
+  };
+export type SendVerifyEmailOtpApiArg = {
+  sendVerifyEmailOtpDto: SendVerifyEmailOtpDto;
+};
+export type VerifyEmailApiResponse =
+  /** status 200 Email verified successfully. */ {
+    success: boolean;
+    message: string;
+    data: VerifyEmailResultDto;
+  };
+export type VerifyEmailApiArg = {
+  verifyEmailDto: VerifyEmailDto;
+};
 export type ResetPasswordApiResponse =
   /** status 200 Password has been successfully reset. */ {
     success: boolean;
@@ -154,7 +169,6 @@ export type ResetPasswordApiResponse =
   };
 export type ResetPasswordApiArg = {
   resetPasswordDto: ResetPasswordDto;
-  resetToken: string;
 };
 export type RegisterResultDto = {
   /** Created user id */
@@ -248,23 +262,6 @@ export type VerifyOtpDto = {
   /** The 6-digit OTP code */
   code: string;
 };
-export type ResetPasswordResultDto = {
-  message: string;
-  success: boolean;
-};
-export type ResetPasswordDto = {
-  /** The new password for the user */
-  newPassword: string;
-};
-export type SendVerifyEmailOtpApiResponse =
-  /** status 200 Verification OTP sent to email successfully. */ {
-    success: boolean;
-    message: string;
-    data: SendVerifyEmailOtpResultDto;
-  };
-export type SendVerifyEmailOtpApiArg = {
-  sendVerifyEmailOtpDto: SendVerifyEmailOtpDto;
-};
 export type SendVerifyEmailOtpResultDto = {
   message: string;
   expiresAt: string;
@@ -272,15 +269,6 @@ export type SendVerifyEmailOtpResultDto = {
 export type SendVerifyEmailOtpDto = {
   /** The email address of the user to verify */
   email: string;
-};
-export type VerifyEmailApiResponse =
-  /** status 200 Email verified successfully. */ {
-    success: boolean;
-    message: string;
-    data: VerifyEmailResultDto;
-  };
-export type VerifyEmailApiArg = {
-  verifyEmailDto: VerifyEmailDto;
 };
 export type VerifyEmailResultDto = {
   message: string;
@@ -292,6 +280,14 @@ export type VerifyEmailDto = {
   /** The 6-digit OTP code */
   code: string;
 };
+export type ResetPasswordResultDto = {
+  message: string;
+  success: boolean;
+};
+export type ResetPasswordDto = {
+  /** The new password for the user */
+  newPassword: string;
+};
 export const {
   useRegisterMutation,
   useLoginMutation,
@@ -301,7 +297,7 @@ export const {
   useGetMeQuery,
   useForgotPasswordMutation,
   useVerifyOtpMutation,
-  useResetPasswordMutation,
   useSendVerifyEmailOtpMutation,
   useVerifyEmailMutation,
+  useResetPasswordMutation,
 } = injectedRtkApi;

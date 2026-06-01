@@ -11,7 +11,7 @@ import { useMemo } from "react";
 const ITEMS_PER_PAGE = 3;
 
 export const TutorsSection = () => {
-  const { data, isLoading, isError, refetch } = useGetTutorsQuery();
+  const { data, isLoading, isError, refetch } = useGetTutorsQuery({});
 
   const tutors = useMemo(() => {
     const mapped = (data?.data ?? []).map(mapTutorResponseToTutor);

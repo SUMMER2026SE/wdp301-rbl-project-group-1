@@ -26,7 +26,6 @@ const injectedRtkApi = api.injectEndpoints({
           status: queryArg.status,
         },
       }),
-      providesTags: ["TutorApplication"],
     }),
     approveTutorApplication: build.mutation<
       ApproveTutorApplicationApiResponse,
@@ -36,7 +35,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/tutor-applications/${queryArg.id}/approve`,
         method: "PATCH",
       }),
-      invalidatesTags: ["TutorApplication"],
     }),
     rejectTutorApplication: build.mutation<
       RejectTutorApplicationApiResponse,
@@ -46,7 +44,6 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/tutor-applications/${queryArg.id}/reject`,
         method: "PATCH",
       }),
-      invalidatesTags: ["TutorApplication"],
     }),
   }),
   overrideExisting: false,
@@ -116,12 +113,12 @@ export type CreateTutorApplicationResponseDto = {
 export type CreateTutorApplicationDto = {
   /** Applicant email address */
   email: string;
+  /** Tutor main specialization */
+  specialization: string;
   /** Tutor phone number */
   phone: string;
   /** Tutor address */
   address?: string;
-  /** Tutor main specialization */
-  specialization: string;
   /** Tutor introduction */
   bio?: string;
   /** Years of teaching experience */

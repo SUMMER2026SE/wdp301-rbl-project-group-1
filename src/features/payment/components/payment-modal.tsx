@@ -75,7 +75,7 @@ const PaymentModal = ({
       });
       router.push(`/payment/checkout?${params.toString()}`);
       setOpen(false);
-    } catch (err: unknown) {
+    } catch {
       setErrorMsg("Đã có lỗi xảy ra, vui lòng thử lại.");
       setStep("error");
     }
