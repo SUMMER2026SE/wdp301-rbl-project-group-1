@@ -55,6 +55,14 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
     return request ? this.toRequestDomain(request) : null;
   }
 
+  async findById(id: string): Promise<TutorRequest | null> {
+    const request = await this.prisma.tutorRequest.findUnique({
+      where: { id },
+    });
+
+    return request ? this.toRequestDomain(request) : null;
+  }
+
   async setBid(data: SetTutorBidData): Promise<TutorBid> {
     const bid = await this.prisma.tutorBid.upsert({
       where: {
@@ -79,9 +87,7 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
     return this.toBidDomain(bid);
   }
 
-  async acceptBid(
-    data: AcceptTutorBidData,
-  ): Promise<AcceptedTutorBid | null> {
+  async acceptBid(data: AcceptTutorBidData): Promise<AcceptedTutorBid | null> {
     return this.prisma.$transaction(async (tx) => {
       const bid = await tx.tutorBid.findFirst({
         where: {

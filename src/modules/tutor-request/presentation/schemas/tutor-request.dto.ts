@@ -71,9 +71,12 @@ export const SetTutorBidSchema = z
       description: 'Proposal message from the tutor',
     }),
   })
-  .refine((bid) => bid.proposedPrice !== undefined || bid.message !== undefined, {
-    message: 'At least one of proposedPrice or message is required',
-  })
+  .refine(
+    (bid) => bid.proposedPrice !== undefined || bid.message !== undefined,
+    {
+      message: 'At least one of proposedPrice or message is required',
+    },
+  )
   .meta({ id: 'SetTutorBidDto' });
 
 export class SetTutorBidDto extends createZodDto(SetTutorBidSchema) {}

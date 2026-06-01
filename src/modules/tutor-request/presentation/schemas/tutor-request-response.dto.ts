@@ -3,6 +3,7 @@ import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 import { AcceptTutorBidResult } from '../../application/commands/accept-tutor-bid/accept-tutor-bid.result';
 import { CreateTutorRequestResult } from '../../application/commands/create-tutor-request/create-tutor-request.result';
 import { SetTutorBidResult } from '../../application/commands/set-tutor-bid/set-tutor-bid.result';
+import { GetTutorRequestResult } from '../../application/queries/get-tutor-request/get-tutor-request.result';
 
 export const TutorRequestResponseSchema = z
   .object({
@@ -27,7 +28,9 @@ export const TutorRequestResponseSchema = z
 export class TutorRequestResponseDto extends createZodDto(
   TutorRequestResponseSchema,
 ) {
-  static fromResult(result: CreateTutorRequestResult): TutorRequestResponseDto {
+  static fromResult(
+    result: CreateTutorRequestResult | GetTutorRequestResult,
+  ): TutorRequestResponseDto {
     const dto = new TutorRequestResponseDto();
     dto.id = result.id;
     dto.studentId = result.studentId;
@@ -65,9 +68,7 @@ export const TutorBidResponseSchema = z
   })
   .meta({ id: 'TutorBidResponseDto' });
 
-export class TutorBidResponseDto extends createZodDto(
-  TutorBidResponseSchema,
-) {
+export class TutorBidResponseDto extends createZodDto(TutorBidResponseSchema) {
   static fromResult(result: SetTutorBidResult): TutorBidResponseDto {
     const dto = new TutorBidResponseDto();
     dto.id = result.id;

@@ -1,5 +1,5 @@
-import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../../../shared/domain/enums/enums';
 import {
@@ -15,6 +15,8 @@ import { CreateTutorRequestCommand } from '../../application/commands/create-tut
 import { CreateTutorRequestResult } from '../../application/commands/create-tutor-request/create-tutor-request.result';
 import { SetTutorBidCommand } from '../../application/commands/set-tutor-bid/set-tutor-bid.command';
 import { SetTutorBidResult } from '../../application/commands/set-tutor-bid/set-tutor-bid.result';
+import { GetTutorRequestQuery } from '../../application/queries/get-tutor-request/get-tutor-request.query';
+import { GetTutorRequestResult } from '../../application/queries/get-tutor-request/get-tutor-request.result';
 import {
   CreateTutorRequestDto,
   SetTutorBidDto,
@@ -28,7 +30,10 @@ import {
 @ApiTags('Tutor Request')
 @Controller('tutor-requests')
 export class TutorRequestController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
 
   @Post()
   @Roles(UserRole.STUDENT)
@@ -60,6 +65,27 @@ export class TutorRequestController {
     );
 
     return BaseResponse.created(TutorRequestResponseDto.fromResult(result));
+  }
+
+  @Get(':id')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getTutorRequest',
+    summary: 'Get a tutor request by ID',
+  })
+  @ApiOkResponseWrapped(TutorRequestResponseDto, {
+    description: 'Tutor request returned successfully.',
+  })
+  async getTutorRequest(
+    @Param('id') id: string,
+  ): Promise<BaseResponse<TutorRequestResponseDto>> {
+    const result = await this.queryBus.execute<
+      GetTutorRequestQuery,
+      GetTutorRequestResult
+    >(new GetTutorRequestQuery(id));
+
+    return BaseResponse.ok(TutorRequestResponseDto.fromResult(result));
   }
 
   @Post(':id/bids')

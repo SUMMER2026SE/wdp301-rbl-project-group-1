@@ -41,6 +41,7 @@ export const ITutorRequestRepository = Symbol('ITutorRequestRepository');
 export interface ITutorRequestRepository {
   createRequest(data: CreateTutorRequestData): Promise<TutorRequest>;
   findOpenRequestById(id: string): Promise<TutorRequest | null>;
+  findById(id: string): Promise<TutorRequest | null>;
   setBid(data: SetTutorBidData): Promise<TutorBid>;
   acceptBid(data: AcceptTutorBidData): Promise<AcceptedTutorBid | null>;
 }
