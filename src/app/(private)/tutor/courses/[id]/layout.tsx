@@ -6,32 +6,8 @@ import {
 } from "@/src/features/tutor/courses-detail/components";
 import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { useParams, usePathname } from "next/navigation";
-
-// Mock course data
-const coursesData: Record<
-  string,
-  {
-    name: string;
-    description: string;
-  }
-> = {
-  "1": {
-    name: "Toán 10 - Nhóm A (Cơ bản)",
-    description: "Quản lý lịch học",
-  },
-  "2": {
-    name: "IELTS Foundation - Lớp CĐ1",
-    description: "Quản lý lớp học chi tiết",
-  },
-  "3": {
-    name: "Lý 12 - Ôn thi THPT Quốc Gia (Kèm 1-1)",
-    description: "Quản lý lớp học chi tiết",
-  },
-  "4": {
-    name: "Toán 11 - Nâng cao",
-    description: "Quản lý lớp học chi tiết",
-  },
-};
+import { useGetBookingByIdQuery } from "@/src/features/booking/bookingApi";
+import { Loader2 } from "lucide-react";
 
 export default function CourseDetailLayout({
   children,
@@ -40,37 +16,68 @@ export default function CourseDetailLayout({
 }) {
   const params = useParams();
   const pathname = usePathname();
-  const courseId = params.id as string;
-  const courseData = coursesData[courseId] || coursesData["1"];
+  const bookingId = params.id as string;
 
-  const courseName = courseData.name;
-  const courseDescription = courseData.description;
+  const { data: response, isLoading, isError } = useGetBookingByIdQuery({ id: bookingId });
+  const booking = response?.data;
+
+  if (isLoading) {
+    return (
+      <main className="flex flex-1 justify-center py-8 px-4 md:px-10">
+        <div className="flex h-[50vh] w-full items-center justify-center">
+          <Loader2 className="size-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Đang tải thông tin lớp học...</span>
+        </div>
+      </main>
+    );
+  }
+
+  if (isError || !booking) {
+    return (
+      <main className="flex flex-1 justify-center py-8 px-4 md:px-10">
+        <div className="flex h-[50vh] w-full items-center justify-center">
+          <p className="text-destructive font-medium">Không thể tải thông tin lớp học. Vui lòng thử lại sau.</p>
+        </div>
+      </main>
+    );
+  }
+
+  const courseName = booking.subject?.name || "Lớp học gia sư";
+  const courseDescription = `Trạng thái: ${
+    booking.status === "PENDING"
+      ? "Đang chờ duyệt"
+      : booking.status === "CONFIRMED"
+      ? "Đã xác nhận"
+      : booking.status === "COMPLETED"
+      ? "Đã hoàn thành"
+      : "Đã hủy"
+  }`;
 
   const tabs = [
     {
       label: "Tổng quan",
-      href: `/tutor/courses/${courseId}`,
-      isActive: pathname === `/tutor/courses/${courseId}`,
+      href: `/tutor/courses/${bookingId}`,
+      isActive: pathname === `/tutor/courses/${bookingId}`,
     },
     {
       label: "Học sinh",
-      href: `/tutor/courses/${courseId}/student`,
-      isActive: pathname === `/tutor/courses/${courseId}/student`,
+      href: `/tutor/courses/${bookingId}/student`,
+      isActive: pathname === `/tutor/courses/${bookingId}/student`,
     },
     {
       label: "Lịch học",
-      href: `/tutor/courses/${courseId}/schedule`,
-      isActive: pathname === `/tutor/courses/${courseId}/schedule`,
+      href: `/tutor/courses/${bookingId}/schedule`,
+      isActive: pathname === `/tutor/courses/${bookingId}/schedule`,
     },
     {
       label: "Tài liệu & Bài tập",
-      href: `/tutor/courses/${courseId}/resource`,
-      isActive: pathname === `/tutor/courses/${courseId}/resource`,
+      href: `/tutor/courses/${bookingId}/resource`,
+      isActive: pathname === `/tutor/courses/${bookingId}/resource`,
     },
     {
       label: "Điểm danh",
-      href: `/tutor/courses/${courseId}/attendance`,
-      isActive: pathname === `/tutor/courses/${courseId}/attendance`,
+      href: `/tutor/courses/${bookingId}/attendance`,
+      isActive: pathname === `/tutor/courses/${bookingId}/attendance`,
     },
   ];
 

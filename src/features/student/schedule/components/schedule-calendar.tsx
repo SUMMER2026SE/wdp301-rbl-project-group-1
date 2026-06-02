@@ -4,7 +4,7 @@ import {
   ScheduleCalendar as SharedScheduleCalendar,
   ScheduleMode,
 } from "@/src/shared/components/organisms/schedule-calendar/schedule-calendar";
-import { classColorMap, getClassesForDate, getFixedClassesForDate } from "../mock-data";
+import { classColorMap, getClassesForDate, getFixedClassesForDate } from "@/src/features/schedule/utils/schedule-ui";
 import { ClassFilter, ScheduleClass } from "../types";
 
 interface ScheduleCalendarProps {

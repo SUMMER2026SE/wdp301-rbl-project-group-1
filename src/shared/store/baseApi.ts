@@ -49,39 +49,84 @@ const baseQueryWithReauth: BaseQueryFn<
   const isRefreshCall = requestUrl?.includes("/api/auth/refresh") ?? false;
 
   if (result.error?.status === 401 && !isRefreshCall) {
+    const currentToken = (
+      api.getState() as { auth?: { accessToken?: string | null } }
+    ).auth?.accessToken;
+
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
 
       try {
-        const refreshResult = await baseQuery(
-          {
-            url: "/api/auth/refresh",
-            method: "POST",
-          },
-          api,
-          extraOptions,
-        );
+        const performRefresh = async () => {
+          const tokenBeforeRefresh = (
+            api.getState() as { auth?: { accessToken?: string | null } }
+          ).auth?.accessToken;
 
-        if (refreshResult.data) {
-          const refreshedAccessToken = (
-            refreshResult.data as { data?: { accessToken?: string } }
-          ).data?.accessToken;
-
-          if (refreshedAccessToken) {
-            api.dispatch(setAuth({ accessToken: refreshedAccessToken }));
+          // If the token was refreshed by another request in THIS tab while we were waiting
+          if (currentToken !== tokenBeforeRefresh) {
+            result = await baseQuery(args, api, extraOptions);
+            return;
           }
 
-          api.dispatch(baseApi.util.invalidateTags(["User"]));
+          let refreshResult = await baseQuery(
+            {
+              url: "/api/auth/refresh",
+              method: "POST",
+            },
+            api,
+            extraOptions,
+          );
 
-          result = await baseQuery(args, api, extraOptions);
+          if (refreshResult.error?.status === 409) {
+            // A race condition occurred across multiple tabs (the other tab already refreshed the token).
+            // Retrying will automatically send the newly updated HttpOnly cookie to the backend.
+            refreshResult = await baseQuery(
+              {
+                url: "/api/auth/refresh",
+                method: "POST",
+              },
+              api,
+              extraOptions,
+            );
+          }
+
+          if (refreshResult.data) {
+            const refreshedAccessToken = (
+              refreshResult.data as { data?: { accessToken?: string } }
+            ).data?.accessToken;
+
+            if (refreshedAccessToken) {
+              api.dispatch(setAuth({ accessToken: refreshedAccessToken }));
+            }
+
+            api.dispatch(baseApi.util.invalidateTags(["User"]));
+
+            result = await baseQuery(args, api, extraOptions);
+          } else {
+            handleAuthFailure(api);
+          }
+        };
+
+        // Use Web Locks API to coordinate refresh across multiple browser tabs
+        if (typeof navigator !== "undefined" && navigator.locks) {
+          await navigator.locks.request(
+            "edura_refresh_token_lock",
+            { mode: "exclusive" },
+            async () => {
+              await performRefresh();
+            },
+          );
         } else {
-          handleAuthFailure(api);
+          await performRefresh();
         }
       } finally {
         release();
       }
     } else {
       await mutex.waitForUnlock();
+      // Small grace period to let the winning request's setAuth dispatch
+      // propagate through Redux before we retry with the new access token.
+      await new Promise((resolve) => setTimeout(resolve, 50));
       result = await baseQuery(args, api, extraOptions);
     }
   }
@@ -92,6 +137,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["User", "TutorApplication"],
+  tagTypes: ["User", "TutorApplication", "TutorRequest"],
   endpoints: () => ({}),
 });

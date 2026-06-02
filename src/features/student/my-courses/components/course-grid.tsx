@@ -1,120 +1,109 @@
-import { User } from "lucide-react";
+import { User, CalendarClock, CreditCard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
 import { Button } from "@/src/shared/components/ui/button";
-import { Progress } from "@/src/shared/components/ui/progress";
-
-export interface CourseCard {
-  id: string;
-  title: string;
-  teacher: string;
-  image: string;
-  progress: number;
-  progressColor: string;
-}
-
-const courses: CourseCard[] = [
-  {
-    id: "1",
-    title: "Toán Hình không gian 12 - Luyện thi Đại học",
-    teacher: "Thầy Nguyễn Văn A",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuD1gVGhgQwKn1B6gMrt4I-rZblwIOcySIqSHyI9PKK53_f0-s4cjdAchJZM3jDohQQ8RPlgh9QyVzf7Y5JCKM62R-S1vZjBSautar9pKYxCEgWblR_Orgt6yMV81f-tkIWQdGsavZPbsJLIRxnUBMtgoDlL-5xQ1HFuSukFxV1R-ZJTLUPZrCLT3puCsSsuXiSnGZd6U6jvEj4y8g1q3Aat3sthuuX8RCUBgpVGYNhtTPStDmeAyH4V8L5MvAv9KQsGktNJuBHQmAI",
-    progress: 75,
-    progressColor: "bg-info",
-  },
-  {
-    id: "2",
-    title: "IELTS Speaking 6.5+ Intensive",
-    teacher: "Ms. Sarah",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDDii-0kOuft-lKLtZMT0ZexL59LRYAWDuRafbrderDxjWVnb89VscfDsUA1VCicF6CiTae1bNTv62-6ejHWC5hRDabHyvif5zr1LNHKeAWr3AH-vd4RvIjMBMWLyma36yV8GTsajONn5U5NtHkUjE7YpUly3eLnASOx_plViIe9U1sig0oM8LLNHXzfPSQQ8M9mAq_U5YfGYSX6m40s9y2jlYhWu-K6Siai6M1DBZBt6QHaGIH0r2cNzWsj4gA-Bmzp83ZoGo0Enk",
-    progress: 40,
-    progressColor: "bg-primary",
-  },
-  {
-    id: "3",
-    title: "Hóa học Hữu cơ 12 Cơ bản & Nâng cao",
-    teacher: "Cô Phạm Thu Thủy",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuCWHd2RFaGzulEOtvqForbWHMagI-qys7WlFWocLN5NGp7XVmM_EA02KELoyComi5nR-UDjGCXnpFbCmtbHtyn9azpJY4QKm9orAoOS2SDVlbK8rzifQawyezTPnGqF0boDtUk4nY_9hDZD70Dm94vhw4uVlzkxcoS5YYZCGEo3686Rk1myoYPMij2hJ6J_-0RmNWgwmkK0Rh_IQYhiXH3G0nIJJl3ib6tQYv3LH0YPb-bEjNOw8FdTGIquKP0UPMzIIEJ_sRFFUHI",
-    progress: 15,
-    progressColor: "bg-warning",
-  },
-  {
-    id: "4",
-    title: "Ngữ Văn 12 - Ôn thi THPT Quốc gia",
-    teacher: "Cô Lê Mai",
-    image:
-      "https://lh3.googleusercontent.com/aida-public/AB6AXuDDii-0kOuft-lKLtZMT0ZexL59LRYAWDuRafbrderDxjWVnb89VscfDsUA1VCicF6CiTae1bNTv62-6ejHWC5hRDabHyvif5zr1LNHKeAWr3AH-vd4RvIjMBMWLyma36yV8GTsajONn5U5NtHkUjE7YpUly3eLnASOx_plViIe9U1sig0oM8LLNHXzfPSQQ8M9mAq_U5YfGYSX6m40s9y2jlYhWu-K6Siai6M1DBZBt6QHaGIH0r2cNzWsj4gA-Bmzp83ZoGo0Enk",
-    progress: 90,
-    progressColor: "bg-success",
-  },
-];
+import { BookingFilterStatus } from "./filter-tabs";
+import { useGetBookingsQuery } from "@/src/features/booking/bookingApi";
 
 interface CourseGridProps {
-  filter: "studying" | "completed";
-}
-
-function ProgressBar({ progress }: { progress: number }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between text-sm">
-        <span className="text-muted-foreground">Tiến độ</span>
-        <span className="font-bold text-primary">{progress}%</span>
-      </div>
-      <Progress
-        value={progress}
-        className="h-2 bg-muted"
-        // We'll use a CSS variable or direct style to override indicator color if needed,
-        // but usually primary is fine.
-      />
-    </div>
-  );
+  filter: BookingFilterStatus;
 }
 
 export default function CourseGrid({ filter }: CourseGridProps) {
-  const filteredCourses = filter === "studying" ? courses : [];
+  const { data, isLoading, error } = useGetBookingsQuery({
+    limit: 20,
+    page: 1,
+    status: filter === "ALL" ? undefined : filter,
+  });
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-24 text-slate-500 font-medium">Đang tải danh sách lớp học...</div>;
+  }
+  
+  if (error) {
+    return <div className="flex items-center justify-center py-24 text-rose-500 font-medium">Có lỗi xảy ra khi tải dữ liệu.</div>;
+  }
+
+  const bookings = data?.data || [];
+
+  if (bookings.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-32 text-slate-500 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
+        <p className="text-lg font-medium text-slate-600 dark:text-slate-400">Bạn chưa có lớp học nào ở trạng thái này.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {filteredCourses.map((course) => (
-        <Link
-          key={course.id}
-          href={`/student/my-courses/${course.id}`}
-          className="flex flex-col overflow-hidden rounded-xl border border-border bg-card transition-all hover:shadow-lg"
+      {bookings.map((booking) => (
+        <div
+          key={booking.id}
+          className="flex flex-col overflow-hidden rounded-[2rem] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 transition-all hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)]"
         >
-          <div className="relative aspect-video w-full overflow-hidden bg-muted">
-            <Image
-              src={course.image}
-              alt={course.title}
-              fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+          {/* Header section with status */}
+          <div className="p-6 pb-4 border-b border-slate-100 dark:border-slate-800/50">
+             <div className="flex justify-between items-start mb-4">
+               <span className={`px-2.5 py-1 text-xs font-bold rounded-md ${
+                  booking.status === "CONFIRMED" ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400" :
+                  booking.status === "PENDING" ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400" :
+                  booking.status === "COMPLETED" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" :
+                  "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400"
+               }`}>
+                 {booking.status}
+               </span>
+               <span className="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 px-2 py-1 rounded-md">
+                 {booking.mode === "ONLINE" ? "Online" : "Tại nhà"}
+               </span>
+             </div>
+             <h3 className="line-clamp-2 text-xl font-bold leading-tight text-slate-900 dark:text-white tracking-tight">
+                {booking.subject?.name || "Lớp gia sư cá nhân"}
+             </h3>
           </div>
 
-          <div className="flex flex-1 flex-col p-5">
-            <h3 className="mb-3 line-clamp-2 text-lg font-bold leading-tight text-foreground">
-              {course.title}
-            </h3>
-
-            <div className="mt-auto flex flex-col gap-4">
-              <div className="flex items-center gap-2">
-                <User className="size-4 text-muted-foreground/60" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  {course.teacher}
-                </span>
+          <div className="flex flex-1 flex-col p-6 gap-5">
+            <div className="flex items-center gap-3">
+              <div className="size-10 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 relative">
+                {booking.tutor.avatarUrl ? (
+                  <Image src={booking.tutor.avatarUrl} alt={booking.tutor.name} fill className="object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-slate-400">
+                    <User className="size-5" />
+                  </div>
+                )}
               </div>
-
-              <ProgressBar progress={course.progress} />
+              <div className="flex flex-col">
+                 <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">Gia sư</span>
+                 <span className="text-sm font-bold text-slate-900 dark:text-white">{booking.tutor.name}</span>
+              </div>
             </div>
 
-            <Button className="mt-6 w-full border border-primary/20 bg-primary/10 text-sm font-bold text-primary transition-colors hover:border-primary hover:bg-primary hover:text-primary-foreground">
-              Vào học
-            </Button>
+            <div className="flex flex-col gap-3 mt-1">
+              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
+                <CalendarClock className="size-4 shrink-0 text-slate-400" />
+                <span className="truncate">
+                  {booking.scheduleRules.length > 0
+                    ? `${booking.scheduleRules.length} buổi / tuần`
+                    : "Lịch tự do"}
+                </span>
+              </div>
+              <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">
+                <CreditCard className="size-4 shrink-0 text-slate-400" />
+                <span className="truncate font-medium text-slate-900 dark:text-white">
+                  {booking.price ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.price) : "Đang cập nhật"}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-auto pt-4">
+              <Link href={`/student/my-courses/${booking.id}`}>
+                <Button className="w-full py-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm font-bold text-slate-900 dark:text-white transition-all hover:bg-slate-50 dark:hover:bg-slate-700 shadow-sm active:scale-[0.98]">
+                  {booking.status === "CONFIRMED" ? "Vào lớp ngay" : "Xem chi tiết"}
+                </Button>
+              </Link>
+            </div>
           </div>
-        </Link>
+        </div>
       ))}
     </div>
   );

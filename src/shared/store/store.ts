@@ -8,6 +8,7 @@ import "@/src/features/user/userEnhance";
 import "@/src/features/student/tutors/tutorEnhance";
 import "@/src/features/tutor-application/tutorApplicationEnhance";
 import "@/src/features/payment/paymentEnhance";
+import "@/src/features/schedule/scheduleAvailabilityEnhance";
 
 export const store = configureStore({
   reducer: {

@@ -2,112 +2,120 @@
 
 import { FilterSidebar } from "@/src/shared/components/organisms/filter-sidebar";
 import { useDebounce } from "@/src/shared/hooks/use-debounce";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo} from "react";
-import { useForm } from "react-hook-form";
-import { filterSchema, type FilterFormData } from "@/src/features/student/tutors/schemas/filter.schema";
-import { LEVELS, SUBJECTS } from "@/src/features/student/tutors/constants/filter.constants";
+import { useMemo, useState } from "react";
 import { TutorRequestSearchBar } from "./tutor-request-search-bar";
 import { TutorRequestList } from "./tutor-request-list";
-import { MOCK_TUTOR_REQUESTS } from "../mocks/tutor-requests.mock";
+import { useGetTutorRequestsQuery } from "@/src/features/tutor-request/tutorRequestApi";
+import { ExtendedTutorRequest } from "./tutor-request-list";
+import { TutorBidModal } from "./tutor-bid-modal";
+import { Loader2 } from "lucide-react";
 
 export function TutorRequestContainer() {
-  const form = useForm<FilterFormData>({
-    resolver: zodResolver(filterSchema),
-    defaultValues: {
-      subjects: [],
-      levels: [],
-      priceRange: [50000, 1000000],
-      rating: 0,
-      search: "",
-      sortBy: "rating",
-    },
-  });
-
-  // eslint-disable-next-line react-hooks/incompatible-library
-  const search = form.watch("search");
-  const subjects = form.watch("subjects");
-  const levels = form.watch("levels");
-  const priceRange = form.watch("priceRange");
-
+  const [search, setSearch] = useState("");
+  const [modes, setModes] = useState<string[]>([]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([10000, 1000000]);
+  
   const debouncedSearch = useDebounce(search, 500);
 
-  // Mock filtering
+  // Fetch open requests from API
+  const { data: apiResponse, isLoading, isFetching } = useGetTutorRequestsQuery({
+    page: "1",
+    limit: "50",
+    status: "OPEN",
+    search: debouncedSearch || undefined,
+  });
+
+  const rawRequests = useMemo(() => {
+    return (apiResponse?.data as unknown as ExtendedTutorRequest[]) || [];
+  }, [apiResponse]);
+
+  // Local filtering for mode and budget
   const filteredRequests = useMemo(() => {
-    return MOCK_TUTOR_REQUESTS.filter((req) => {
-      // Filter by search
-      if (debouncedSearch && !req.title.toLowerCase().includes(debouncedSearch.toLowerCase()) && !req.subject.toLowerCase().includes(debouncedSearch.toLowerCase())) {
+    return rawRequests.filter((req) => {
+      // Filter by mode
+      if (modes.length > 0 && !modes.includes(req.mode)) {
         return false;
       }
-      // Filter by subjects
-      if (subjects.length > 0 && !subjects.includes(req.subject)) {
-        return false;
+      
+      // Filter by budget (if requested budget is specified, must fall within range)
+      // If student didn't specify budget (null), we might still want to show it or hide it.
+      // We'll show requests if their budget falls in the range, or if they have no budget (Thoả thuận)
+      if (req.budget !== null && req.budget !== undefined) {
+        if (req.budget < priceRange[0] || req.budget > priceRange[1]) {
+          return false;
+        }
       }
-      // Filter by levels
-      if (levels.length > 0 && !levels.includes(req.level)) {
-        return false;
-      }
-      // Filter by price
-      if (req.pricePerSession < priceRange[0] || req.pricePerSession > priceRange[1]) {
-        return false;
-      }
+      
       return true;
     });
-  }, [debouncedSearch, subjects, levels, priceRange]);
+  }, [rawRequests, modes, priceRange]);
+
+  // Bidding modal state
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+
+  const handleApply = (id: string) => {
+    setSelectedRequestId(id);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-muted/20">
       <TutorRequestSearchBar
         value={search}
-        onChange={(value) => form.setValue("search", value)}
+        onChange={setSearch}
       />
 
       <main className="w-full max-w-[1440px] mx-auto px-4 md:px-10 py-10 flex-1">
         <div className="flex flex-col lg:flex-row gap-8 items-start">
           <div className="w-full lg:w-[280px] xl:w-[320px] shrink-0 lg:sticky lg:top-24">
             <FilterSidebar
-              subjects={{
-                items: SUBJECTS,
-                selected: subjects,
-                onChange: (v) => form.setValue("subjects", v),
-              }}
               secondary={{
-                label: "Cấp độ",
-                items: LEVELS,
-                selected: levels,
-                onChange: (v) => form.setValue("levels", v),
+                label: "Hình thức học",
+                items: [
+                  { id: "ONLINE", label: "Học trực tuyến" },
+                  { id: "AT_HOME", label: "Học tại nhà" },
+                ],
+                selected: modes,
+                onChange: setModes,
               }}
               price={{
-                label: "Mức giá mong muốn",
+                label: "Mức giá học viên đề xuất",
                 current: priceRange,
-                sliderMin: 50000,
+                sliderMin: 10000,
                 sliderMax: 1000000,
-                step: 50000,
-                onChange: (min, max) => form.setValue("priceRange", [min, max]),
+                step: 10000,
+                onChange: (min, max) => setPriceRange([min, max]),
               }}
-              onClear={() =>
-                form.reset({
-                  subjects: [],
-                  levels: [],
-                  priceRange: [50000, 1000000],
-                  rating: 0,
-                  search: "",
-                  sortBy: "rating",
-                })
-              }
+              onClear={() => {
+                setSearch("");
+                setModes([]);
+                setPriceRange([10000, 1000000]);
+              }}
             />
           </div>
 
           <div className="flex-1 w-full min-w-0">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-semibold text-foreground">
-                Hiển thị <span className="text-primary">{filteredRequests.length}</span> yêu cầu phù hợp
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-3">
+                <span>
+                  Hiển thị <span className="text-primary">{filteredRequests.length}</span> yêu cầu
+                </span>
+                {isFetching && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
               </h2>
             </div>
-            <TutorRequestList requests={filteredRequests} />
+            <TutorRequestList 
+              requests={filteredRequests} 
+              isLoading={isLoading} 
+              onApply={handleApply} 
+            />
           </div>
         </div>
       </main>
+
+      <TutorBidModal 
+        isOpen={!!selectedRequestId} 
+        onOpenChange={(open) => !open && setSelectedRequestId(null)} 
+        requestId={selectedRequestId} 
+      />
     </div>
   );
 }

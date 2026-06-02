@@ -38,6 +38,20 @@ export function RequestStatusBadge({ status }: RequestStatusBadgeProps) {
           Hoàn thành
         </Badge>
       );
+    case "awaiting_payment":
+      return (
+        <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 gap-1.5 py-1 px-2.5 shadow-none rounded-full font-medium dark:bg-purple-900/30 dark:text-purple-400 dark:border-purple-800/50">
+          <CircleDashed className="size-3.5" />
+          Chờ thanh toán
+        </Badge>
+      );
+    case "confirmed":
+      return (
+        <Badge variant="outline" className="bg-emerald-100 text-emerald-700 border-emerald-200 gap-1.5 py-1 px-2.5 shadow-none rounded-full font-medium dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800/50">
+          <CheckSquare className="size-3.5" />
+          Đã xác nhận
+        </Badge>
+      );
     default:
       return null;
   }

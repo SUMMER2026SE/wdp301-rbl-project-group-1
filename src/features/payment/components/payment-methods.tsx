@@ -12,11 +12,12 @@ import { PaymentMethodItem } from "./payment-method-item";
 type PaymentMethodId = "payos";
 
 interface PaymentMethodsProps {
-  enrollmentId: string;
+  referenceType: "COURSE_ENROLLMENT" | "TUTOR_BOOKING";
+  referenceId: string;
   amount: number;
 }
 
-export const PaymentMethods = ({ enrollmentId, amount }: PaymentMethodsProps) => {
+export const PaymentMethods = ({ referenceType, referenceId, amount }: PaymentMethodsProps) => {
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodId>("payos");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
@@ -29,8 +30,8 @@ export const PaymentMethods = ({ enrollmentId, amount }: PaymentMethodsProps) =>
       const origin = window.location.origin;
       const result = (await createPayment({
         createPaymentDto: {
-          referenceType: "COURSE_ENROLLMENT",
-          referenceId: enrollmentId,
+          referenceType: referenceType,
+          referenceId: referenceId,
           amount,
           returnUrl: `${origin}/payment/success`,
           cancelUrl: window.location.href, // Quay về trang checkout để thử lại

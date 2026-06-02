@@ -103,8 +103,9 @@ export function UserPopover() {
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-    } catch (e) {
-      console.error("Logout API error:", e);
+    } catch (e: unknown) {
+      const error = e as { data?: { message?: string }; status?: number; error?: string };
+      console.warn("Logout note:", error?.data?.message || error?.status || error?.error || "Session ended");
     } finally {
       dispatch(clearAuth());
       router.push("/login");

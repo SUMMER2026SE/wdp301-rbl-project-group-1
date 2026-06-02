@@ -6,35 +6,47 @@ const config = {
   apiImport: "baseApi",
 
   outputFiles: {
-    "./src/features/auth/authApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
-      exportName: "authApi",
-    },
-    "./src/features/user/userApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
-      exportName: "userApi",
-    },
-    "./src/features/student/tutors/tutorApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/tutors"),
-      exportName: "tutorApi",
-    },
-    "./src/features/tutor-application/tutorApplicationApi.ts": {
-      filterEndpoints: (_, { path }) =>
-        path.startsWith("/api/tutor-application"),
-      exportName: "tutorApplicationApi",
-    },
-    "./src/features/academic-catalog/academicCatalogApi.ts": {
-      filterEndpoints: (_, { path }) =>
-        path.startsWith("/api/grades") || path.startsWith("/api/subjects"),
-      exportName: "academicCatalogApi",
-    },
-    "./src/features/storage/storageApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/storage"),
-      exportName: "storageApi",
-    },
-    "./src/features/payment/paymentApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/payments"),
-      exportName: "paymentApi",
+    // "./src/features/auth/authApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/auth"),
+    //   exportName: "authApi",
+    // },
+    // "./src/features/user/userApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/users"),
+    //   exportName: "userApi",
+    // },
+    // "./src/features/student/tutors/tutorApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/tutors"),
+    //   exportName: "tutorApi",
+    // },
+    // "./src/features/tutor-application/tutorApplicationApi.ts": {
+    //   filterEndpoints: (_, { path }) =>
+    //     path.startsWith("/api/tutor-application"),
+    //   exportName: "tutorApplicationApi",
+    // },
+    // "./src/features/academic-catalog/academicCatalogApi.ts": {
+    //   filterEndpoints: (_, { path }) =>
+    //     path.startsWith("/api/grades") || path.startsWith("/api/subjects"),
+    //   exportName: "academicCatalogApi",
+    // },
+    // "./src/features/storage/storageApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/storage"),
+    //   exportName: "storageApi",
+    // },
+    // "./src/features/payment/paymentApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/payments"),
+    //   exportName: "paymentApi",
+    // },
+    // "./src/features/booking/bookingApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/bookings"),
+    //   exportName: "bookingApi",
+    // },
+    // "./src/features/schedule/scheduleAvailabilityApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/schedule-availability"),
+    //   exportName: "scheduleAvailabilityApi",
+    // }
+    "./src/features/tutor-request/tutorRequestApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/tutor-requests"),
+      exportName: "tutorRequestApi",
     },
   },
 

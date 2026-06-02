@@ -5,57 +5,24 @@ import {
   FilterSection,
   HeaderSection,
 } from "@/src/features/tutor/courses/components";
-import {Pagination} from "@/src/shared/components/molecules/pagination/pagination";
+import { Pagination } from "@/src/shared/components/molecules/pagination/pagination";
 import { useState } from "react";
-
-const mockCourses = [
-  {
-    id: "1",
-    subject: "Toán Học",
-    title: "Toán 10 - Nhóm A (Cơ bản)",
-    studentCount: "5 học sinh",
-    schedule: "Thứ 3, Thứ 5 (18:00 - 19:30)",
-    meetLink: "meet.google.com/abc-defg-hij",
-    color: "blue" as const,
-  },
-  {
-    id: "2",
-    subject: "Tiếng Anh",
-    title: "IELTS Foundation - Lớp CĐ1",
-    studentCount: "8 học sinh",
-    schedule: "Thứ 2, Thứ 4, Thứ 6 (19:30 - 21:00)",
-    meetLink: "meet.google.com/xyz-uvwx-yz",
-    color: "purple" as const,
-  },
-  {
-    id: "3",
-    subject: "Vật Lý",
-    title: "Lý 12 - Ôn thi THPT Quốc Gia (Kèm 1-1)",
-    studentCount: "1 học sinh (Em Bảo)",
-    schedule: "Chủ nhật (08:00 - 10:00)",
-    meetLink: "meet.google.com/qwe-rtyu-iop",
-    color: "green" as const,
-  },
-  {
-    id: "4",
-    subject: "Toán Học",
-    title: "Toán 11 - Nâng cao",
-    studentCount: "12 học sinh",
-    schedule: "Thứ 4, Thứ 7 (14:00 - 15:30)",
-    meetLink: "meet.google.com/lkj-hgfd-sa",
-    color: "blue" as const,
-  },
-];
-
-const itemsPerPage = 3;
+import { useGetBookingsQuery, BookingResponseDto } from "@/src/features/booking/bookingApi";
 
 export default function TutorCoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  const totalPages = Math.ceil(mockCourses.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedCourses = mockCourses.slice(startIndex, endIndex);
+  const limit = 12;
+
+  const { data, isLoading, error } = useGetBookingsQuery({
+    limit,
+    page: currentPage,
+    status: statusFilter === "ALL" ? undefined : (statusFilter as "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED"),
+  });
+
+  const bookings: BookingResponseDto[] = data?.data || [];
+  const totalPages = data?.meta?.totalPages || 1;
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -68,18 +35,34 @@ export default function TutorCoursesPage() {
         <HeaderSection />
 
         {/* Filters */}
-        <FilterSection />
+        <FilterSection 
+          onStatusChange={setStatusFilter}
+          onSubjectChange={() => {}}
+          onSearch={() => {}}
+        />
 
         {/* Course Grid */}
-        <CourseGrid courses={displayedCourses} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24 text-slate-500 font-medium">Đang tải danh sách lớp học...</div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-24 text-rose-500 font-medium">Có lỗi xảy ra khi tải dữ liệu.</div>
+        ) : bookings.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-32 text-slate-500 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
+             <p className="text-lg font-medium text-slate-600 dark:text-slate-400">Không tìm thấy lớp học nào.</p>
+          </div>
+        ) : (
+          <CourseGrid courses={bookings} />
+        )}
 
         {/* Pagination */}
-        <Pagination
-          currentPage={currentPage}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-          className="mt-4"
-        />
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+            className="mt-4"
+          />
+        )}
       </div>
     </main>
   );

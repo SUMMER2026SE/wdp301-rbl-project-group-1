@@ -111,6 +111,7 @@ export function Schedule({
     time: e.time,
     endTime: e.endTime ?? "",
     color: (e.color ?? "blue") as "blue" | "orange",
+    dateStr: format(e.date, "yyyy-MM-dd"),
   }));
 
   // getClassesForDate: looks up original event.date via id

@@ -3,7 +3,7 @@
 import {
   ScheduleHeader as SharedScheduleHeader,
 } from "@/src/shared/components/molecules/schedule-sidebar/schedule-header";
-import { availableClasses } from "../mock-data";
+import { availableClasses } from "@/src/features/schedule/utils/schedule-ui";
 import { ClassFilter } from "../types";
 
 interface ScheduleHeaderProps {

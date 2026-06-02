@@ -48,7 +48,7 @@ export function ScheduleCalendar({
   variant = "availability",
   tutorAvailableSlots,
 }: ScheduleCalendarProps) {
-  const [currentDate, setCurrentDate] = useState(new Date(2023, 9, 1)); // Oct 2023 from design
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [availableSlots, setAvailableSlots] = useState<Record<string, boolean>>(
     initialAvailableSlots || {},
   );
@@ -104,6 +104,7 @@ export function ScheduleCalendar({
           {mode === "weekly" ? (
             <>
               <Button
+                type="button"
                 onClick={goToPreviousWeek}
                 variant="ghost"
                 size="sm"
@@ -115,6 +116,7 @@ export function ScheduleCalendar({
                 {format(calendarStart, "MMMM, yyyy", { locale: vi })}
               </h3>
               <Button
+                type="button"
                 onClick={goToNextWeek}
                 variant="ghost"
                 size="sm"
@@ -133,6 +135,7 @@ export function ScheduleCalendar({
           {(Object.keys(SESSION_CONFIG) as SessionType[]).map((s) => (
             <Button
               key={s}
+              type="button"
               onClick={() => setSession(s)}
               variant={session === s ? "default" : "ghost"}
               size="sm"

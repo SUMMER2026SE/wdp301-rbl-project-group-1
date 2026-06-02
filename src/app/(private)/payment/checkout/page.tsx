@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 interface CheckoutPageProps {
   searchParams: Promise<{
     enrollmentId?: string;
+    bookingId?: string;
     amount?: string;
     courseTitle?: string;
     courseSubject?: string;
@@ -14,14 +15,17 @@ interface CheckoutPageProps {
 
 export default async function CheckoutPage({ searchParams }: CheckoutPageProps) {
   const params = await searchParams;
-  const { enrollmentId, amount, courseTitle, courseSubject, tutorName } = params;
+  const { enrollmentId, bookingId, amount, courseTitle, courseSubject, tutorName } = params;
 
-  // Guard — nếu không có context hợp lệ thì về trang courses
-  if (!enrollmentId || !amount || !courseTitle) {
+  // Guard — nếu không có context hợp lệ thì về trang chủ
+  if ((!enrollmentId && !bookingId) || !amount || !courseTitle) {
     redirect("/student/courses");
   }
 
   const parsedAmount = Number(amount);
+  
+  const referenceType = enrollmentId ? "COURSE_ENROLLMENT" : "TUTOR_BOOKING";
+  const referenceId = enrollmentId || bookingId || "";
 
   return (
     <main className="flex-grow w-full max-w-7xl mx-auto px-6 py-6 md:px-12 md:py-8 lg:py-12">
@@ -36,11 +40,11 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         <OrderSummary
           courseTitle={courseTitle}
-          courseSubject={courseSubject ?? "Khóa học"}
+          courseSubject={courseSubject ?? (bookingId ? "Dạy kèm Gia sư" : "Khóa học")}
           tutorName={tutorName ?? "Gia sư"}
           amount={parsedAmount}
         />
-        <PaymentMethods enrollmentId={enrollmentId} amount={parsedAmount} />
+        <PaymentMethods referenceType={referenceType} referenceId={referenceId} amount={parsedAmount} />
       </div>
     </main>
   );

@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 export interface ScheduleClass {
+  dateStr: string;
   id: string;
   name: string;
   subject: string;

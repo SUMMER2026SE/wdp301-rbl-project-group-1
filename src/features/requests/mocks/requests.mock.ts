@@ -1,4 +1,4 @@
-export type RequestStatus = "pending" | "accepted" | "rejected" | "completed";
+export type RequestStatus = "pending" | "accepted" | "rejected" | "completed" | "awaiting_payment" | "confirmed";
 
 export interface BookingRequest {
   id: string;
@@ -11,6 +11,7 @@ export interface BookingRequest {
   status: RequestStatus;
   message?: string;
   type: "sent" | "received"; // from the perspective of the current user
+  isTutorRequest?: boolean; // True if this is a general tutor request rather than a direct booking
 }
 
 export const MOCK_STUDENT_REQUESTS: BookingRequest[] = [

@@ -9,6 +9,10 @@ import { BookingForm } from "./booking-form";
 
 interface BookingModalProps {
   trigger: React.ReactNode;
+  tutorId: string;
+  tutorName?: string;
+  pricePerHour: number;
+  tutorAvailableSlots?: Record<string, boolean>;
 }
 
 const CustomHeader = () => (
@@ -25,7 +29,13 @@ const CustomHeader = () => (
   </div>
 );
 
-export function BookingModal({ trigger }: BookingModalProps) {
+export function BookingModal({
+  trigger,
+  tutorId,
+  tutorName,
+  pricePerHour,
+  tutorAvailableSlots,
+}: BookingModalProps) {
   return (
     <Modal
       trigger={trigger}
@@ -36,7 +46,12 @@ export function BookingModal({ trigger }: BookingModalProps) {
       hideDefaultFooter={true}
       customHeader={<CustomHeader />}
     >
-      <BookingForm />
+      <BookingForm
+        tutorId={tutorId}
+        tutorName={tutorName}
+        pricePerHour={pricePerHour}
+        tutorAvailableSlots={tutorAvailableSlots}
+      />
     </Modal>
   );
 }
