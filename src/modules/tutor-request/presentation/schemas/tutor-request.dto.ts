@@ -50,6 +50,10 @@ export const CreateTutorRequestSchema = z
       example: 250000,
       description: 'Optional budget for the request',
     }),
+    totalSessions: z.number().int().positive().min(1).meta({
+      example: 10,
+      description: 'Total number of sessions for the request',
+    }),
     scheduleRules: z.array(ScheduleRuleSchema).optional().meta({
       description: 'Optional recurring schedule rules',
     }),

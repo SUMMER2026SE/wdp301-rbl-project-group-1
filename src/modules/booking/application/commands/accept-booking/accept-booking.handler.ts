@@ -22,7 +22,7 @@ export class AcceptBookingHandler
       command.bookingId,
       command.tutorId,
       BookingStatus.PENDING,
-      BookingStatus.CONFIRMED,
+      BookingStatus.AWAITING_PAYMENT,
     );
 
     if (!booking) {

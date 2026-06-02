@@ -18,6 +18,19 @@ export const TutorResponseSchema = z
     rating: z.number().meta({ example: 4.8 }),
     reviewCount: z.number().int().meta({ example: 42 }),
     studentCount: z.number().int().meta({ example: 100 }),
+    availability: z
+      .array(
+        z.object({
+          id: z.string(),
+          dayOfWeek: z.number().int(),
+          startTime: z.string(),
+          endTime: z.string(),
+          createdAt: z.string().datetime(),
+          updatedAt: z.string().datetime(),
+        }),
+      )
+      .optional()
+      .meta({ description: 'Tutor availability slots' }),
   })
   .meta({ id: 'TutorResponseDto' });
 

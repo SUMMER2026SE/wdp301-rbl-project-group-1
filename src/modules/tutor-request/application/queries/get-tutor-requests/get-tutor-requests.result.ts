@@ -6,6 +6,7 @@ import {
 } from '../../../../../shared/domain/enums/enums';
 
 export interface TutorRequestPaginatedParams extends QueryParams {
+  studentId?: string;
   subjectId?: string;
   mode?: TutoringMode;
   status?: RequestStatus;
@@ -33,6 +34,11 @@ export interface TutorRequestResultData {
     slug: string;
   } | null;
   bidCount: number;
+  scheduleRules: {
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+  }[];
 }
 
 export type GetTutorRequestsResult = QueryApiResponse<TutorRequestResultData>;

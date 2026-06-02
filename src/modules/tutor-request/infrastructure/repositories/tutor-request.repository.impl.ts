@@ -4,10 +4,12 @@ import {
   BidStatus,
   RequestStatus,
   TutoringMode,
+  BookingStatus,
 } from '../../../../shared/domain/enums/enums';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 import { TutorBid } from '../../domain/entities/tutor-bid.entity';
 import { TutorRequest } from '../../domain/entities/tutor-request.entity';
+import { SessionGeneratorService } from '../../../booking/domain/services/session-generator.service';
 import {
   AcceptedTutorBid,
   AcceptTutorBidData,
@@ -32,6 +34,7 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
         description: data.description,
         mode: data.mode,
         budget: data.budget,
+        totalSessions: data.totalSessions,
         scheduleRules: data.scheduleRules?.length
           ? {
               create: data.scheduleRules.map((rule) => ({
@@ -122,11 +125,67 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
       const acceptedBid = await tx.tutorBid.update({
         where: { id: data.bidId },
         data: { status: BidStatus.ACCEPTED },
+        include: {
+          request: {
+            include: { scheduleRules: true },
+          },
+        },
+      });
+
+      const request = acceptedBid.request;
+
+      // Generate Sessions
+      const generatedSessions = SessionGeneratorService.generateSessions(
+        request.totalSessions || 1, // Fallback if missing
+        request.scheduleRules.map((r) => ({
+          dayOfWeek: r.dayOfWeek,
+          startTime: r.startTime,
+          endTime: r.endTime,
+        })),
+        new Date(),
+      );
+
+      // Create Booking
+      const booking = await tx.booking.create({
+        data: {
+          studentId: request.studentId,
+          tutorId: acceptedBid.tutorId,
+          subjectId: request.subjectId,
+          mode: request.mode,
+          status: BookingStatus.AWAITING_PAYMENT,
+          price: acceptedBid.proposedPrice || request.budget || 0,
+          message: acceptedBid.message,
+          totalSessions: request.totalSessions || 1,
+          startDate:
+            generatedSessions.length > 0
+              ? generatedSessions[0].startTime
+              : null,
+          scheduleRules: request.scheduleRules.length
+            ? {
+                create: request.scheduleRules.map((rule) => ({
+                  dayOfWeek: rule.dayOfWeek,
+                  startTime: rule.startTime,
+                  endTime: rule.endTime,
+                })),
+              }
+            : undefined,
+          sessions: generatedSessions.length
+            ? {
+                create: generatedSessions.map((session) => ({
+                  startTime: session.startTime,
+                  endTime: session.endTime,
+                  order: session.order,
+                  status: session.status,
+                })),
+              }
+            : undefined,
+        },
       });
 
       return {
         bid: this.toBidDomain(acceptedBid),
         requestStatus: RequestStatus.CLOSED,
+        bookingId: booking.id,
       };
     });
   }
@@ -140,6 +199,7 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
       description: record.description,
       mode: record.mode as TutoringMode,
       budget: record.budget,
+      totalSessions: record.totalSessions,
       status: record.status as RequestStatus,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,

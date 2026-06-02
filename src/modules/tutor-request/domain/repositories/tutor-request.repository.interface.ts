@@ -15,6 +15,7 @@ export type CreateTutorRequestData = {
   description: string;
   mode: TutoringMode;
   budget?: number;
+  totalSessions?: number;
   scheduleRules?: ScheduleRuleInput[];
 };
 
@@ -34,6 +35,7 @@ export type AcceptTutorBidData = {
 export type AcceptedTutorBid = {
   bid: TutorBid;
   requestStatus: RequestStatus;
+  bookingId: string;
 };
 
 export const ITutorRequestRepository = Symbol('ITutorRequestRepository');

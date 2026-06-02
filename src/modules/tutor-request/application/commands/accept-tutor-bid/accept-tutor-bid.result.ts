@@ -14,5 +14,6 @@ export class AcceptTutorBidResult {
     public readonly requestStatus: RequestStatus,
     public readonly createdAt: Date,
     public readonly updatedAt: Date,
+    public readonly bookingId: string,
   ) {}
 }

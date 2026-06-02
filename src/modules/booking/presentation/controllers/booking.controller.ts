@@ -1,21 +1,174 @@
-import { Controller, Param, Patch } from '@nestjs/common';
-import { CommandBus } from '@nestjs/cqrs';
+import {
+  Body,
+  Controller,
+  Param,
+  Patch,
+  Post,
+  Get,
+  Query,
+} from '@nestjs/common';
+import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserRole } from '../../../../shared/domain/enums/enums';
-import { ApiOkResponseWrapped } from '../../../../shared/presentation/decorators/api-response.decorator';
+import {
+  ApiCreatedResponseWrapped,
+  ApiOkResponseWrapped,
+  ApiOkResponseQueryWrapped,
+} from '../../../../shared/presentation/decorators/api-response.decorator';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
+import {
+  QueryResponse,
+  QueryApiResponse,
+} from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
+import { CreateDirectBookingCommand } from '../../application/commands/create-direct-booking/create-direct-booking.command';
+import { CreateDirectBookingResult } from '../../application/commands/create-direct-booking/create-direct-booking.result';
 import { AcceptBookingCommand } from '../../application/commands/accept-booking/accept-booking.command';
 import { AcceptBookingResult } from '../../application/commands/accept-booking/accept-booking.result';
 import { RejectBookingCommand } from '../../application/commands/reject-booking/reject-booking.command';
 import { RejectBookingResult } from '../../application/commands/reject-booking/reject-booking.result';
-import { BookingStatusUpdateResponseDto } from '../schemas/booking-response.dto';
+import {
+  BookingStatusUpdateResponseDto,
+  CreateDirectBookingResponseDto,
+  BookingResponseDto,
+} from '../schemas/booking-response.dto';
+import { CreateDirectBookingDto } from '../schemas/create-direct-booking.dto';
+import { GetBookingsQueryDto } from '../schemas/get-bookings-query.dto';
+import {
+  MarkSessionAttendanceDto,
+  MarkSessionAttendanceResponseDto,
+} from '../schemas/mark-session-attendance.dto';
+import { MarkSessionAttendanceCommand } from '../../application/commands/mark-session-attendance/mark-session-attendance.command';
+import { MarkSessionAttendanceResult } from '../../application/commands/mark-session-attendance/mark-session-attendance.result';
+import { GetBookingsQuery } from '../../application/queries/get-bookings/get-bookings.query';
+import { GetBookingByIdQuery } from '../../application/queries/get-booking-by-id/get-booking-by-id.query';
+import { GetMySessionsQuery } from '../../application/queries/get-my-sessions/get-my-sessions.query';
+import { BookingResultData } from '../../application/queries/get-bookings/get-bookings.result';
+import { MySessionResultData } from '../../application/queries/get-my-sessions/get-my-sessions.result';
+import { QueryResult } from '../../../../shared/domain/common/query';
+import { SessionResponseDto } from '../schemas/session-response.dto';
+import { GetMySessionsQueryDto } from '../schemas/get-my-sessions-query.dto';
 
 @ApiTags('Booking')
 @Controller('bookings')
 export class BookingController {
-  constructor(private readonly commandBus: CommandBus) {}
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly queryBus: QueryBus,
+  ) {}
+
+  @Get()
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getBookings',
+    summary: 'Get bookings for current user',
+    description:
+      'Returns a paginated list of bookings where current user is student or tutor',
+  })
+  @ApiOkResponseQueryWrapped(BookingResponseDto, {
+    description: 'List of bookings returned successfully.',
+  })
+  async getBookings(
+    @CurrentUser() user: { userId: string; role: 'STUDENT' | 'TUTOR' },
+    @Query() query: GetBookingsQueryDto,
+  ): Promise<QueryApiResponse<BookingResponseDto>> {
+    const result = await this.queryBus.execute<
+      GetBookingsQuery,
+      QueryResult<BookingResultData>
+    >(new GetBookingsQuery(user.userId, user.role, query));
+
+    const mappedData = result.data.map((item) =>
+      BookingResponseDto.fromResult(item),
+    );
+    return QueryResponse.query({ ...result, data: mappedData });
+  }
+
+  @Get('sessions/my')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getMySessions',
+    summary: 'Get all sessions for current user',
+    description:
+      'Returns a paginated list of sessions where current user is student or tutor',
+  })
+  @ApiOkResponseQueryWrapped(SessionResponseDto, {
+    description: 'List of sessions returned successfully.',
+  })
+  async getMySessions(
+    @CurrentUser() user: { userId: string; role: 'STUDENT' | 'TUTOR' },
+    @Query() query: GetMySessionsQueryDto,
+  ): Promise<QueryApiResponse<SessionResponseDto>> {
+    const result = await this.queryBus.execute<
+      GetMySessionsQuery,
+      QueryResult<MySessionResultData>
+    >(new GetMySessionsQuery(user.userId, user.role, query));
+
+    const mappedData = result.data.map((item) =>
+      SessionResponseDto.fromResult(item),
+    );
+    return QueryResponse.query({ ...result, data: mappedData });
+  }
+
+  @Get(':id')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'getBookingById',
+    summary: 'Get booking by ID',
+    description:
+      'Returns the details of a booking if the current user is associated with it',
+  })
+  @ApiOkResponseWrapped(BookingResponseDto, {
+    description: 'Booking returned successfully.',
+  })
+  async getBookingById(
+    @CurrentUser() user: { userId: string },
+    @Param('id') id: string,
+  ): Promise<BaseResponse<BookingResponseDto>> {
+    const result = await this.queryBus.execute<
+      GetBookingByIdQuery,
+      BookingResultData
+    >(new GetBookingByIdQuery(id, user.userId));
+
+    return BaseResponse.ok(BookingResponseDto.fromResult(result));
+  }
+
+  @Post('direct')
+  @Roles(UserRole.STUDENT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'createDirectBooking',
+    summary: 'Student creates a direct booking with a specific tutor',
+  })
+  @ApiCreatedResponseWrapped(CreateDirectBookingResponseDto, {
+    description: 'Booking created successfully with status PENDING.',
+  })
+  async createDirectBooking(
+    @CurrentUser() user: { userId: string },
+    @Body() dto: CreateDirectBookingDto,
+  ): Promise<BaseResponse<CreateDirectBookingResponseDto>> {
+    const result = await this.commandBus.execute<
+      CreateDirectBookingCommand,
+      CreateDirectBookingResult
+    >(
+      new CreateDirectBookingCommand(
+        user.userId,
+        dto.tutorId,
+        dto.subjectId ?? null,
+        dto.mode,
+        dto.message ?? null,
+        dto.totalSessions,
+        dto.scheduleRules,
+      ),
+    );
+
+    return BaseResponse.created(
+      CreateDirectBookingResponseDto.fromResult(result),
+    );
+  }
 
   @Patch(':id/accept')
   @Roles(UserRole.TUTOR)
@@ -59,5 +212,36 @@ export class BookingController {
     >(new RejectBookingCommand(id, user.userId));
 
     return BaseResponse.ok(BookingStatusUpdateResponseDto.fromResult(result));
+  }
+
+  @Patch('sessions/:sessionId/attendance')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'markSessionAttendance',
+    summary: 'Tutor marks a session as complete with attendance status',
+  })
+  @ApiOkResponseWrapped(MarkSessionAttendanceResponseDto, {
+    description: 'Session attendance marked successfully.',
+  })
+  async markSessionAttendance(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: MarkSessionAttendanceDto,
+  ): Promise<BaseResponse<MarkSessionAttendanceResponseDto>> {
+    const result = await this.commandBus.execute<
+      MarkSessionAttendanceCommand,
+      MarkSessionAttendanceResult
+    >(
+      new MarkSessionAttendanceCommand(
+        sessionId,
+        user.userId,
+        dto.studentId,
+        dto.status,
+        dto.notes ?? null,
+      ),
+    );
+
+    return BaseResponse.ok(MarkSessionAttendanceResponseDto.fromResult(result));
   }
 }

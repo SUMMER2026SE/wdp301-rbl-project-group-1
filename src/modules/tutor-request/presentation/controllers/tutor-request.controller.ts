@@ -80,6 +80,7 @@ export class TutorRequestController {
         dto.mode,
         dto.subjectId,
         dto.budget,
+        dto.totalSessions,
         dto.scheduleRules,
       ),
     );
@@ -114,6 +115,7 @@ export class TutorRequestController {
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
       subjectId: query.subjectId,
+      studentId: query.studentId,
       mode: query.mode,
       status: query.status,
     };

@@ -1,5 +1,6 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import * as crypto from 'crypto';
 import { AuthTokenPayload } from 'src/modules/auth/domain/value-objects/auth-token-payload';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
@@ -53,7 +54,10 @@ export class LoginCommandHandler
     };
 
     const accessToken = await jwtService.sign(payload);
-    const refreshToken = await jwtService.signRefresh(payload);
+    const refreshToken = await jwtService.signRefresh({
+      ...payload,
+      jti: crypto.randomUUID(),
+    });
 
     const refreshPayload = await jwtService.verifyRefresh<
       AuthTokenPayload & { exp?: number }

@@ -13,6 +13,7 @@ export class CreateTutorRequestResult {
     public readonly mode: TutoringMode,
     public readonly budget: number | null,
     public readonly status: RequestStatus,
+    public readonly totalSessions: number | null,
     public readonly createdAt: Date,
   ) {}
 }

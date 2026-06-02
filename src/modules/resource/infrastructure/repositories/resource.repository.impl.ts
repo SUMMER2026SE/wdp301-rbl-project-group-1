@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import {
   createQueryResult,
   QueryResult,
@@ -11,11 +11,7 @@ import {
   ResourcePaginatedParams,
 } from '../../domain/repositories/resource.repository.interface';
 import { ResourceMapper } from '../mapper/resource.mapper';
-import {
-  CourseResourceDelegate,
-  LessonResourceDelegate,
-  ResourceDelegate,
-} from './resource.repository.type';
+import { ResourceDelegate } from './resource.repository.type';
 
 @Injectable()
 export class PrismaResourceRepository implements IResourceRepository {
@@ -35,14 +31,6 @@ export class PrismaResourceRepository implements IResourceRepository {
 
   private get resourceDelegate(): ResourceDelegate {
     return this.client.resource as unknown as ResourceDelegate;
-  }
-
-  private get courseResourceDelegate(): CourseResourceDelegate {
-    return this.client.courseResource as unknown as CourseResourceDelegate;
-  }
-
-  private get lessonResourceDelegate(): LessonResourceDelegate {
-    return this.client.lessonResource as unknown as LessonResourceDelegate;
   }
 
   async create(resource: Resource): Promise<Resource> {
@@ -66,28 +54,14 @@ export class PrismaResourceRepository implements IResourceRepository {
     return records.map((r) => this.mapper.toDomain(r));
   }
 
-  async findByTarget(
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  findByTarget(
     targetType: 'COURSE' | 'LESSON',
     targetId: string,
   ): Promise<Resource[]> {
-    if (targetType === 'COURSE') {
-      const rows = await this.courseResourceDelegate.findMany({
-        where: { courseId: targetId },
-        include: { resource: true },
-      });
-      return rows
-        .filter((r) => r.resource && !r.resource.deletedAt)
-        .map((r) => this.mapper.toDomain(r.resource!));
-    }
-
-    const rows = await this.lessonResourceDelegate.findMany({
-      where: { lessonId: targetId },
-      include: { resource: true },
-    });
-    return rows
-      .filter((r) => r.resource && !r.resource.deletedAt)
-      .map((r) => this.mapper.toDomain(r.resource!));
+    return Promise.resolve([]);
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   async findByUserId(
     params: ResourcePaginatedParams,
@@ -119,71 +93,27 @@ export class PrismaResourceRepository implements IResourceRepository {
     return createQueryResult(resources, total, params);
   }
 
-  async assignToCourse(resourceId: string, courseId: string): Promise<void> {
-    try {
-      await this.courseResourceDelegate.create({
-        data: { courseId, resourceId },
-      });
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        'code' in error &&
-        (error as Record<string, unknown>).code === 'P2003'
-      ) {
-        throw new NotFoundException(`Course with id ${courseId} not found`);
-      }
-      throw error;
-    }
+  /* eslint-disable @typescript-eslint/no-unused-vars */
+  assignToCourse(resourceId: string, courseId: string): Promise<void> {
+    return Promise.resolve();
   }
 
-  async assignToLesson(resourceId: string, lessonId: string): Promise<void> {
-    try {
-      await this.lessonResourceDelegate.create({
-        data: { lessonId, resourceId },
-      });
-    } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        'code' in error &&
-        (error as Record<string, unknown>).code === 'P2003'
-      ) {
-        throw new NotFoundException(`Lesson with id ${lessonId} not found`);
-      }
-      throw error;
-    }
+  assignToLesson(resourceId: string, lessonId: string): Promise<void> {
+    return Promise.resolve();
   }
 
-  async unassignFromCourse(
-    resourceIds: string[],
-    courseId: string,
-  ): Promise<number> {
-    const result = await this.courseResourceDelegate.deleteMany({
-      where: {
-        courseId,
-        resourceId: { in: resourceIds },
-      },
-    });
-    return result.count;
+  unassignFromCourse(resourceIds: string[], courseId: string): Promise<number> {
+    return Promise.resolve(0);
   }
 
-  async unassignFromLesson(
-    resourceIds: string[],
-    lessonId: string,
-  ): Promise<number> {
-    const result = await this.lessonResourceDelegate.deleteMany({
-      where: {
-        lessonId,
-        resourceId: { in: resourceIds },
-      },
-    });
-    return result.count;
+  unassignFromLesson(resourceIds: string[], lessonId: string): Promise<number> {
+    return Promise.resolve(0);
   }
 
-  async removeAllFromLesson(lessonId: string): Promise<void> {
-    await this.lessonResourceDelegate.deleteMany({
-      where: { lessonId },
-    });
+  removeAllFromLesson(lessonId: string): Promise<void> {
+    return Promise.resolve();
   }
+  /* eslint-enable @typescript-eslint/no-unused-vars */
 
   async softDelete(id: string, userId: string): Promise<boolean> {
     const result = await this.resourceDelegate.updateMany({

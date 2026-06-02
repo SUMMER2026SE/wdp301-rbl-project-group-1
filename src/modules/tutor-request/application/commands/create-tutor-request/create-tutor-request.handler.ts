@@ -28,6 +28,7 @@ export class CreateTutorRequestHandler
       description: command.description,
       mode: command.mode,
       budget: command.budget,
+      totalSessions: command.totalSessions,
       scheduleRules: command.scheduleRules,
     });
 
@@ -40,6 +41,7 @@ export class CreateTutorRequestHandler
       request.mode,
       request.budget,
       request.status,
+      request.totalSessions,
       request.createdAt,
     );
   }

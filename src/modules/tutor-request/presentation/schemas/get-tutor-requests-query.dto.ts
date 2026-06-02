@@ -8,6 +8,10 @@ import {
 } from '../../../../shared/domain/enums/enums';
 
 export const GetTutorRequestsQuerySchema = BaseQuerySchema.extend({
+  studentId: z.string().optional().meta({
+    description: 'Filter by student ID',
+    example: 'clxstudent0000123456789',
+  }),
   subjectId: z.string().optional().meta({
     description: 'Filter by subject ID',
     example: 'clxsubject00000123456789',

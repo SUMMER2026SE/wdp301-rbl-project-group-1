@@ -28,6 +28,10 @@ export class GetTutorRequestsQueryHandler
 
     const where: Prisma.TutorRequestWhereInput = {};
 
+    if (params.studentId) {
+      where.studentId = params.studentId;
+    }
+
     if (params.status) {
       where.status = params.status;
     }
@@ -68,6 +72,7 @@ export class GetTutorRequestsQueryHandler
         include: {
           student: true,
           subject: true,
+          scheduleRules: true,
           _count: {
             select: {
               bids: true,
@@ -102,6 +107,11 @@ export class GetTutorRequestsQueryHandler
           }
         : null,
       bidCount: item._count.bids,
+      scheduleRules: item.scheduleRules.map((rule) => ({
+        dayOfWeek: rule.dayOfWeek,
+        startTime: rule.startTime,
+        endTime: rule.endTime,
+      })),
     }));
 
     return createQueryResult(data, total, params);

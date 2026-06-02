@@ -39,6 +39,7 @@ export class AcceptTutorBidHandler
       accepted.requestStatus,
       accepted.bid.createdAt,
       accepted.bid.updatedAt,
+      accepted.bookingId,
     );
   }
 }

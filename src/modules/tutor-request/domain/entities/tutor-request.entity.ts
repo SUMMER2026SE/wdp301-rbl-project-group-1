@@ -17,6 +17,7 @@ export type TutorRequestProps = {
   description: string;
   mode: TutoringMode;
   budget: number | null;
+  totalSessions: number | null;
   status: RequestStatus;
   createdAt: Date;
   updatedAt: Date;
@@ -30,6 +31,7 @@ export class TutorRequest {
   readonly description: string;
   readonly mode: TutoringMode;
   readonly budget: number | null;
+  readonly totalSessions: number | null;
   readonly status: RequestStatus;
   readonly createdAt: Date;
   readonly updatedAt: Date;
@@ -42,6 +44,7 @@ export class TutorRequest {
     this.description = props.description;
     this.mode = props.mode;
     this.budget = props.budget;
+    this.totalSessions = props.totalSessions;
     this.status = props.status;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;

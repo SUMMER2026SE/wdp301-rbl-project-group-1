@@ -30,6 +30,7 @@ export enum TutoringMode {
 
 export enum BookingStatus {
   PENDING = 'PENDING',
+  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
   CONFIRMED = 'CONFIRMED',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
@@ -72,4 +73,17 @@ export enum ResourceType {
   VIDEO = 'VIDEO',
   LINK = 'LINK',
   DOCUMENT = 'DOCUMENT',
+}
+
+export enum SessionStatus {
+  SCHEDULED = 'SCHEDULED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum AttendanceStatus {
+  PRESENT = 'PRESENT',
+  ABSENT = 'ABSENT',
+  LATE = 'LATE',
+  EXCUSED = 'EXCUSED',
 }
