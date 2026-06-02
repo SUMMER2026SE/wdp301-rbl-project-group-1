@@ -1,8 +1,8 @@
 import Link from "next/link";
 
+import { TutorHeaderUserInfo } from "@/src/features/tutor/layout/components/tutor-header-user-info";
 import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
 import { TutorPopover } from "@/src/shared/components/molecules/tutor-popover/tutor-popover";
-import { TutorHeaderUserInfo } from "@/src/features/tutor/layout/components/tutor-header-user-info";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
 import { GraduationCap } from "lucide-react";
 
@@ -14,10 +14,18 @@ export default function TutorLayout({
   const navLinks = [
     { key: "home", trigger: "Trang chủ", href: "/tutor/home" },
     { key: "schedule", trigger: "Lịch dạy", href: "/tutor/schedule" },
-    { key: "tutor-requests", trigger: "Yêu cầu dạy kèm", href: "/tutor/tutor-request" },
+    {
+      key: "tutor-requests",
+      trigger: "Yêu cầu dạy kèm",
+      href: "/tutor/tutor-request",
+    },
     { key: "courses", trigger: "Lớp học của tôi", href: "/tutor/courses" },
     { key: "resources", trigger: "Tài liệu", href: "/tutor/resources" },
-    {key: "requests", trigger: "Yêu cầu của học sinh", href: "/tutor/requests"},
+    {
+      key: "requests",
+      trigger: "Yêu cầu của học sinh",
+      href: "/tutor/requests",
+    },
     { key: "earnings", trigger: "Thu nhập", href: "/tutor/earnings" },
   ];
 
