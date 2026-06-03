@@ -69,8 +69,8 @@ export class RefreshTokenCommandHandler
     );
 
     if (!wasRevoked) {
-      console.error(
-        'Refresh token failed: token was already revoked (race condition detected)',
+      console.warn(
+        'Refresh token note: token was already revoked by a concurrent request (race condition mitigated).',
         { tokenId: storedRefreshToken.id },
       );
       // Token was already revoked by a concurrent request (e.g. multiple tabs).

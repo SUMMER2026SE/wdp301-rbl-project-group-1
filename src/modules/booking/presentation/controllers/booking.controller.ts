@@ -21,6 +21,7 @@ import {
   QueryApiResponse,
 } from '../../../../shared/presentation/responses/query-response';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
+import { Public } from '../../../auth/presentation/decorators/public.decorator';
 import { Roles } from '../../../auth/presentation/decorators/role.decorator';
 import { CreateDirectBookingCommand } from '../../application/commands/create-direct-booking/create-direct-booking.command';
 import { CreateDirectBookingResult } from '../../application/commands/create-direct-booking/create-direct-booking.result';
@@ -44,11 +45,13 @@ import { MarkSessionAttendanceResult } from '../../application/commands/mark-ses
 import { GetBookingsQuery } from '../../application/queries/get-bookings/get-bookings.query';
 import { GetBookingByIdQuery } from '../../application/queries/get-booking-by-id/get-booking-by-id.query';
 import { GetMySessionsQuery } from '../../application/queries/get-my-sessions/get-my-sessions.query';
+import { GetTutorSessionsQuery } from '../../application/queries/get-tutor-sessions/get-tutor-sessions.query';
 import { BookingResultData } from '../../application/queries/get-bookings/get-bookings.result';
 import { MySessionResultData } from '../../application/queries/get-my-sessions/get-my-sessions.result';
 import { QueryResult } from '../../../../shared/domain/common/query';
 import { SessionResponseDto } from '../schemas/session-response.dto';
 import { GetMySessionsQueryDto } from '../schemas/get-my-sessions-query.dto';
+import { BookingStatus } from '../../../../shared/domain/enums/enums';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -65,7 +68,7 @@ export class BookingController {
     operationId: 'getBookings',
     summary: 'Get bookings for current user',
     description:
-      'Returns a paginated list of bookings where current user is student or tutor',
+      'Returns a paginated list of bookings where current user is student or tutor. Defaults to CONFIRMED status.',
   })
   @ApiOkResponseQueryWrapped(BookingResponseDto, {
     description: 'List of bookings returned successfully.',
@@ -74,10 +77,27 @@ export class BookingController {
     @CurrentUser() user: { userId: string; role: 'STUDENT' | 'TUTOR' },
     @Query() query: GetBookingsQueryDto,
   ): Promise<QueryApiResponse<BookingResponseDto>> {
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 10;
+    const skip = (page - 1) * limit;
+
     const result = await this.queryBus.execute<
       GetBookingsQuery,
       QueryResult<BookingResultData>
-    >(new GetBookingsQuery(user.userId, user.role, query));
+    >(
+      new GetBookingsQuery({
+        userId: user.userId,
+        role: user.role,
+        page,
+        limit,
+        skip,
+        search: query.search,
+        sortBy: query.sortBy,
+        sortOrder: query.sortOrder,
+        status: query.status ?? BookingStatus.CONFIRMED,
+        mode: query.mode,
+      }),
+    );
 
     const mappedData = result.data.map((item) =>
       BookingResponseDto.fromResult(item),
@@ -105,6 +125,32 @@ export class BookingController {
       GetMySessionsQuery,
       QueryResult<MySessionResultData>
     >(new GetMySessionsQuery(user.userId, user.role, query));
+
+    const mappedData = result.data.map((item) =>
+      SessionResponseDto.fromResult(item),
+    );
+    return QueryResponse.query({ ...result, data: mappedData });
+  }
+
+  @Get('sessions/tutor/:tutorId')
+  @Public()
+  @ApiOperation({
+    operationId: 'getTutorSessions',
+    summary: 'Get public sessions for a specific tutor',
+    description:
+      'Returns a paginated list of public sessions for a tutor, with sensitive info redacted',
+  })
+  @ApiOkResponseQueryWrapped(SessionResponseDto, {
+    description: 'List of public tutor sessions returned successfully.',
+  })
+  async getTutorSessions(
+    @Param('tutorId') tutorId: string,
+    @Query() query: GetMySessionsQueryDto,
+  ): Promise<QueryApiResponse<SessionResponseDto>> {
+    const result = await this.queryBus.execute<
+      GetTutorSessionsQuery,
+      QueryResult<MySessionResultData>
+    >(new GetTutorSessionsQuery(tutorId, query));
 
     const mappedData = result.data.map((item) =>
       SessionResponseDto.fromResult(item),

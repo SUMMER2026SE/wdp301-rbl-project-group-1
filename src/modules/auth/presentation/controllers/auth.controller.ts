@@ -191,6 +191,7 @@ export class AuthController {
 
   @Public()
   @Post('refresh')
+  @RateLimit(100, 300)
   @ApiOperation({
     operationId: 'refresh',
     summary: 'Refresh access token using refresh token cookie',

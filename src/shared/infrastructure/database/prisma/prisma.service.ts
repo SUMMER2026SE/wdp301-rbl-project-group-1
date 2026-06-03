@@ -11,12 +11,21 @@ export class PrismaService
 {
   constructor(private configService: ConfigService) {
     const connectionString = configService.get<string>('prisma.url');
-    const pool = new Pool({ connectionString });
+    const pool = new Pool({ 
+      connectionString,
+      max: 20,
+    });
     const adapter = new PrismaPg(
       pool as unknown as ConstructorParameters<typeof PrismaPg>[0],
     );
 
-    super({ adapter });
+    super({ 
+      adapter,
+      transactionOptions: {
+        maxWait: 15000,
+        timeout: 30000,
+      }
+    });
   }
 
   async onModuleInit() {

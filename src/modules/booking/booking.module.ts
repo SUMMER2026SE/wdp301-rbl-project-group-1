@@ -10,6 +10,7 @@ import { BookingController } from './presentation/controllers/booking.controller
 import { GetBookingsQueryHandler } from './application/queries/get-bookings/get-bookings.handler';
 import { GetBookingByIdHandler } from './application/queries/get-booking-by-id/get-booking-by-id.handler';
 import { GetMySessionsHandler } from './application/queries/get-my-sessions/get-my-sessions.handler';
+import { GetTutorSessionsHandler } from './application/queries/get-tutor-sessions/get-tutor-sessions.handler';
 
 import { MarkSessionAttendanceHandler } from './application/commands/mark-session-attendance/mark-session-attendance.handler';
 
@@ -26,6 +27,7 @@ const QueryHandlers = [
   GetBookingsQueryHandler,
   GetBookingByIdHandler,
   GetMySessionsHandler,
+  GetTutorSessionsHandler,
 ];
 
 const EventHandlers = [BookingPaymentConfirmedHandler];

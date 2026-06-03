@@ -9,7 +9,17 @@ export class RedisService implements OnModuleDestroy, ICache {
 
   constructor(private readonly configService: ConfigService) {
     const redisUrl = this.configService.get<string>('REDIS_URL');
-    this.client = new Redis(redisUrl || 'redis://localhost:6379');
+    this.client = new Redis(redisUrl || 'redis://localhost:6379', {
+      maxRetriesPerRequest: 1,
+      enableOfflineQueue: false,
+      connectTimeout: 5000,
+      commandTimeout: 3000,
+    });
+
+    // Handle connection errors gracefully to prevent application crash
+    this.client.on('error', (error) => {
+      console.warn(`[RedisService] Connection error: ${error.message}`);
+    });
   }
 
   async set(key: string, value: unknown, ttl?: number): Promise<void> {

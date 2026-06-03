@@ -1,30 +1,24 @@
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
+import { Inject } from '@nestjs/common';
+import { IBookingRepository } from '../../../domain/repositories/booking.repository.interface';
 import { GetBookingByIdQuery } from './get-booking-by-id.query';
 import { BookingResultData } from '../get-bookings/get-bookings.result';
-import {
-  TutoringMode,
-  BookingStatus,
-} from '../../../../../shared/domain/enums/enums';
 
 @QueryHandler(GetBookingByIdQuery)
 export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery> {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    @Inject(IBookingRepository)
+    private readonly bookingRepository: IBookingRepository,
+  ) {}
 
   async execute(query: GetBookingByIdQuery): Promise<BookingResultData> {
-    const booking = await this.prisma.booking.findFirst({
-      where: {
-        id: query.id,
-        OR: [{ studentId: query.userId }, { tutorId: query.userId }],
-      },
-      include: {
-        student: true,
-        tutor: { include: { user: true } },
-        subject: true,
-        scheduleRules: true,
-      },
-    });
+    const booking = await this.bookingRepository.findById(query.id);
+
+    // Make sure booking belongs to user
+    if (booking && booking.studentId !== query.userId && booking.tutorId !== query.userId) {
+      throw new NotFoundException(`Booking with id ${query.id} not found`);
+    }
 
     if (!booking) {
       throw new NotFoundException(`Booking with id ${query.id} not found`);
@@ -35,20 +29,20 @@ export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery>
       studentId: booking.studentId,
       tutorId: booking.tutorId,
       subjectId: booking.subjectId,
-      mode: booking.mode as TutoringMode,
-      status: booking.status as BookingStatus,
+      mode: booking.mode,
+      status: booking.status,
       price: booking.price,
       message: booking.message,
       createdAt: booking.createdAt,
       student: {
-        id: booking.student.id,
-        nickname: booking.student.nickname ?? null,
-        avatarUrl: booking.student.avatarUrl ?? null,
+        id: booking.student?.id || '',
+        nickname: booking.student?.nickname ?? null,
+        avatarUrl: booking.student?.avatarUrl ?? null,
       },
       tutor: {
-        id: booking.tutor.id,
-        name: booking.tutor.user.nickname || 'Gia sư',
-        avatarUrl: booking.tutor.user.avatarUrl ?? null,
+        id: booking.tutor?.id || '',
+        name: booking.tutor?.name || 'Gia sư',
+        avatarUrl: booking.tutor?.avatarUrl ?? null,
       },
       subject: booking.subject
         ? {
@@ -57,11 +51,11 @@ export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery>
             slug: booking.subject.slug,
           }
         : null,
-      scheduleRules: booking.scheduleRules.map((rule) => ({
+      scheduleRules: booking.scheduleRules?.map((rule) => ({
         dayOfWeek: rule.dayOfWeek,
         startTime: rule.startTime,
         endTime: rule.endTime,
-      })),
+      })) || [],
     };
   }
 }
