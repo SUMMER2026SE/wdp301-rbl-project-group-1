@@ -11,14 +11,19 @@ import { useGetBookingsQuery, BookingResponseDto } from "@/src/features/booking/
 
 export default function TutorCoursesPage() {
   const [currentPage, setCurrentPage] = useState(1);
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("CONFIRMED");
 
   const limit = 12;
+
+  const validStatuses = ["PENDING", "AWAITING_PAYMENT", "CONFIRMED", "COMPLETED", "CANCELLED"];
+  const statusParam = validStatuses.includes(statusFilter)
+    ? (statusFilter as "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED")
+    : undefined;
 
   const { data, isLoading, error } = useGetBookingsQuery({
     limit,
     page: currentPage,
-    status: statusFilter === "ALL" ? undefined : (statusFilter as "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED"),
+    status: statusParam,
   });
 
   const bookings: BookingResponseDto[] = data?.data || [];
@@ -35,10 +40,10 @@ export default function TutorCoursesPage() {
         <HeaderSection />
 
         {/* Filters */}
-        <FilterSection 
+        <FilterSection
           onStatusChange={setStatusFilter}
-          onSubjectChange={() => {}}
-          onSearch={() => {}}
+          onSubjectChange={() => { }}
+          onSearch={() => { }}
         />
 
         {/* Course Grid */}
@@ -48,7 +53,7 @@ export default function TutorCoursesPage() {
           <div className="flex items-center justify-center py-24 text-rose-500 font-medium">Có lỗi xảy ra khi tải dữ liệu.</div>
         ) : bookings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-32 text-slate-500 bg-slate-50 dark:bg-slate-800/30 rounded-[2.5rem] border border-dashed border-slate-200 dark:border-slate-700">
-             <p className="text-lg font-medium text-slate-600 dark:text-slate-400">Không tìm thấy lớp học nào.</p>
+            <p className="text-lg font-medium text-slate-600 dark:text-slate-400">Không tìm thấy lớp học nào.</p>
           </div>
         ) : (
           <CourseGrid courses={bookings} />

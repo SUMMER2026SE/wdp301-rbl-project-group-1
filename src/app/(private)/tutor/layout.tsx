@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { TutorHeaderUserInfo } from "@/src/features/tutor/layout/components/tutor-header-user-info";
 import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
-import { TutorPopover } from "@/src/shared/components/molecules/tutor-popover/tutor-popover";
+import { UserProfilePopover } from "@/src/shared/components/molecules/user-profile-popover/user-profile-popover";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
 import { GraduationCap } from "lucide-react";
 
@@ -50,7 +50,15 @@ export default function TutorLayout({
             <NotificationPopover />
             <div className="flex items-center gap-4 border-l border-border pl-6">
               <TutorHeaderUserInfo />
-              <TutorPopover />
+              <UserProfilePopover
+                menuItems={[
+                  { href: "/tutor/profile/information", label: "Hồ sơ cá nhân", iconType: "profile" },
+                  { href: "/tutor/home", label: "Bảng điều khiển", iconType: "dashboard" },
+                  { href: "/tutor/settings", label: "Cài đặt", iconType: "settings" },
+                ]}
+                defaultName="Gia sư"
+                ariaLabel="Mở menu gia sư"
+              />
             </div>
           </div>
         </div>

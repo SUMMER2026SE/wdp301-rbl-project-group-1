@@ -10,11 +10,25 @@ import "@/src/features/tutor-application/tutorApplicationEnhance";
 import "@/src/features/payment/paymentEnhance";
 import "@/src/features/schedule/scheduleAvailabilityEnhance";
 
+import { combineReducers, Action } from "@reduxjs/toolkit";
+
+const appReducer = combineReducers({
+  auth: authReducer,
+  [baseApi.reducerPath]: baseApi.reducer,
+});
+
+type AppState = ReturnType<typeof appReducer>;
+
+const rootReducer = (state: AppState | undefined, action: Action) => {
+  if (action.type === 'auth/clearAuth') {
+    // Reset all state (including RTK Query cache) on logout
+    state = undefined;
+  }
+  return appReducer(state, action);
+};
+
 export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    [baseApi.reducerPath]: baseApi.reducer,
-  },
+  reducer: rootReducer,
 
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseApi.middleware),

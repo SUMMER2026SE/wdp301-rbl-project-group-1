@@ -1,5 +1,5 @@
 import { Button } from "@/src/shared/components/ui/button";
-import { FileText, Image } from "lucide-react";
+import { FileText, Image as ImageIcon } from "lucide-react";
 import type { AttachmentType, SharedDocument } from "../../types";
 import { formatFileSize } from "../chat-window/message-bubble";
 
@@ -31,7 +31,7 @@ function DocTypeIcon({ type }: { type: AttachmentType }) {
   }
   return (
     <div className="size-8 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
-      <Image className="size-4" />
+      <ImageIcon className="size-4" />
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { Pagination } from "@/src/shared/components/molecules/pagination/pagination";
-import { TutorGridHeader } from "@/src/shared/components/molecules/tutor-grid-header";
+import { TutorGridHeader } from "@/src/features/student/tutors/components/tutor-grid-header";
 import { Spinner } from "@/src/shared/components/ui/spinner";
 import { useState } from "react";
 import type { Tutor } from "../types";
@@ -47,29 +47,29 @@ export function TutorGrid({
   const sortedTutors = isServerPaging
     ? [...tutors]
     : [...tutors].sort((a, b) => {
-        switch (sortBy) {
-          case "rating":
-            return b.rating - a.rating;
-          case "price-low":
-            return a.pricePerHour - b.pricePerHour;
-          case "price-high":
-            return b.pricePerHour - a.pricePerHour;
-          case "experience":
-            return (
-              Number(b.experience.split(" ")[0]) -
-              Number(a.experience.split(" ")[0])
-            );
-          default:
-            return 0;
-        }
-      });
+      switch (sortBy) {
+        case "rating":
+          return b.rating - a.rating;
+        case "price-low":
+          return a.pricePerHour - b.pricePerHour;
+        case "price-high":
+          return b.pricePerHour - a.pricePerHour;
+        case "experience":
+          return (
+            Number(b.experience.split(" ")[0]) -
+            Number(a.experience.split(" ")[0])
+          );
+        default:
+          return 0;
+      }
+    });
 
   const visibleTutors = isServerPaging
     ? sortedTutors
     : sortedTutors.slice(
-        (currentPage - 1) * itemsPerPage,
-        currentPage * itemsPerPage,
-      );
+      (currentPage - 1) * itemsPerPage,
+      currentPage * itemsPerPage,
+    );
 
   return (
     <div className="flex-1 min-w-0">

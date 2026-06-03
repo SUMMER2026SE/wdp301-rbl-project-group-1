@@ -1,6 +1,6 @@
 import { Avatar } from "@/src/shared/components/atoms/avatar/avatar";
 import { cn } from "@/src/shared/lib/utils";
-import { Download, FileText, Image } from "lucide-react";
+import { Download, FileText, Image as ImageIcon } from "lucide-react";
 import type { AttachmentType, Message, MessageAttachment } from "../../types";
 
 interface MessageBubbleProps {
@@ -22,7 +22,7 @@ function formatTime(date: Date): string {
 
 function AttachmentFileIcon({ type }: { type: AttachmentType }) {
   if (type === "pdf") return <FileText className="size-5 text-red-500" />;
-  if (type === "image") return <Image className="size-5 text-blue-500" />;
+  if (type === "image") return <ImageIcon className="size-5 text-blue-500" />;
   return <FileText className="size-5 text-muted-foreground" />;
 }
 

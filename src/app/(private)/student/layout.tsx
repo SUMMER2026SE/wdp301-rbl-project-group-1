@@ -1,7 +1,7 @@
 import { STUDENT_NAV_LINKS } from "@/src/app/(private)/student/constants/constants";
 import { StudentHeaderUserInfo } from "@/src/features/student/layout/components/student-header-user-info";
 import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
-import { UserPopover } from "@/src/shared/components/molecules/user-popover/user-popover";
+import { UserProfilePopover } from "@/src/shared/components/molecules/user-profile-popover/user-profile-popover";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
 import { GraduationCap } from "lucide-react";
 import Link from "next/link";
@@ -43,7 +43,15 @@ export default function StudentLayout({
             {/* User profile */}
             <div className="flex items-center gap-4 border-l border-border pl-6 dark:border-border">
               <StudentHeaderUserInfo />
-              <UserPopover />
+              <UserProfilePopover
+                menuItems={[
+                  { href: "/student/profile/information", label: "Hồ sơ cá nhân", iconType: "profile" },
+                  { href: "/student/dashboard", label: "Bảng điều khiển", iconType: "dashboard" },
+                  { href: "/student/settings", label: "Cài đặt", iconType: "settings" },
+                ]}
+                defaultName="Học sinh"
+                ariaLabel="Mở menu người dùng"
+              />
             </div>
           </div>
         </div>

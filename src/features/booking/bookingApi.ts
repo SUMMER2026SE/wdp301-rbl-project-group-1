@@ -64,6 +64,15 @@ const injectedRtkApi = api.injectEndpoints({
         },
       }),
     }),
+    getTutorPublicSessions: build.query<GetMySessionsApiResponse, GetTutorPublicSessionsApiArg>({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/tutor/${queryArg.tutorId}`,
+        params: {
+          startDate: queryArg.startDate,
+          endDate: queryArg.endDate,
+        },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -252,6 +261,12 @@ export type GetMySessionsApiArg = {
   endDate?: string;
 };
 
+export type GetTutorPublicSessionsApiArg = {
+  tutorId: string;
+  startDate?: string;
+  endDate?: string;
+};
+
 export const {
   useGetBookingsQuery,
   useGetBookingByIdQuery,
@@ -260,4 +275,5 @@ export const {
   useRejectBookingMutation,
   useMarkSessionAttendanceMutation,
   useGetMySessionsQuery,
+  useGetTutorPublicSessionsQuery,
 } = injectedRtkApi;

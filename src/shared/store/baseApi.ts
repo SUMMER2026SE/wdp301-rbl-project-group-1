@@ -68,12 +68,15 @@ const baseQueryWithReauth: BaseQueryFn<
             return;
           }
 
+          // Create a new signal so the refresh request isn't aborted if the original query unmounts (React Strict Mode)
+          const refreshApi = { ...api, signal: new AbortController().signal };
+
           let refreshResult = await baseQuery(
             {
               url: "/api/auth/refresh",
               method: "POST",
             },
-            api,
+            refreshApi,
             extraOptions,
           );
 
@@ -85,7 +88,7 @@ const baseQueryWithReauth: BaseQueryFn<
                 url: "/api/auth/refresh",
                 method: "POST",
               },
-              api,
+              refreshApi,
               extraOptions,
             );
           }

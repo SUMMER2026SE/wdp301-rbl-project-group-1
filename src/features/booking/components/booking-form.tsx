@@ -17,6 +17,9 @@ import { Button } from "@/src/shared/components/ui/button";
 import { DialogClose } from "@/src/shared/components/ui/dialog";
 import { toast } from "sonner";
 import { useCreateDirectBookingMutation } from "../bookingApi";
+import { useGetAllSubjectsQuery, useGetAllGradesQuery } from "@/src/features/academic-catalog/academicCatalogApi";
+import { useGetScheduleAvailabilityQuery } from "@/src/features/schedule/scheduleAvailabilityApi";
+import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
 
 // Helper to parse time string "HH:mm" to minutes
 const timeToMinutes = (time: string) => {
@@ -163,8 +166,39 @@ export function BookingForm({
   const [selectedSlots, setSelectedSlots] = useState<Record<string, boolean>>({});
   const closeRef = useRef<HTMLButtonElement>(null);
 
-
   const [createDirectBooking, { isLoading }] = useCreateDirectBookingMutation();
+
+  // Fetch subjects and grades
+  const { data: subjectsResponse, isLoading: isLoadingSubjects } = useGetAllSubjectsQuery();
+  const { data: gradesResponse, isLoading: isLoadingGrades } = useGetAllGradesQuery();
+
+  const subjects = subjectsResponse?.data || [];
+  const grades = gradesResponse?.data || [];
+
+  // Fetch student's own schedule availability
+  const { data: scheduleResponse } = useGetScheduleAvailabilityQuery();
+  const studentSlots = useMemo(() => {
+    return mapApiToSlots(scheduleResponse?.data?.availability || []);
+  }, [scheduleResponse]);
+
+  // Compute intersected slots between tutor and student
+  const intersectedSlots = useMemo(() => {
+    const common: Record<string, boolean> = {};
+    const hasStudentSlots = Object.values(studentSlots).some((v) => v);
+
+    // Option A: If student has no slots defined, fallback to tutor's slots entirely.
+    if (!hasStudentSlots) {
+      return tutorAvailableSlots;
+    }
+
+    // Otherwise, perform intersection
+    Object.keys(tutorAvailableSlots).forEach((key) => {
+      if (tutorAvailableSlots[key] && studentSlots[key]) {
+        common[key] = true;
+      }
+    });
+    return common;
+  }, [tutorAvailableSlots, studentSlots]);
 
   const handleSubmit = async (data: BookingFormValues) => {
     const scheduleRules = slotsToScheduleRules(selectedSlots);
@@ -279,25 +313,17 @@ export function BookingForm({
                 id="subject"
                 name="subject"
                 label="Môn học"
-                placeholder="Chọn môn học"
-                options={[
-                  { label: "Tiếng Anh", value: "english" },
-                  { label: "Toán học", value: "math" },
-                  { label: "Vật lý", value: "physics" },
-                  { label: "Hóa học", value: "chemistry" },
-                ]}
+                placeholder={isLoadingSubjects ? "Đang tải..." : "Chọn môn học"}
+                options={subjects.map((s) => ({ label: s.name, value: s.name }))}
+                disabled={isLoadingSubjects}
               />
               <SelectBox
                 id="grade"
                 name="grade"
                 label="Lớp"
-                placeholder="Chọn trình độ"
-                options={[
-                  { label: "Lớp 10", value: "10" },
-                  { label: "Lớp 11", value: "11" },
-                  { label: "Lớp 12", value: "12" },
-                  { label: "Luyện thi Đại học", value: "uni" },
-                ]}
+                placeholder={isLoadingGrades ? "Đang tải..." : "Chọn trình độ"}
+                options={grades.map((g) => ({ label: g.name, value: g.name }))}
+                disabled={isLoadingGrades}
               />
               <TextBox
                 id="totalSessions"
@@ -326,7 +352,7 @@ export function BookingForm({
                       <ScheduleCalendar
                         mode="fixed"
                         variant="booking"
-                        tutorAvailableSlots={tutorAvailableSlots}
+                        tutorAvailableSlots={intersectedSlots}
                         initialAvailableSlots={selectedSlots}
                         onAvailableSlotsChange={(slots) => {
                           setSelectedSlots(slots);

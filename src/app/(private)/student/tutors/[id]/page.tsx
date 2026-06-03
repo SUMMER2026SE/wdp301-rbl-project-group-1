@@ -14,7 +14,9 @@ import { Button } from "@/src/shared/components/ui/button";
 import { ScheduleCalendar } from "@/src/features/student/schedule/components";
 import Link from "next/link";
 import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorApi";
+import { useGetTutorPublicSessionsQuery } from "@/src/features/booking/bookingApi";
 import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
+import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
 import { Tutor } from "@/src/features/student/tutors/types";
 
 export default function TutorDetailPage() {
@@ -26,7 +28,12 @@ export default function TutorDetailPage() {
     { skip: !tutorId }
   );
 
-  if (isLoading) {
+  const { data: sessionsData, isLoading: isFetchingSessions } = useGetTutorPublicSessionsQuery(
+    { tutorId },
+    { skip: !tutorId }
+  );
+
+  if (isLoading || isFetchingSessions) {
     return (
       <main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
         <div className="text-center py-12">
@@ -74,6 +81,7 @@ export default function TutorDetailPage() {
   };
 
   const initialAvailableSlots = mapApiToSlots(tutorDto.availability || []);
+  const scheduleClasses = sessionsData?.data ? mapSessionsToScheduleClasses(sessionsData.data) : [];
 
   return (
     <>
@@ -113,12 +121,12 @@ export default function TutorDetailPage() {
             <div className="rounded-lg border border-border bg-card p-6 shadow-sm flex flex-col gap-4">
               <div>
                 <h3 className="text-xl font-bold text-foreground">Lịch rảnh cố định</h3>
-                <p className="text-sm text-muted-foreground mt-1">Lịch có thể nhận lớp mới của gia sư hàng tuần.</p>
+                <p className="text-sm text-muted-foreground mt-1">Lịch rảnh và các buổi dạy đã được đặt của gia sư.</p>
               </div>
               <ScheduleCalendar
                 mode="fixed"
                 readonly={true}
-                classes={[]}
+                classes={scheduleClasses}
                 selectedFilter="all"
                 initialAvailableSlots={initialAvailableSlots}
               />
