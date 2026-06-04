@@ -1,6 +1,8 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
-import { Logger } from '@nestjs/common';
+import { Logger, Inject } from '@nestjs/common';
 import { PaymentConfirmedEvent } from '../../../payment/domain/events/payment-confirmed.event';
+import { IMessageBroker } from '../../../../shared/application/interfaces/message-broker.interface';
+import { EVENTS } from '../../../../shared/application/constants/events.constants';
 import {
   PaymentReferenceType,
   BookingStatus,
@@ -11,7 +13,10 @@ import { PrismaService } from '../../../../shared/infrastructure/database/prisma
 export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConfirmedEvent> {
   private readonly logger = new Logger(BookingPaymentConfirmedHandler.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
+  ) {}
 
   async handle(event: PaymentConfirmedEvent) {
     if (event.referenceType !== PaymentReferenceType.TUTOR_BOOKING) {
@@ -25,6 +30,7 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
     try {
       const booking = await this.prisma.booking.findUnique({
         where: { id: event.referenceId },
+        include: { subject: true },
       });
 
       if (!booking) {
@@ -42,6 +48,13 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
         data: {
           status: BookingStatus.CONFIRMED,
         },
+      });
+
+      await this.messageBroker.publishEvent(EVENTS.BOOKING_CREATED, {
+        userId: booking.studentId,
+        tutorId: booking.tutorId,
+        bookingId: booking.id,
+        subjectSlug: booking.subject?.slug,
       });
 
       this.logger.log(

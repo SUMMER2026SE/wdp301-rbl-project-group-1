@@ -1,6 +1,10 @@
 import { BadRequestException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
+import { IMessageBroker } from '../../../../../shared/application/interfaces/message-broker.interface';
+import { EVENTS } from '../../../../../shared/application/constants/events.constants';
+import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
+import { UserRole } from '../../../../../shared/domain/enums/enums';
 import { IScheduleAvailabilityRepository } from '../../../domain/repositories/schedule-availability.repository.interface';
 import { UpdateScheduleAvailabilityCommand } from './update-schedule-availability.command';
 import { UpdateScheduleAvailabilityResult } from './update-schedule-availability.result';
@@ -17,6 +21,8 @@ export class UpdateScheduleAvailabilityHandler
   constructor(
     @Inject(IScheduleAvailabilityRepository)
     private readonly availabilityRepository: IScheduleAvailabilityRepository,
+    @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
+    private readonly prisma: PrismaService,
   ) {}
 
   async execute(
@@ -28,6 +34,22 @@ export class UpdateScheduleAvailabilityHandler
       command.userId,
       command.availability,
     );
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: command.userId },
+      select: { role: true },
+    });
+
+    if (user?.role === UserRole.TUTOR) {
+      await this.messageBroker.publishEvent(EVENTS.TUTOR_UPDATED, {
+        id: command.userId,
+        availabilitySlots: availability.map((slot) => ({
+          dayOfWeek: slot.dayOfWeek,
+          startTime: slot.startTime,
+          endTime: slot.endTime,
+        })),
+      });
+    }
 
     return {
       userId: command.userId,

@@ -24,7 +24,7 @@ import { BookingModule } from './modules/booking/booking.module';
 import { TutorRequestModule } from './modules/tutor-request/tutor-request.module';
 // import { ResourceModule } from './modules/resource/resource.module';
 import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
-// import { RecommendationModule } from './modules/recommendation/recommendation.module';
+import { RecommendationModule } from './modules/recommendation/recommendation.module';
 
 @Module({
   imports: [
@@ -48,7 +48,7 @@ import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbi
     BookingModule,
     TutorRequestModule,
     // ResourceModule,
-    // RecommendationModule,
+    RecommendationModule,
   ],
   providers: [
     {

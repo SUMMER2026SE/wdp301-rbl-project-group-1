@@ -1,8 +1,10 @@
 import { AttendanceStatus } from '../../../../../../generated/prisma/client';
-import { ForbiddenException, NotFoundException } from '@nestjs/common';
+import { ForbiddenException, NotFoundException, Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
+import { IMessageBroker } from '../../../../../shared/application/interfaces/message-broker.interface';
+import { EVENTS } from '../../../../../shared/application/constants/events.constants';
 import {
   SessionStatus,
   BookingStatus,
@@ -16,7 +18,10 @@ export class MarkSessionAttendanceHandler
     ICommandHandler<MarkSessionAttendanceCommand>,
     ICommand<MarkSessionAttendanceCommand, MarkSessionAttendanceResult>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
+  ) {}
 
   async execute(
     command: MarkSessionAttendanceCommand,
@@ -87,6 +92,12 @@ export class MarkSessionAttendanceHandler
           await tx.booking.update({
             where: { id: session.bookingId },
             data: { status: BookingStatus.COMPLETED },
+          });
+
+          await this.messageBroker.publishEvent(EVENTS.BOOKING_COMPLETED, {
+            userId: session.booking!.studentId,
+            tutorId: session.booking!.tutorId,
+            bookingId: session.booking!.id,
           });
         }
       }

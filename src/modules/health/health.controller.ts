@@ -29,7 +29,7 @@ export class HealthController {
   @Public()
   @Get('test-rabbitmq')
   async testRabbitMQ() {
-    await this.rabbitmqService.publishEvent(EVENTS.ENROLLMENT_CREATED, {
+    await this.rabbitmqService.publishEvent(EVENTS.USER_CREATED, {
       studentId: 'user_123',
       courseId: 'course_456',
       message: 'Hello from NestJS!',

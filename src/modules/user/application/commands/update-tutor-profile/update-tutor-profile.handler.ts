@@ -1,6 +1,8 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
+import { IMessageBroker } from '../../../../../shared/application/interfaces/message-broker.interface';
+import { EVENTS } from '../../../../../shared/application/constants/events.constants';
 import { UserRole } from '../../../../../shared/domain/enums/enums';
 import {
   EntityNotFoundException,
@@ -21,6 +23,7 @@ export class UpdateTutorProfileHandler
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
     @Inject(ITutorRepository)
     private readonly tutorRepository: ITutorRepository,
+    @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
   ) {}
 
   async execute(
@@ -53,6 +56,14 @@ export class UpdateTutorProfileHandler
     }
 
     await this.tutorRepository.save(tutor);
+
+    await this.messageBroker.publishEvent(EVENTS.TUTOR_UPDATED, {
+      id: tutor.id,
+      specialization: tutor.specialization,
+      experience: tutor.experience,
+      education: tutor.education,
+      pricePerHour: tutor.pricePerHour ? Number(tutor.pricePerHour) : null,
+    });
 
     return new UpdateTutorProfileResult(
       tutor.userId,

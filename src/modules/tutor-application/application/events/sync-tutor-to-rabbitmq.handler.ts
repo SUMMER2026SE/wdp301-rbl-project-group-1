@@ -17,7 +17,11 @@ export class SyncTutorToRabbitMqHandler implements IEventHandler<TutorCreatedDom
     const tutor = await this.prisma.tutor.findUnique({
       where: { id: event.tutorId },
       include: {
-        user: true,
+        user: {
+          include: {
+            availabilities: true,
+          }
+        },
         subjects: true,
         grades: true,
       },
@@ -27,16 +31,23 @@ export class SyncTutorToRabbitMqHandler implements IEventHandler<TutorCreatedDom
 
     const subjectSlugs = tutor.subjects.map((s) => s.slug);
     const gradeSlugs = tutor.grades.map((g) => g.slug);
+    const availabilitySlots = tutor.user.availabilities.map((slot) => ({
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }));
 
     await this.messageBroker.publishEvent(EVENTS.TUTOR_CREATED, {
       id: tutor.id,
       name: tutor.user.nickname || tutor.user.email,
+      avatarUrl: tutor.user.avatarUrl,
       specialization: tutor.specialization,
       experience: tutor.experience,
       education: tutor.education,
       pricePerHour: tutor.pricePerHour ? Number(tutor.pricePerHour) : null,
       subjectSlugs,
       gradeSlugs,
+      availabilitySlots,
     });
   }
 }

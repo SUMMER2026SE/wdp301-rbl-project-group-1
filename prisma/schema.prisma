@@ -612,36 +612,54 @@ model Report {
 
 //////////////////////////////////////////////////
 // AI RECOMMENDATION SYSTEM (Managed by Python)
+// itemType is always "TUTOR" — course recommendations removed.
+// features JSONB schema for TutorItem:
+//   { subjectSlugs: string[], gradeSlugs: string[], specialization: string,
+//     experience: int, pricePerHour: float, availabilitySlots: [{dayOfWeek, startTime, endTime}] }
+// metrics JSONB schema:
+//   { rating: float, reviewCount: int, studentCount: int, bookingCount: int }
+// User.recommendation JSONB schema:
+//   { explicitPreferences: { subjectSlugs, gradeSlugs },
+//     implicitPreferences: { viewedTutorIds, bookedTutorIds },
+//     embeddingVector: float[] }
 //////////////////////////////////////////////////
 
-model Item {
+model TutorItem {
   id              String                      @id
-  itemType        String                      @map("itemType")
-  basicInfo       Json                        @map("basicInfo")
+  /// Always "TUTOR"
+  itemType        String                      @default("TUTOR") @map("item_type")
+  /// { name, avatarUrl }
+  basicInfo       Json                        @map("basic_info")
+  /// { subjectSlugs, gradeSlugs, specialization, experience, pricePerHour, availabilitySlots }
   features        Json
+  /// { rating, reviewCount, studentCount, bookingCount }
   metrics         Json
-  embeddingVector Unsupported("vector(384)")? @map("embeddingVector")
-  createdAt       DateTime                    @default(now()) @map("createdAt")
-  updatedAt       DateTime                    @updatedAt @map("updatedAt")
+  embeddingVector Unsupported("vector(384)")? @map("embedding_vector")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
 
   @@index([itemType])
-  @@map("items")
+  @@map("tutor_items")
 }
 
-model Interaction {
+/// Tutor interaction events from NestJS via RabbitMQ.
+/// type values: VIEW_PROFILE | BOOKING_CREATED | BOOKING_COMPLETED | RATING | BID_ACCEPTED
+/// value is a float weight (see INTERACTION_WEIGHTS in Python layer)
+model TutorInteraction {
   id        Int      @id @default(autoincrement())
-  userId    String   @map("userId")
-  itemId    String   @map("itemId")
-  itemType  String   @map("itemType")
+  userId    String   @map("user_id")
+  tutorId   String   @map("tutor_id")
   type      String
+  /// Pre-computed weight: VIEW=0.05, BOOKING_CREATED=0.40, BOOKING_COMPLETED=0.50, RATING=0.30, BID_ACCEPTED=0.20
   value     Float    @default(1.0)
   context   Json?
-  createdAt DateTime @default(now()) @map("createdAt")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
-  @@index([itemId])
+  @@index([tutorId])
+  @@index([userId, tutorId])
   @@index([type])
-  @@map("interactions")
+  @@map("tutor_interactions")
 }
 
 //////////////////////////////////////////////////
