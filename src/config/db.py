@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 from src.models.base import Base
 # Import all models to ensure they are registered with Base.metadata
 from src.models.user import User
-from src.models.item import Item
-from src.models.interaction import Interaction
+from src.models.tutor_item import TutorItem
+from src.models.interaction import TutorInteraction
 
 load_dotenv()
 
@@ -23,6 +23,10 @@ async def init_db():
 
     # asyncpg expects 'ssl' instead of 'sslmode'
     db_url = DATABASE_URL.replace("sslmode=", "ssl=")
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql+asyncpg://", 1)
+    elif db_url.startswith("postgresql://") and not db_url.startswith("postgresql+asyncpg://"):
+        db_url = db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 
     # Create async engine
     engine = create_async_engine(db_url, echo=False)
