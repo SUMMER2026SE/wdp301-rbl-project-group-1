@@ -69,6 +69,7 @@ export const TutorRequestResponseSchema = z
       .string()
       .nullable()
       .meta({ example: 'clxsubject00000123456789' }),
+    gradeId: z.string().nullable().meta({ example: 'clxgrade00000123456789' }),
     title: z.string().meta({ example: 'Need a math tutor' }),
     description: z.string().meta({ example: 'Need help twice a week.' }),
     mode: z.enum(['ONLINE', 'AT_HOME']).meta({ example: 'ONLINE' }),
@@ -79,6 +80,23 @@ export const TutorRequestResponseSchema = z
       .string()
       .datetime()
       .meta({ example: '2026-05-31T10:00:00.000Z' }),
+    subject: z
+      .object({
+        id: z.string().meta({ example: 'clxsubject00000123456789' }),
+        name: z.string().meta({ example: 'Toán' }),
+        slug: z.string().meta({ example: 'toan' }),
+      })
+      .nullable()
+      .optional(),
+    grade: z
+      .object({
+        id: z.string().meta({ example: 'clxgrade00000123456789' }),
+        name: z.string().meta({ example: 'Lớp 10' }),
+        slug: z.string().meta({ example: 'lop-10' }),
+        order: z.number().meta({ example: 10 }),
+      })
+      .nullable()
+      .optional(),
     bids: z.array(TutorBidResponseSchema).optional(),
   })
   .meta({ id: 'TutorRequestResponseDto' });
@@ -93,6 +111,7 @@ export class TutorRequestResponseDto extends createZodDto(
     dto.id = result.id;
     dto.studentId = result.studentId;
     dto.subjectId = result.subjectId;
+    dto.gradeId = result.gradeId;
     dto.title = result.title;
     dto.description = result.description;
     dto.mode = result.mode;
@@ -100,6 +119,12 @@ export class TutorRequestResponseDto extends createZodDto(
     dto.status = result.status;
     dto.totalSessions = result.totalSessions ?? undefined;
     dto.createdAt = result.createdAt.toISOString();
+    if ('subject' in result) {
+      dto.subject = result.subject ?? undefined;
+    }
+    if ('grade' in result) {
+      dto.grade = result.grade ?? undefined;
+    }
     if ('bids' in result) {
       dto.bids = result.bids.map((b) => ({
         ...b,

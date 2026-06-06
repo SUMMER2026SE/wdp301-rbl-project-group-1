@@ -34,6 +34,10 @@ export const CreateTutorRequestSchema = z
       example: 'clxsubject00000123456789',
       description: 'Optional subject ID for the request',
     }),
+    gradeId: z.string().optional().meta({
+      example: 'clxgrade00000123456789',
+      description: 'Optional grade ID for the request',
+    }),
     title: z.string().min(1).max(200).meta({
       example: 'Need a math tutor for grade 10 algebra',
       description: 'Short request title',

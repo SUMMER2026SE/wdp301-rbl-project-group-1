@@ -24,6 +24,7 @@ export class CreateTutorRequestHandler
     const request = await this.tutorRequestRepository.createRequest({
       studentId: command.studentId,
       subjectId: command.subjectId,
+      gradeId: command.gradeId,
       title: command.title,
       description: command.description,
       mode: command.mode,
@@ -36,6 +37,7 @@ export class CreateTutorRequestHandler
       request.id,
       request.studentId,
       request.subjectId,
+      request.gradeId,
       request.title,
       request.description,
       request.mode,

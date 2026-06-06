@@ -2,15 +2,16 @@ import {
   RequestStatus,
   TutoringMode,
 } from '../../../../shared/domain/enums/enums';
+import { TutorBid } from '../entities/tutor-bid.entity';
 import {
   ScheduleRuleInput,
   TutorRequest,
 } from '../entities/tutor-request.entity';
-import { TutorBid } from '../entities/tutor-bid.entity';
 
 export type CreateTutorRequestData = {
   studentId: string;
   subjectId?: string;
+  gradeId?: string;
   title: string;
   description: string;
   mode: TutoringMode;

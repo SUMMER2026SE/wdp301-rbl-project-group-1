@@ -13,6 +13,7 @@ export type TutorRequestProps = {
   id: string;
   studentId: string;
   subjectId: string | null;
+  gradeId: string | null;
   title: string;
   description: string;
   mode: TutoringMode;
@@ -27,6 +28,7 @@ export class TutorRequest {
   readonly id: string;
   readonly studentId: string;
   readonly subjectId: string | null;
+  readonly gradeId: string | null;
   readonly title: string;
   readonly description: string;
   readonly mode: TutoringMode;
@@ -40,6 +42,7 @@ export class TutorRequest {
     this.id = props.id;
     this.studentId = props.studentId;
     this.subjectId = props.subjectId;
+    this.gradeId = props.gradeId;
     this.title = props.title;
     this.description = props.description;
     this.mode = props.mode;

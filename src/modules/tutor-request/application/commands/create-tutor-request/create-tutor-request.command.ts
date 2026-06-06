@@ -8,6 +8,7 @@ export class CreateTutorRequestCommand {
     public readonly description: string,
     public readonly mode: TutoringMode,
     public readonly subjectId?: string,
+    public readonly gradeId?: string,
     public readonly budget?: number,
     public readonly totalSessions?: number,
     public readonly scheduleRules?: ScheduleRuleInput[],

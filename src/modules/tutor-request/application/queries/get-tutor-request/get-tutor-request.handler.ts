@@ -1,17 +1,17 @@
 import { NotFoundException } from '@nestjs/common';
 import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { IQuery } from '../../../../../shared/application/interfaces/use-case.interface';
+import {
+  BidStatus,
+  RequestStatus,
+  TutoringMode,
+} from '../../../../../shared/domain/enums/enums';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
 import { GetTutorRequestQuery } from './get-tutor-request.query';
 import {
   GetTutorRequestResult,
   TutorBidResultData,
 } from './get-tutor-request.result';
-import {
-  BidStatus,
-  RequestStatus,
-  TutoringMode,
-} from '../../../../../shared/domain/enums/enums';
 
 @QueryHandler(GetTutorRequestQuery)
 export class GetTutorRequestQueryHandler
@@ -25,6 +25,8 @@ export class GetTutorRequestQueryHandler
     const request = await this.prisma.tutorRequest.findUnique({
       where: { id: query.id },
       include: {
+        subject: true,
+        grade: true,
         bids: {
           include: {
             tutor: {
@@ -67,6 +69,7 @@ export class GetTutorRequestQueryHandler
       request.id,
       request.studentId,
       request.subjectId,
+      request.gradeId,
       request.title,
       request.description,
       request.mode as TutoringMode,
@@ -75,6 +78,21 @@ export class GetTutorRequestQueryHandler
       request.totalSessions,
       request.createdAt,
       bids,
+      request.subject
+        ? {
+            id: request.subject.id,
+            name: request.subject.name,
+            slug: request.subject.slug,
+          }
+        : null,
+      request.grade
+        ? {
+            id: request.grade.id,
+            name: request.grade.name,
+            slug: request.grade.slug,
+            order: request.grade.order,
+          }
+        : null,
     );
   }
 }

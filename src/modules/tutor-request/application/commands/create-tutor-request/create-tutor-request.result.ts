@@ -8,6 +8,7 @@ export class CreateTutorRequestResult {
     public readonly id: string,
     public readonly studentId: string,
     public readonly subjectId: string | null,
+    public readonly gradeId: string | null,
     public readonly title: string,
     public readonly description: string,
     public readonly mode: TutoringMode,

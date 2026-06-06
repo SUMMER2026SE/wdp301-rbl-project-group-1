@@ -1,13 +1,14 @@
-import { QueryApiResponse } from '../../../../../shared/presentation/responses/query-response';
 import { QueryParams } from '../../../../../shared/domain/common/query';
 import {
   RequestStatus,
   TutoringMode,
 } from '../../../../../shared/domain/enums/enums';
+import { QueryApiResponse } from '../../../../../shared/presentation/responses/query-response';
 
 export interface TutorRequestPaginatedParams extends QueryParams {
   studentId?: string;
-  subjectId?: string;
+  subjectIds?: string[];
+  gradeIds?: string[];
   mode?: TutoringMode;
   status?: RequestStatus;
 }
@@ -16,6 +17,7 @@ export interface TutorRequestResultData {
   id: string;
   studentId: string;
   subjectId: string | null;
+  gradeId: string | null;
   title: string;
   description: string;
   mode: TutoringMode;
@@ -32,6 +34,12 @@ export interface TutorRequestResultData {
     id: string;
     name: string;
     slug: string;
+  } | null;
+  grade: {
+    id: string;
+    name: string;
+    slug: string;
+    order: number;
   } | null;
   bidCount: number;
   scheduleRules: {

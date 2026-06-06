@@ -2,14 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '../../../../../generated/prisma/client';
 import {
   BidStatus,
+  BookingStatus,
   RequestStatus,
   TutoringMode,
-  BookingStatus,
 } from '../../../../shared/domain/enums/enums';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
+import { SessionGeneratorService } from '../../../booking/domain/services/session-generator.service';
 import { TutorBid } from '../../domain/entities/tutor-bid.entity';
 import { TutorRequest } from '../../domain/entities/tutor-request.entity';
-import { SessionGeneratorService } from '../../../booking/domain/services/session-generator.service';
 import {
   AcceptedTutorBid,
   AcceptTutorBidData,
@@ -30,6 +30,7 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
       data: {
         studentId: data.studentId,
         subjectId: data.subjectId,
+        gradeId: data.gradeId,
         title: data.title,
         description: data.description,
         mode: data.mode,
@@ -195,6 +196,7 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
       id: record.id,
       studentId: record.studentId,
       subjectId: record.subjectId,
+      gradeId: record.gradeId,
       title: record.title,
       description: record.description,
       mode: record.mode as TutoringMode,

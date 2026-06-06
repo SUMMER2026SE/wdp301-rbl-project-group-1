@@ -366,6 +366,7 @@ model Grade {
   tutors            Tutor[]            @relation("TutorGrades")
   students          User[]             @relation("StudentGrades")
   tutorApplications TutorApplication[] @relation("TutorApplicationGrades")
+  tutorRequests     TutorRequest[]
 
   @@map("grade")
 }
@@ -670,6 +671,7 @@ model TutorRequest {
   id        String  @id @default(cuid())
   studentId String  @map("student_id")
   subjectId String? @map("subject_id")
+  gradeId   String? @map("grade_id")
 
   title       String
   description String
@@ -684,6 +686,7 @@ model TutorRequest {
 
   student User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
   subject Subject? @relation(fields: [subjectId], references: [id])
+  grade   Grade?   @relation(fields: [gradeId], references: [id])
 
   bids          TutorBid[]
   scheduleRules ScheduleRule[]
@@ -693,6 +696,7 @@ model TutorRequest {
 
   @@index([studentId])
   @@index([subjectId])
+  @@index([gradeId])
   @@index([status])
   @@map("tutor_request")
 }

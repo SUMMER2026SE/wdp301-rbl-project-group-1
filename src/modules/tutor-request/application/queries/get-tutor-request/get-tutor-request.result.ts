@@ -28,6 +28,7 @@ export class GetTutorRequestResult {
     public readonly id: string,
     public readonly studentId: string,
     public readonly subjectId: string | null,
+    public readonly gradeId: string | null,
     public readonly title: string,
     public readonly description: string,
     public readonly mode: TutoringMode,
@@ -36,5 +37,12 @@ export class GetTutorRequestResult {
     public readonly totalSessions: number | null,
     public readonly createdAt: Date,
     public readonly bids: TutorBidResultData[],
+    public readonly subject: { id: string; name: string; slug: string } | null,
+    public readonly grade: {
+      id: string;
+      name: string;
+      slug: string;
+      order: number;
+    } | null,
   ) {}
 }

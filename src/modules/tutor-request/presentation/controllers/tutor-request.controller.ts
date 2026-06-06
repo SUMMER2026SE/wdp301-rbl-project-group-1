@@ -9,6 +9,7 @@ import {
 } from '@nestjs/common';
 import { CommandBus, QueryBus } from '@nestjs/cqrs';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { QueryResult } from '../../../../shared/domain/common/query';
 import { UserRole } from '../../../../shared/domain/enums/enums';
 import {
   ApiCreatedResponseWrapped,
@@ -32,11 +33,6 @@ import {
   GetTutorRequestsResult,
   TutorRequestResultData,
 } from '../../application/queries/get-tutor-requests/get-tutor-requests.result';
-import { QueryResult } from '../../../../shared/domain/common/query';
-import {
-  CreateTutorRequestDto,
-  SetTutorBidDto,
-} from '../schemas/tutor-request.dto';
 import {
   GetTutorRequestsQueryDto,
   GetTutorRequestsQueryParams,
@@ -46,6 +42,10 @@ import {
   TutorBidResponseDto,
   TutorRequestResponseDto,
 } from '../schemas/tutor-request-response.dto';
+import {
+  CreateTutorRequestDto,
+  SetTutorBidDto,
+} from '../schemas/tutor-request.dto';
 
 @ApiTags('Tutor Request')
 @Controller('tutor-requests')
@@ -79,6 +79,7 @@ export class TutorRequestController {
         dto.description,
         dto.mode,
         dto.subjectId,
+        dto.gradeId,
         dto.budget,
         dto.totalSessions,
         dto.scheduleRules,
@@ -114,7 +115,8 @@ export class TutorRequestController {
       search: query.search,
       sortBy: query.sortBy,
       sortOrder: query.sortOrder,
-      subjectId: query.subjectId,
+      subjectIds: query.subjectIds,
+      gradeIds: query.gradeIds,
       studentId: query.studentId,
       mode: query.mode,
       status: query.status,
