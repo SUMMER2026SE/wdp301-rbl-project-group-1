@@ -23,8 +23,9 @@ const injectedRtkApi = api.injectEndpoints({
           search: queryArg.search,
           sortBy: queryArg.sortBy,
           sortOrder: queryArg.sortOrder,
-          subjectId: queryArg.subjectId,
           studentId: queryArg.studentId,
+          subjectIds: queryArg.subjectIds,
+          gradeIds: queryArg.gradeIds,
           mode: queryArg.mode,
           status: queryArg.status,
         },
@@ -88,10 +89,12 @@ export type GetTutorRequestsApiArg = {
   sortBy?: string;
   /** Sort direction */
   sortOrder?: "asc" | "desc";
-  /** Filter by subject ID */
-  subjectId?: string;
   /** Filter by student ID */
   studentId?: string;
+  /** Filter by one or more subject IDs */
+  subjectIds: string[];
+  /** Filter by one or more grade IDs */
+  gradeIds: string[];
   /** Filter by tutoring mode */
   mode?: "ONLINE" | "AT_HOME";
   /** Filter by request status */
@@ -126,6 +129,12 @@ export type AcceptTutorBidApiArg = {
   requestId: string;
   bidId: string;
 };
+export type TutorBidTutorDto = {
+  name: string | null;
+  avatarUrl: string | null;
+  rating: number;
+  reviewCount: number;
+};
 export type TutorBidResponseDto = {
   id: string;
   requestId: string;
@@ -135,18 +144,13 @@ export type TutorBidResponseDto = {
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdAt: string;
   updatedAt: string;
-  tutor?: {
-    name: string | null;
-    avatarUrl: string | null;
-    rating: number;
-    reviewCount: number;
-  };
+  tutor?: TutorBidTutorDto;
 };
-
 export type TutorRequestResponseDto = {
   id: string;
   studentId: string;
   subjectId: string | null;
+  gradeId: string | null;
   title: string;
   description: string;
   mode: "ONLINE" | "AT_HOME";
@@ -154,11 +158,24 @@ export type TutorRequestResponseDto = {
   status: "OPEN" | "CLOSED" | "CANCELLED";
   totalSessions?: number;
   createdAt: string;
+  subject?: {
+    id: string;
+    name: string;
+    slug: string;
+  } | null;
+  grade?: {
+    id: string;
+    name: string;
+    slug: string;
+    order: number;
+  } | null;
   bids?: TutorBidResponseDto[];
 };
 export type CreateTutorRequestDto = {
   /** Optional subject ID for the request */
   subjectId?: string;
+  /** Optional grade ID for the request */
+  gradeId?: string;
   /** Short request title */
   title: string;
   /** Detailed tutoring need */
@@ -167,6 +184,8 @@ export type CreateTutorRequestDto = {
   mode: "ONLINE" | "AT_HOME";
   /** Optional budget for the request */
   budget?: number;
+  /** Total number of sessions for the request */
+  totalSessions: number;
   /** Optional recurring schedule rules */
   scheduleRules?: {
     /** Day of week, where 0 is Sunday */
@@ -176,8 +195,6 @@ export type CreateTutorRequestDto = {
     /** End time in HH:mm format */
     endTime: string;
   }[];
-  /** Total number of sessions requested */
-  totalSessions: number;
 };
 export type SetTutorBidDto = {
   /** Tutor proposed price */
@@ -194,9 +211,10 @@ export type AcceptTutorBidResponseDto = {
   status: "PENDING" | "ACCEPTED" | "REJECTED";
   createdAt: string;
   updatedAt: string;
+  tutor?: TutorBidTutorDto;
   /** Updated request status after accepting the bid */
   requestStatus: "OPEN" | "CLOSED" | "CANCELLED";
-  /** Booking ID created */
+  /** The created booking ID after accepting the bid */
   bookingId: string;
 };
 export const {

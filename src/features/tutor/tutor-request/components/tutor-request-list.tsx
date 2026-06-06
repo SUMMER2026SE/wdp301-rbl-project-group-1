@@ -1,13 +1,12 @@
 "use client";
 
-import { Skeleton } from "@/src/shared/components/ui/skeleton";
-import { TutorRequestCard } from "./tutor-request-card";
-import { Frown } from "lucide-react";
 import { TutorRequestResponseDto } from "@/src/features/tutor-request/tutorRequestApi";
+import { Skeleton } from "@/src/shared/components/ui/skeleton";
+import { Frown } from "lucide-react";
+import { TutorRequestCard } from "./tutor-request-card";
 
 export interface ExtendedTutorRequest extends TutorRequestResponseDto {
   student?: { nickname: string | null; avatarUrl: string | null };
-  subject?: { name: string; slug: string };
   bidCount?: number;
   scheduleRules?: {
     dayOfWeek: number;
@@ -22,12 +21,19 @@ interface TutorRequestListProps {
   onApply?: (id: string) => void;
 }
 
-export function TutorRequestList({ requests, isLoading, onApply }: TutorRequestListProps) {
+export function TutorRequestList({
+  requests,
+  isLoading,
+  onApply,
+}: TutorRequestListProps) {
   if (isLoading) {
     return (
       <div className="flex-1 space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl border border-border p-6 shadow-sm bg-card">
+          <div
+            key={i}
+            className="rounded-2xl border border-border p-6 shadow-sm bg-card"
+          >
             <div className="flex gap-5">
               <Skeleton className="h-14 w-14 rounded-full" />
               <div className="flex-1 space-y-4">
@@ -54,9 +60,12 @@ export function TutorRequestList({ requests, isLoading, onApply }: TutorRequestL
         <div className="h-20 w-20 bg-muted/50 rounded-full flex items-center justify-center mb-6">
           <Frown className="h-10 w-10 text-muted-foreground opacity-50" />
         </div>
-        <h3 className="text-xl font-bold text-foreground mb-2">Không tìm thấy yêu cầu nào</h3>
+        <h3 className="text-xl font-bold text-foreground mb-2">
+          Không tìm thấy yêu cầu nào
+        </h3>
         <p className="text-muted-foreground max-w-md">
-          Hiện tại không có yêu cầu tìm gia sư nào phù hợp với bộ lọc của bạn. Hãy thử điều chỉnh lại các tiêu chí tìm kiếm.
+          Hiện tại không có yêu cầu tìm gia sư nào phù hợp với bộ lọc của bạn.
+          Hãy thử điều chỉnh lại các tiêu chí tìm kiếm.
         </p>
       </div>
     );
@@ -65,7 +74,11 @@ export function TutorRequestList({ requests, isLoading, onApply }: TutorRequestL
   return (
     <div className="flex-1 flex flex-col gap-5">
       {requests.map((request) => (
-        <TutorRequestCard key={request.id} request={request} onApply={onApply} />
+        <TutorRequestCard
+          key={request.id}
+          request={request}
+          onApply={onApply}
+        />
       ))}
     </div>
   );

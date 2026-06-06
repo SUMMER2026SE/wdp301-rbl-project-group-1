@@ -89,7 +89,7 @@ export function TutorListContainer() {
         <div className="flex flex-col lg:flex-row gap-8">
           <FilterSidebar
             subjects={{
-              items: SUBJECTS,
+              items: SUBJECTS.map((s) => ({ id: s, label: s })),
               selected: subjects,
               onChange: (v) => form.setValue("subjects", v),
             }}

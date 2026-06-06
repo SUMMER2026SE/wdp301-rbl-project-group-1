@@ -9,9 +9,23 @@ import { Mutex } from "async-mutex";
 
 const mutex = new Mutex();
 
+const serializeParams = (params: Record<string, unknown>): string => {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) {
+      value.forEach((item) => search.append(key, String(item)));
+    } else {
+      search.append(key, String(value));
+    }
+  }
+  return search.toString();
+};
+
 const baseQuery = fetchBaseQuery({
   baseUrl: process.env.NEXT_PUBLIC_API_URL,
   credentials: "include",
+  paramsSerializer: serializeParams,
   prepareHeaders: (headers, { getState }) => {
     const accessToken = (
       getState() as { auth?: { accessToken?: string | null } }
