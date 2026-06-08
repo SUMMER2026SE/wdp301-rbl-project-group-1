@@ -4,9 +4,9 @@ import { FilterSidebar } from "@/src/shared/components/organisms/filter-sidebar"
 import { Button } from "@/src/shared/components/ui/button";
 import { useDebounce } from "@/src/shared/hooks/use-debounce";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { LEVELS, SUBJECTS } from "../constants/filter.constants";
+import { useGetAllSubjectsQuery, useGetAllGradesQuery } from "@/src/features/academic-catalog/academicCatalogApi";
 import { filterSchema, type FilterFormData } from "../schemas/filter.schema";
 import { useGetTutorsQuery } from "../tutorEnhance";
 import { mapTutorResponseToTutor } from "../utils/map-tutor";
@@ -15,11 +15,17 @@ import { TutorGrid } from "./tutor-grid";
 
 const ITEMS_PER_PAGE = 9;
 export function TutorListContainer() {
+  const { data: subjectsResponse } = useGetAllSubjectsQuery();
+  const { data: gradesResponse } = useGetAllGradesQuery();
+
+  const subjectsData = subjectsResponse?.data || [];
+  const gradesData = gradesResponse?.data || [];
+
   const form = useForm<FilterFormData>({
     resolver: zodResolver(filterSchema),
     defaultValues: {
-      subjects: [],
-      levels: [],
+      subjectIds: [],
+      gradeIds: [],
       priceRange: [50000, 1000000],
       rating: 0,
       search: "",
@@ -29,8 +35,8 @@ export function TutorListContainer() {
 
   // eslint-disable-next-line react-hooks/incompatible-library
   const search = form.watch("search");
-  const subjects = form.watch("subjects");
-  const levels = form.watch("levels");
+  const subjectIds = form.watch("subjectIds");
+  const gradeIds = form.watch("gradeIds");
   const priceRange = form.watch("priceRange");
   const rating = form.watch("rating");
   const sortBy = form.watch("sortBy");
@@ -59,12 +65,16 @@ export function TutorListContainer() {
     search: debouncedSearch || undefined,
     sortBy: apiSortParams.sortBy,
     sortOrder: apiSortParams.sortOrder,
-    subjects: subjects.length ? subjects : undefined,
-    levels: levels.length ? levels : undefined,
+    subjectIds: subjectIds.length ? subjectIds : undefined,
+    gradeIds: gradeIds.length ? gradeIds : undefined,
     minPrice: priceRange[0],
     maxPrice: priceRange[1],
     minRating: rating || undefined,
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, subjectIds, gradeIds, priceRange, rating, sortBy]);
 
   const tutors = useMemo(
     () => (data?.data ?? []).map(mapTutorResponseToTutor),
@@ -89,15 +99,15 @@ export function TutorListContainer() {
         <div className="flex flex-col lg:flex-row gap-8">
           <FilterSidebar
             subjects={{
-              items: SUBJECTS.map((s) => ({ id: s, label: s })),
-              selected: subjects,
-              onChange: (v) => form.setValue("subjects", v),
+              items: subjectsData.map((s) => ({ id: s.id, label: s.name })),
+              selected: subjectIds,
+              onChange: (v) => form.setValue("subjectIds", v),
             }}
-            secondary={{
-              label: "Cấp độ",
-              items: LEVELS,
-              selected: form.watch("levels"),
-              onChange: (v) => form.setValue("levels", v),
+            grades={{
+              label: "Khối lớp",
+              items: gradesData.map((g) => ({ id: g.id, label: g.name })),
+              selected: gradeIds,
+              onChange: (v) => form.setValue("gradeIds", v),
             }}
             price={{
               label: "Giá tiền",
@@ -113,8 +123,8 @@ export function TutorListContainer() {
             }}
             onClear={() =>
               form.reset({
-                subjects: [],
-                levels: [],
+                subjectIds: [],
+                gradeIds: [],
                 priceRange: [50000, 1000000],
                 rating: 0,
                 search: "",

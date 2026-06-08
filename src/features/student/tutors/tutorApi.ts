@@ -68,6 +68,10 @@ export type TutorResponseDto = {
   avatarUrl: string | null;
   bio: string | null;
   specialization: string | null;
+  subjects?: AcademicCatalogItem[];
+  subject?: AcademicCatalogItem | null;
+  grades?: AcademicCatalogItem[];
+  grade?: AcademicCatalogItem | null;
   experience: number | null;
   education: string | null;
   pricePerHour: number | null;
@@ -82,5 +86,10 @@ export type TutorResponseDto = {
     createdAt: string;
     updatedAt: string;
   }[];
+};
+export type AcademicCatalogItem = {
+  id: string;
+  name: string;
+  slug?: string;
 };
 export const { useGetTutorsQuery, useGetTutorByIdQuery } = injectedRtkApi;

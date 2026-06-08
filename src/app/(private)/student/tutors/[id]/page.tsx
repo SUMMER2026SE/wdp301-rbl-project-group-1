@@ -13,7 +13,7 @@ import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/
 import { Button } from "@/src/shared/components/ui/button";
 import { ScheduleCalendar } from "@/src/features/student/schedule/components";
 import Link from "next/link";
-import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorApi";
+import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorEnhance";
 import { useGetTutorPublicSessionsQuery } from "@/src/features/booking/bookingApi";
 import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
 import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
@@ -73,6 +73,14 @@ export default function TutorDetailPage() {
     education: tutorDto.education || "Chưa cập nhật",
     pricePerHour: tutorDto.pricePerHour || 0,
     skills: tutorDto.specialization ? [tutorDto.specialization] : [],
+    subjects: Array.from(new Set([
+      ...(tutorDto.subjects ?? []).map((subject) => subject.name),
+      ...(tutorDto.subject ? [tutorDto.subject.name] : []),
+    ])),
+    grades: Array.from(new Set([
+      ...(tutorDto.grades ?? []).map((grade) => grade.name),
+      ...(tutorDto.grade ? [tutorDto.grade.name] : []),
+    ])),
     bio: tutorDto.bio || "",
     // Note: teachingExperience, certifications, and reviews are not yet provided by the API
     teachingExperience: [],

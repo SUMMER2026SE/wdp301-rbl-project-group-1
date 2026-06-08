@@ -1,8 +1,12 @@
-import { tutorApi as originalTutorApi, GetTutorsApiResponse, GetTutorsApiArg as OriginalGetTutorsApiArg } from "./tutorApi";
+import {
+  tutorApi as originalTutorApi,
+  GetTutorsApiResponse,
+  GetTutorsApiArg as OriginalGetTutorsApiArg,
+} from "./tutorApi";
 
 export type GetTutorsApiArg = OriginalGetTutorsApiArg & {
-  subjects?: string[] | string;
-  levels?: string[] | string;
+  subjectIds?: string[];
+  gradeIds?: string[];
   minRating?: number;
 };
 
@@ -11,7 +15,13 @@ export const tutorApi = originalTutorApi
     addTagTypes: ["Tutor"],
     endpoints: {
       getTutorById: {
-        providesTags: (result, error, arg) => [{ type: "Tutor", id: arg.id }],
+        providesTags: (result, error, arg) =>
+          result?.data
+            ? [
+                { type: "Tutor", id: arg.id },
+                { type: "Tutor", id: "LIST" },
+              ]
+            : [{ type: "Tutor", id: arg.id }],
       },
     },
   })
@@ -29,12 +39,21 @@ export const tutorApi = originalTutorApi
             specialization: queryArg.specialization,
             minPrice: queryArg.minPrice,
             maxPrice: queryArg.maxPrice,
-            subjects: queryArg.subjects,
-            levels: queryArg.levels,
+            subjectIds: queryArg.subjectIds,
+            gradeIds: queryArg.gradeIds,
             minRating: queryArg.minRating,
           },
         }),
-        providesTags: ["Tutor"],
+        providesTags: (result) =>
+          result?.data
+            ? [
+                { type: "Tutor", id: "LIST" },
+                ...result.data.map((tutor) => ({
+                  type: "Tutor" as const,
+                  id: tutor.id,
+                })),
+              ]
+            : [{ type: "Tutor", id: "LIST" }],
       }),
     }),
     overrideExisting: true,

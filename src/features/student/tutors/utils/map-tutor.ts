@@ -1,7 +1,8 @@
-import type { TutorResponseDto } from "../tutorApi";
+import type { AcademicCatalogItem, TutorResponseDto } from "../tutorApi";
 import type { Tutor } from "../types";
 
 const DEFAULT_AVATAR_NAME = "Tutor";
+const FALLBACK_TEXT = "Chưa cập nhật";
 
 const buildAvatarUrl = (name: string, avatarUrl?: string | null) => {
   if (avatarUrl) return avatarUrl;
@@ -11,13 +12,24 @@ const buildAvatarUrl = (name: string, avatarUrl?: string | null) => {
   )}`;
 };
 
+const mapCatalogNames = (
+  ...sources: Array<AcademicCatalogItem[] | AcademicCatalogItem | null | undefined>
+) => {
+  const names = sources.flatMap((source) => {
+    if (!source) return [];
+    return Array.isArray(source) ? source.map((item) => item.name) : [source.name];
+  });
+
+  return Array.from(new Set(names.filter(Boolean)));
+};
+
 export const mapTutorResponseToTutor = (tutor: TutorResponseDto): Tutor => {
-  const name = tutor.nickname?.trim() || "Gia su";
+  const name = tutor.nickname?.trim() || "Gia sư";
   const specialization = tutor.specialization?.trim() || "";
   const experienceText =
     typeof tutor.experience === "number"
-      ? `${tutor.experience} nam kinh nghiem`
-      : "";
+      ? `${tutor.experience} năm kinh nghiệm`
+      : FALLBACK_TEXT;
 
   return {
     id: tutor.id,
@@ -26,11 +38,13 @@ export const mapTutorResponseToTutor = (tutor: TutorResponseDto): Tutor => {
     isOnline: false,
     rating: tutor.rating ?? 0,
     reviewCount: tutor.reviewCount ?? 0,
-    specialty: specialization || "Gia su",
+    specialty: specialization || FALLBACK_TEXT,
     experience: experienceText,
-    education: tutor.education ?? "",
+    education: tutor.education ?? FALLBACK_TEXT,
     pricePerHour: tutor.pricePerHour ?? 0,
     skills: specialization ? [specialization] : [],
+    subjects: mapCatalogNames(tutor.subjects, tutor.subject),
+    grades: mapCatalogNames(tutor.grades, tutor.grade),
     bio: tutor.bio ?? undefined,
     studentCount:
       tutor.studentCount !== undefined && tutor.studentCount !== null

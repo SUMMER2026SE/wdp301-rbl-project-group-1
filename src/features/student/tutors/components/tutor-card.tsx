@@ -1,7 +1,14 @@
 "use client";
 
 import { Button } from "@/src/shared/components/ui/button";
-import { Briefcase, DollarSign, GraduationCap, Star } from "lucide-react";
+import {
+  BookOpen,
+  Briefcase,
+  DollarSign,
+  GraduationCap,
+  School,
+  Star,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Tutor } from "../types";
@@ -48,12 +55,28 @@ export function TutorCard({ tutor }: TutorCardProps) {
 
         {/* Info items */}
         <div className="space-y-2 mb-4">
+          {tutor.subjects.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="p-1.5 rounded-md bg-purple-soft text-purple">
+                <BookOpen className="size-4" />
+              </div>
+              <span className="line-clamp-1">{tutor.subjects.join(", ")}</span>
+            </div>
+          )}
+          {tutor.grades.length > 0 && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="p-1.5 rounded-md bg-indigo-soft text-indigo">
+                <GraduationCap className="size-4" />
+              </div>
+              <span className="line-clamp-1">{tutor.grades.join(", ")}</span>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Briefcase className="size-4" />
             <span>{tutor.experience}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <GraduationCap className="size-4" />
+            <School className="size-4" />
             <span>{tutor.education}</span>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
