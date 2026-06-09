@@ -48,7 +48,7 @@ export type MockPaymentControllerMockCheckoutApiArg = {
 };
 export type CreatePaymentDto = {
   /** The reference type for the payment */
-  referenceType: "COURSE_ENROLLMENT";
+  referenceType: "TUTOR_BOOKING";
   /** The ID of the reference entity */
   referenceId: string;
   /** Payment amount */

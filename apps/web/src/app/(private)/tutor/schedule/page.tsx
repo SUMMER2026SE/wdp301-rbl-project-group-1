@@ -5,20 +5,43 @@ import Link from "next/link";
 import {
   ScheduleCalendar,
   ScheduleHeader,
-  TodaySchedule,
-  UpcomingClasses,
 } from "@/src/features/tutor/schedule/components";
-import {
-  scheduleClasses,
-  todayClasses,
-  upcomingClasses,
-} from "@/src/features/tutor/schedule/mock-data";
 import { ClassFilter } from "@/src/features/tutor/schedule/types";
-import { ChevronRight, Info } from "lucide-react";
-import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/src/shared/components/ui/tabs";
+import { Button } from "@/src/shared/components/ui/button";
+import { toast } from "sonner";
+import { ChevronRight, Info, Save, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  useGetScheduleAvailabilityQuery,
+  useUpdateScheduleAvailabilityMutation,
+} from "@/src/features/schedule/scheduleAvailabilityEnhance";
+import { mapApiToSlots, mapSlotsToApi } from "@/src/features/schedule/utils/schedule-mapper";
+import { useGetMySessionsQuery } from "@/src/features/booking/bookingApi";
+import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
 
 export default function TutorSchedulePage() {
   const [selectedFilter, setSelectedFilter] = useState<ClassFilter>("all");
+  const { data: availabilityData, isLoading: isFetchingAvailability } = useGetScheduleAvailabilityQuery();
+  const [updateAvailability, { isLoading: isUpdatingAvailability }] = useUpdateScheduleAvailabilityMutation();
+
+  const { data: sessionsData, isLoading: isFetchingSessions } = useGetMySessionsQuery({});
+
+  const [initialFixedSlots, setInitialFixedSlots] = useState<Record<string, boolean>>({});
+  const [fixedSlots, setFixedSlots] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    if (availabilityData?.data?.availability) {
+      const mappedSlots = mapApiToSlots(availabilityData.data.availability);
+      const syncState = () => {
+        setInitialFixedSlots(mappedSlots);
+        setFixedSlots(mappedSlots);
+      };
+      syncState();
+    }
+  }, [availabilityData]);
+
+  const scheduleClasses = sessionsData?.data ? mapSessionsToScheduleClasses(sessionsData.data) : [];
 
   const handleNewSchedule = () => {
     console.log("Open new schedule modal");
@@ -46,15 +69,86 @@ export default function TutorSchedulePage() {
           onNewScheduleClick={handleNewSchedule}
         />
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Side - Calendar */}
-          <div className="lg:col-span-2 flex flex-col gap-8">
-            <ScheduleCalendar
-              classes={scheduleClasses}
-              selectedFilter={selectedFilter}
-              onClassClick={() => { }}
-            />
+        {/* Main Content */}
+        <div className="flex flex-col gap-8">
+          <Tabs defaultValue="weekly" className="w-full flex flex-col gap-6">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground">Lịch giảng dạy</h3>
+                  <p className="text-sm text-muted-foreground mt-1">Quản lý lịch học hàng tuần và thiết lập thời gian rảnh cố định.</p>
+                </div>
+                <div className="flex flex-col items-end gap-3">
+                  <TabsList>
+                    <TabsTrigger value="weekly">Tuần này</TabsTrigger>
+                    <TabsTrigger value="fixed">Cố định</TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
+
+              <TabsContent value="weekly" className="m-0">
+                {isFetchingSessions ? (
+                  <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
+                    <Loader2 className="size-8 animate-spin mb-4" />
+                    <p>Đang tải dữ liệu lớp học...</p>
+                  </div>
+                ) : (
+                  <ScheduleCalendar
+                    mode="weekly"
+                    classes={scheduleClasses}
+                    selectedFilter={selectedFilter}
+                    onClassClick={() => { }}
+                  />
+                )}
+              </TabsContent>
+
+              <TabsContent value="fixed" className="m-0 flex flex-col gap-4">
+                <div className="flex justify-between items-center bg-muted/30 p-3 rounded-lg border border-border">
+                  <p className="text-sm text-muted-foreground">
+                    Nhấn vào các ô thời gian để bật/tắt lịch rảnh cố định. Các lớp học cố định sẽ được hiển thị để bạn tiện theo dõi.
+                  </p>
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        const availabilityPayload = mapSlotsToApi(fixedSlots);
+                        await updateAvailability({
+                          updateScheduleAvailabilityDto: {
+                            availability: availabilityPayload,
+                          },
+                        }).unwrap();
+                        setInitialFixedSlots(fixedSlots);
+                        toast.success("Đã lưu lịch rảnh cố định thành công!");
+                      } catch {
+                        toast.error("Đã xảy ra lỗi khi lưu lịch rảnh.");
+                      }
+                    }}
+                    disabled={
+                      isUpdatingAvailability ||
+                      isFetchingAvailability ||
+                      JSON.stringify(Object.entries(initialFixedSlots).filter(([, v]) => v).sort()) === 
+                      JSON.stringify(Object.entries(fixedSlots).filter(([, v]) => v).sort())
+                    }
+                  >
+                    {isUpdatingAvailability ? <Loader2 className="size-4 animate-spin mr-2" /> : <Save className="size-4 mr-2" />}
+                    Lưu thay đổi
+                  </Button>
+                </div>
+                {isFetchingAvailability ? (
+                  <div className="flex flex-col items-center justify-center p-12 text-muted-foreground">
+                    <Loader2 className="size-8 animate-spin mb-4" />
+                    <p>Đang tải dữ liệu lịch rảnh...</p>
+                  </div>
+                ) : (
+                  <ScheduleCalendar
+                    mode="fixed"
+                    classes={scheduleClasses}
+                    selectedFilter="all"
+                    onClassClick={() => { }}
+                    initialAvailableSlots={initialFixedSlots}
+                    onAvailableSlotsChange={(slots) => setFixedSlots(slots)}
+                  />
+                )}
+              </TabsContent>
+            </Tabs>
 
             {/* Info Banner */}
             <div className="rounded-xl border border-border bg-schedule-blue-light/50 p-4 flex gap-3">
@@ -72,14 +166,7 @@ export default function TutorSchedulePage() {
               </div>
             </div>
           </div>
-
-          {/* Right Side - Sidebar */}
-          <div className="flex flex-col gap-8">
-            <TodaySchedule classes={todayClasses} />
-            <UpcomingClasses classes={upcomingClasses} />
-          </div>
         </div>
-      </div>
     </main>
   );
 }

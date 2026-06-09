@@ -1,4 +1,4 @@
-import { TutorApprovalsBoard } from "@/src/features/admin/tutor-approvals/components";
+import { TutorApprovalTable } from "@/src/features/admin/tutor-approvals/components";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -7,5 +7,9 @@ export const metadata: Metadata = {
 };
 
 export default function TutorApprovalsPage() {
-  return <TutorApprovalsBoard />;
+  return (
+    <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-6 p-4 sm:p-6">
+      <TutorApprovalTable />
+    </div>
+  );
 }

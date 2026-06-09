@@ -15,7 +15,7 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 
-import { useResetPasswordMutation } from '@/src/features/auth/authApi';
+import { useResetPasswordMutation } from '@/src/features/auth/authEnhance';
 import {
   resetPasswordFormSchema,
   type ResetPasswordFormData,

@@ -1,16 +1,21 @@
 "use client";
 
 import { Button } from "@/src/shared/components/ui/button";
+import { BookingModal } from "@/src/features/booking/components";
 
 interface TutorCTACardProps {
+  tutorId: string;
+  tutorName?: string;
   price: number;
-  onBookLesson?: () => void;
+  tutorAvailableSlots?: Record<string, boolean>;
   onContactChat?: () => void;
 }
 
 export function TutorCTACard({
+  tutorId,
+  tutorName,
   price,
-  onBookLesson,
+  tutorAvailableSlots,
   onContactChat,
 }: TutorCTACardProps) {
   return (
@@ -21,12 +26,17 @@ export function TutorCTACard({
         </div>
         <p className="text-sm text-muted-foreground">/giờ</p>
       </div>
-      <Button
-        onClick={onBookLesson}
-        className="w-full bg-primary hover:bg-primary/90 mb-3"
-      >
-        Đặt lịch học ngay
-      </Button>
+      <BookingModal
+        tutorId={tutorId}
+        tutorName={tutorName}
+        pricePerHour={price}
+        tutorAvailableSlots={tutorAvailableSlots}
+        trigger={
+          <Button className="w-full bg-primary hover:bg-primary/90 mb-3">
+            Đặt lịch học ngay
+          </Button>
+        }
+      />
       <Button variant="outline" onClick={onContactChat} className="w-full">
         Liên hệ qua chat
       </Button>

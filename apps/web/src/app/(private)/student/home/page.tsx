@@ -1,15 +1,16 @@
-import { Metadata } from 'next';
 import {
-  WelcomeBanner,
-  StatsGrid,
+  PendingTasks,
   RecentCourses,
+  StatsGrid,
+  TutorsSection,
   UpcomingSession,
-  PendingTasks
-} from '@/src/features/student/home/components';
+  WelcomeBanner,
+} from "@/src/features/student/home/components";
+import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Trang chủ',
-  description: 'Hệ thống học tập thông minh Edura',
+  title: "Trang chủ",
+  description: "Hệ thống học tập thông minh Edura",
 };
 
 export default function StudentHome() {
@@ -26,6 +27,9 @@ export default function StudentHome() {
 
           {/* Recent Courses */}
           <RecentCourses />
+
+          {/* Featured Tutors */}
+          <TutorsSection />
         </div>
 
         {/* Right Column: Schedule & Tasks */}

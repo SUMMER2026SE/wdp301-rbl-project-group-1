@@ -13,7 +13,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/src/shared/components/ui/dialog";
-import { useEnrollCourseMutation } from "@/src/features/enrollment/enrollmentApi";
+
 import { cn } from "@/src/shared/lib/utils";
 import { AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -45,7 +45,7 @@ const PaymentModal = ({
   const [step, setStep] = useState<Step>("confirm");
   const [errorMsg, setErrorMsg] = useState<string>("");
 
-  const [enrollCourse] = useEnrollCourseMutation();
+
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
@@ -60,17 +60,10 @@ const PaymentModal = ({
     setErrorMsg("");
 
     try {
-      // Bước 1: Tạo Enrollment PENDING
-      const enrollResult = await enrollCourse({
-        enrollCourseDto: { courseId },
-      }).unwrap();
+      // Giả lập delay thay vì gọi API
+      await new Promise(resolve => setTimeout(resolve, 600));
 
-      const { id: enrollmentId, status } = enrollResult.data;
-
-      if (status === "ACTIVE") {
-        router.push("/student/my-courses");
-        return;
-      }
+      const enrollmentId = `mock-enrollment-${courseId}`;
 
       // Chuyển sang trang checkout với context đầy đủ qua search params
       const params = new URLSearchParams({
@@ -82,26 +75,8 @@ const PaymentModal = ({
       });
       router.push(`/payment/checkout?${params.toString()}`);
       setOpen(false);
-    } catch (err: unknown) {
-      // 409 = enrollment đã ACTIVE → vào học luôn
-      const status =
-        err && typeof err === "object" && "status" in err
-          ? (err as { status: number }).status
-          : null;
-      if (status === 409) {
-        router.push("/student/my-courses");
-        return;
-      }
-      const msg =
-        err &&
-        typeof err === "object" &&
-        "data" in err &&
-        err.data &&
-        typeof err.data === "object" &&
-        "message" in err.data
-          ? String((err.data as { message: string }).message)
-          : "Đã có lỗi xảy ra, vui lòng thử lại.";
-      setErrorMsg(msg);
+    } catch {
+      setErrorMsg("Đã có lỗi xảy ra, vui lòng thử lại.");
       setStep("error");
     }
   };

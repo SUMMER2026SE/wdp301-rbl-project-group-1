@@ -1,5 +1,7 @@
+"use client";
+
+import { useParams } from "next/navigation";
 import {
-  TutorAvailabilityCard,
   TutorBio,
   TutorCertifications,
   TutorCTACard,
@@ -7,20 +9,43 @@ import {
   TutorInfoHeader,
   TutorReviews,
 } from "@/src/features/student/tutor-detail/components";
-import { TUTORS_DETAIL_DATA } from "@/src/features/student/tutor-detail/mock-data";
 import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { Button } from "@/src/shared/components/ui/button";
+import { ScheduleCalendar } from "@/src/features/student/schedule/components";
 import Link from "next/link";
+import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorEnhance";
+import { useGetTutorPublicSessionsQuery } from "@/src/features/booking/bookingApi";
+import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
+import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
+import { Tutor } from "@/src/features/student/tutors/types";
 
-export default async function TutorDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const tutor = TUTORS_DETAIL_DATA[id];
+export default function TutorDetailPage() {
+  const params = useParams();
+  const tutorId = params?.id as string;
 
-  if (!tutor) {
+  const { data, isLoading, error } = useGetTutorByIdQuery(
+    { id: tutorId },
+    { skip: !tutorId }
+  );
+
+  const { data: sessionsData, isLoading: isFetchingSessions } = useGetTutorPublicSessionsQuery(
+    { tutorId },
+    { skip: !tutorId }
+  );
+
+  if (isLoading || isFetchingSessions) {
+    return (
+      <main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
+        <div className="text-center py-12">
+          <p className="text-muted-foreground text-lg">Đang tải thông tin...</p>
+        </div>
+      </main>
+    );
+  }
+
+  const tutorDto = data?.data;
+
+  if (error || !tutorDto) {
     return (
       <main className="mx-auto w-full max-w-[1440px] px-4 py-8 md:px-10">
         <div className="text-center py-12">
@@ -34,6 +59,37 @@ export default async function TutorDetailPage({
       </main>
     );
   }
+
+  // Map API response to Tutor type
+  const tutor: Tutor = {
+    id: tutorDto.id,
+    name: tutorDto.nickname || "Gia sư",
+    avatar: tutorDto.avatarUrl || "https://i.pravatar.cc/150",
+    isOnline: false, // Not supported yet
+    rating: tutorDto.rating || 0,
+    reviewCount: tutorDto.reviewCount || 0,
+    specialty: tutorDto.specialization || "Chưa cập nhật",
+    experience: tutorDto.experience ? `${tutorDto.experience} năm` : "Chưa cập nhật",
+    education: tutorDto.education || "Chưa cập nhật",
+    pricePerHour: tutorDto.pricePerHour || 0,
+    skills: tutorDto.specialization ? [tutorDto.specialization] : [],
+    subjects: Array.from(new Set([
+      ...(tutorDto.subjects ?? []).map((subject) => subject.name),
+      ...(tutorDto.subject ? [tutorDto.subject.name] : []),
+    ])),
+    grades: Array.from(new Set([
+      ...(tutorDto.grades ?? []).map((grade) => grade.name),
+      ...(tutorDto.grade ? [tutorDto.grade.name] : []),
+    ])),
+    bio: tutorDto.bio || "",
+    // Note: teachingExperience, certifications, and reviews are not yet provided by the API
+    teachingExperience: [],
+    certifications: [],
+    reviews: [],
+  };
+
+  const initialAvailableSlots = mapApiToSlots(tutorDto.availability || []);
+  const scheduleClasses = sessionsData?.data ? mapSessionsToScheduleClasses(sessionsData.data) : [];
 
   return (
     <>
@@ -68,6 +124,21 @@ export default async function TutorDetailPage({
               tutor.teachingExperience.length > 0 && (
                 <TutorExperience experiences={tutor.teachingExperience} />
               )}
+            
+            {/* Fixed Schedule Section */}
+            <div className="rounded-lg border border-border bg-card p-6 shadow-sm flex flex-col gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-foreground">Lịch rảnh cố định</h3>
+                <p className="text-sm text-muted-foreground mt-1">Lịch rảnh và các buổi dạy đã được đặt của gia sư.</p>
+              </div>
+              <ScheduleCalendar
+                mode="fixed"
+                readonly={true}
+                classes={scheduleClasses}
+                selectedFilter="all"
+                initialAvailableSlots={initialAvailableSlots}
+              />
+            </div>
 
             {/* Reviews section */}
             {tutor.reviews && tutor.reviews.length > 0 && (
@@ -82,12 +153,12 @@ export default async function TutorDetailPage({
           {/* Sidebar */}
           <div className="flex-1 lg:w-[30%] flex flex-col gap-8">
             {/* CTA Card */}
-            <TutorCTACard price={tutor.pricePerHour} />
-
-            {/* Availability */}
-            {tutor.availability && (
-              <TutorAvailabilityCard availability={tutor.availability} />
-            )}
+            <TutorCTACard
+              tutorId={tutorDto.id}
+              tutorName={tutor.name}
+              price={tutor.pricePerHour}
+              tutorAvailableSlots={initialAvailableSlots}
+            />
           </div>
         </div>
       </main>

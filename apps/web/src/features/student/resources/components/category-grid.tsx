@@ -1,5 +1,6 @@
 "use client";
 
+import { IconStatCard } from "@/src/shared/components/molecules/icon-stat-card/icon-stat-card";
 import { BookOpen, HelpCircle, Lightbulb } from "lucide-react";
 import { CATEGORIES } from "../mock-data";
 import type { Category } from "../types";
@@ -11,9 +12,9 @@ const colorClasses: Record<Category["color"], string> = {
 };
 
 const iconMap: Record<string, React.ReactNode> = {
-  menu_book: <BookOpen className="size-8" />,
-  quiz: <HelpCircle className="size-8" />,
-  lightbulb: <Lightbulb className="size-8" />,
+  menu_book: <BookOpen className="size-6" />,
+  quiz: <HelpCircle className="size-6" />,
+  lightbulb: <Lightbulb className="size-6" />,
 };
 
 export function CategoryGrid() {
@@ -24,25 +25,14 @@ export function CategoryGrid() {
       </h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         {CATEGORIES.map((category) => (
-          <a
+          <IconStatCard
             key={category.id}
             href="#"
-            className="group flex items-center gap-4 rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/50 hover:shadow-md"
-          >
-            <div
-              className={`${colorClasses[category.color]} rounded-xl p-3 transition-transform group-hover:scale-110`}
-            >
-              {iconMap[category.icon]}
-            </div>
-            <div>
-              <h3 className="text-lg font-bold text-foreground">
-                {category.name}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {category.count}+ cuốn
-              </p>
-            </div>
-          </a>
+            title={category.name}
+            subtitle={`${category.count}+ cuốn`}
+            icon={iconMap[category.icon]}
+            iconWrapperClassName={colorClasses[category.color]}
+          />
         ))}
       </div>
     </section>

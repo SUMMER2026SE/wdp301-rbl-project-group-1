@@ -1,41 +1,31 @@
 "use client";
 
 import { FilterSidebar } from "@/src/shared/components/organisms/filter-sidebar";
+import { Button } from "@/src/shared/components/ui/button";
+import { useDebounce } from "@/src/shared/hooks/use-debounce";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
+import { useGetAllSubjectsQuery, useGetAllGradesQuery } from "@/src/features/academic-catalog/academicCatalogApi";
 import { filterSchema, type FilterFormData } from "../schemas/filter.schema";
-import type { Tutor } from "../types";
+import { useGetTutorsQuery } from "../tutorEnhance";
+import { mapTutorResponseToTutor } from "../utils/map-tutor";
 import { SearchBar } from "./search-bar";
 import { TutorGrid } from "./tutor-grid";
 
-const SUBJECTS = [
-  "Toán học",
-  "Vật lý",
-  "Tiếng Anh",
-  "Hóa học",
-  "Ngữ văn",
-  "Sinh học",
-];
+const ITEMS_PER_PAGE = 9;
+export function TutorListContainer() {
+  const { data: subjectsResponse } = useGetAllSubjectsQuery();
+  const { data: gradesResponse } = useGetAllGradesQuery();
 
-const LEVELS = [
-  { id: "cap-1", label: "Cấp 1" },
-  { id: "cap-2", label: "Cấp 2" },
-  { id: "cap-3", label: "Cấp 3" },
-  { id: "dai-hoc", label: "Đại học" },
-  { id: "ielts-toeic", label: "IELTS/TOEIC" },
-];
+  const subjectsData = subjectsResponse?.data || [];
+  const gradesData = gradesResponse?.data || [];
 
-interface TutorListContainerProps {
-  tutors: Tutor[];
-  totalCount?: number;
-}
-
-export function TutorListContainer({ tutors }: TutorListContainerProps) {
   const form = useForm<FilterFormData>({
     resolver: zodResolver(filterSchema),
     defaultValues: {
-      subjects: [],
-      levels: [],
+      subjectIds: [],
+      gradeIds: [],
       priceRange: [50000, 1000000],
       rating: 0,
       search: "",
@@ -43,51 +33,56 @@ export function TutorListContainer({ tutors }: TutorListContainerProps) {
     },
   });
 
-  // Watch form values
+  // eslint-disable-next-line react-hooks/incompatible-library
   const search = form.watch("search");
-  const subjects = form.watch("subjects");
-
+  const subjectIds = form.watch("subjectIds");
+  const gradeIds = form.watch("gradeIds");
   const priceRange = form.watch("priceRange");
   const rating = form.watch("rating");
   const sortBy = form.watch("sortBy");
 
-  // Filter tutors based on form state
-  const filteredTutors = tutors.filter((tutor) => {
-    // Search filter
-    if (search) {
-      const searchLower = search.toLowerCase();
-      const matchesSearch =
-        tutor.name.toLowerCase().includes(searchLower) ||
-        tutor.specialty.toLowerCase().includes(searchLower) ||
-        tutor.skills.some((skill) => skill.toLowerCase().includes(searchLower));
-      if (!matchesSearch) return false;
-    }
+  const debouncedSearch = useDebounce(search, 500);
 
-    // Subject filter
-    if (subjects.length > 0) {
-      const matchesSubject = tutor.skills.some((skill) =>
-        subjects.some((subject) =>
-          skill.toLowerCase().includes(subject.toLowerCase()),
-        ),
-      );
-      if (!matchesSubject) return false;
-    }
+  const [currentPage, setCurrentPage] = useState(1);
 
-    // Price range filter
-    if (
-      tutor.pricePerHour < priceRange[0] ||
-      tutor.pricePerHour > priceRange[1]
-    ) {
-      return false;
+  const apiSortParams = useMemo(() => {
+    switch (sortBy) {
+      case "price-low":
+        return { sortBy: "pricePerHour", sortOrder: "asc" as const };
+      case "price-high":
+        return { sortBy: "pricePerHour", sortOrder: "desc" as const };
+      case "experience":
+        return { sortBy: "experience", sortOrder: "desc" as const };
+      case "rating":
+      default:
+        return { sortBy: "rating", sortOrder: "desc" as const };
     }
+  }, [sortBy]);
 
-    // Rating filter
-    if (rating > 0 && tutor.rating < rating) {
-      return false;
-    }
-
-    return true;
+  const { data, isFetching, isError, refetch } = useGetTutorsQuery({
+    page: currentPage.toString(),
+    limit: ITEMS_PER_PAGE.toString(),
+    search: debouncedSearch || undefined,
+    sortBy: apiSortParams.sortBy,
+    sortOrder: apiSortParams.sortOrder,
+    subjectIds: subjectIds.length ? subjectIds : undefined,
+    gradeIds: gradeIds.length ? gradeIds : undefined,
+    minPrice: priceRange[0],
+    maxPrice: priceRange[1],
+    minRating: rating || undefined,
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, subjectIds, gradeIds, priceRange, rating, sortBy]);
+
+  const tutors = useMemo(
+    () => (data?.data ?? []).map(mapTutorResponseToTutor),
+    [data],
+  );
+
+  const totalCount = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 0;
 
   const handleSortChange = (value: string) => {
     form.setValue("sortBy", value);
@@ -95,27 +90,24 @@ export function TutorListContainer({ tutors }: TutorListContainerProps) {
 
   return (
     <>
-      {/* Hero search section */}
       <SearchBar
         value={search}
         onChange={(value) => form.setValue("search", value)}
       />
 
-      {/* Main content */}
       <main className="w-full max-w-[1440px] mx-auto px-4 md:px-10 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Filter sidebar */}
           <FilterSidebar
             subjects={{
-              items: SUBJECTS,
-              selected: subjects,
-              onChange: (v) => form.setValue("subjects", v),
+              items: subjectsData.map((s) => ({ id: s.id, label: s.name })),
+              selected: subjectIds,
+              onChange: (v) => form.setValue("subjectIds", v),
             }}
-            secondary={{
-              label: "Cấp độ",
-              items: LEVELS,
-              selected: form.watch("levels"),
-              onChange: (v) => form.setValue("levels", v),
+            grades={{
+              label: "Khối lớp",
+              items: gradesData.map((g) => ({ id: g.id, label: g.name })),
+              selected: gradeIds,
+              onChange: (v) => form.setValue("gradeIds", v),
             }}
             price={{
               label: "Giá tiền",
@@ -131,8 +123,8 @@ export function TutorListContainer({ tutors }: TutorListContainerProps) {
             }}
             onClear={() =>
               form.reset({
-                subjects: [],
-                levels: [],
+                subjectIds: [],
+                gradeIds: [],
                 priceRange: [50000, 1000000],
                 rating: 0,
                 search: "",
@@ -141,13 +133,35 @@ export function TutorListContainer({ tutors }: TutorListContainerProps) {
             }
           />
 
-          {/* Tutors grid */}
-          <TutorGrid
-            tutors={filteredTutors}
-            totalCount={filteredTutors.length}
-            sortBy={sortBy}
-            onSortChange={handleSortChange}
-          />
+          {isError ? (
+            <div className="flex-1">
+              <div className="rounded-lg border border-border bg-card p-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Không thể tải danh sách gia sư. Vui lòng thử lại.
+                </p>
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => refetch()}
+                >
+                  Thử lại
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <TutorGrid
+              tutors={tutors}
+              totalCount={totalCount}
+              totalPages={totalPages}
+              sortBy={sortBy}
+              onSortChange={handleSortChange}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              itemsPerPage={ITEMS_PER_PAGE}
+              isServerPaging={true}
+              isLoading={isFetching}
+            />
+          )}
         </div>
       </main>
     </>

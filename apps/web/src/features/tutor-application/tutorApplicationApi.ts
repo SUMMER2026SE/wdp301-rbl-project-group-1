@@ -115,6 +115,10 @@ export type CreateTutorApplicationDto = {
   email: string;
   /** Tutor main specialization */
   specialization: string;
+  /** Tutor phone number */
+  phone: string;
+  /** Tutor address */
+  address?: string;
   /** Tutor introduction */
   bio?: string;
   /** Years of teaching experience */

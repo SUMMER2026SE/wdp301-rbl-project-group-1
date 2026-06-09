@@ -14,6 +14,8 @@ interface SortSelectProps {
   onChange: (value: string) => void;
   options?: Array<{ value: string; label: string }>;
   className?: string; // Hỗ trợ custom css từ bên ngoài
+  label?: string;
+  placeholder?: string;
 }
 
 const DEFAULT_OPTIONS = [
@@ -28,15 +30,19 @@ export function SortSelect({
   onChange,
   options = DEFAULT_OPTIONS,
   className,
+  label = "Sắp xếp:",
+  placeholder = "Chọn kiểu sắp xếp",
 }: SortSelectProps) {
   return (
     <div className={cn("flex items-center gap-2", className)}>
-      <label className="text-sm text-muted-foreground whitespace-nowrap">
-        Sắp xếp:
-      </label>
+      {label && (
+        <label className="text-sm text-muted-foreground whitespace-nowrap">
+          {label}
+        </label>
+      )}
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-[180px] bg-card">
-          <SelectValue placeholder="Chọn kiểu sắp xếp" />
+          <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
           {options.map((option) => (

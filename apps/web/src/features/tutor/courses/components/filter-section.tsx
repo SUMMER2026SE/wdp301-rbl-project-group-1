@@ -29,7 +29,7 @@ export function FilterSection({
     defaultValues: {
       search: "",
       subject: "all",
-      status: "active",
+      status: "ALL",
     },
   });
 
@@ -89,12 +89,15 @@ export function FilterSection({
           name="status"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger className="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white">
+              <SelectTrigger className="w-[160px] rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm text-slate-900 dark:text-white">
                 <SelectValue placeholder="Trạng thái" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="active">Đang hoạt động</SelectItem>
-                <SelectItem value="completed">Đã kết thúc</SelectItem>
+                <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
+                <SelectItem value="PENDING">Chờ xác nhận</SelectItem>
+                <SelectItem value="CONFIRMED">Đang hoạt động</SelectItem>
+                <SelectItem value="COMPLETED">Đã kết thúc</SelectItem>
+                <SelectItem value="CANCELLED">Đã hủy</SelectItem>
               </SelectContent>
             </Select>
           )}

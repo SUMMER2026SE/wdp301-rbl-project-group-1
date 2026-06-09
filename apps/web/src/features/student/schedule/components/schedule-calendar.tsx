@@ -1,13 +1,22 @@
 "use client";
 
-import { ScheduleCalendar as SharedScheduleCalendar } from "@/src/shared/components/organisms/schedule-calendar/schedule-calendar";
-import { classColorMap, getClassesForDate } from "../mock-data";
+import {
+  ScheduleCalendar as SharedScheduleCalendar,
+  ScheduleMode,
+} from "@/src/shared/components/organisms/schedule-calendar/schedule-calendar";
+import { classColorMap, getClassesForDate, getFixedClassesForDate } from "@/src/features/schedule/utils/schedule-ui";
 import { ClassFilter, ScheduleClass } from "../types";
 
 interface ScheduleCalendarProps {
   classes: ScheduleClass[];
   selectedFilter: ClassFilter;
   onClassClick?: (cls: ScheduleClass) => void;
+  mode?: ScheduleMode;
+  initialAvailableSlots?: Record<string, boolean>;
+  onAvailableSlotsChange?: (slots: Record<string, boolean>) => void;
+  readonly?: boolean;
+  variant?: "availability" | "booking";
+  tutorAvailableSlots?: Record<string, boolean>;
 }
 
 const filterClasses = (classes: ScheduleClass[], filter: ClassFilter) => {
@@ -30,15 +39,27 @@ export function ScheduleCalendar({
   classes,
   selectedFilter,
   onClassClick,
+  mode = "weekly",
+  initialAvailableSlots,
+  onAvailableSlotsChange,
+  readonly = false,
+  variant,
+  tutorAvailableSlots,
 }: ScheduleCalendarProps) {
   return (
     <SharedScheduleCalendar
+      mode={mode}
+      readonly={readonly}
+      variant={variant}
+      tutorAvailableSlots={tutorAvailableSlots}
+      initialAvailableSlots={initialAvailableSlots}
+      onAvailableSlotsChange={onAvailableSlotsChange}
       classes={classes}
       selectedFilter={selectedFilter}
       classColorMap={classColorMap}
       onClassClick={onClassClick}
       legendItems={STUDENT_LEGEND_ITEMS}
-      getClassesForDate={getClassesForDate}
+      getClassesForDate={mode === "fixed" ? getFixedClassesForDate : getClassesForDate}
       filterClasses={filterClasses}
     />
   );

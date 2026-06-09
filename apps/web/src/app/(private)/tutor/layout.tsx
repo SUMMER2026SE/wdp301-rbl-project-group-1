@@ -1,9 +1,9 @@
 import Link from "next/link";
 
+import { TutorHeaderUserInfo } from "@/src/features/tutor/layout/components/tutor-header-user-info";
 import { NotificationPopover } from "@/src/shared/components/molecules/notification-popover/notification-popover";
-import { TutorPopover } from "@/src/shared/components/molecules/tutor-popover/tutor-popover";
+import { UserProfilePopover } from "@/src/shared/components/molecules/user-profile-popover/user-profile-popover";
 import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navigation-bar";
-import SearchBox from "@/src/shared/components/molecules/search-box/search-box";
 import { GraduationCap } from "lucide-react";
 
 export default function TutorLayout({
@@ -14,9 +14,18 @@ export default function TutorLayout({
   const navLinks = [
     { key: "home", trigger: "Trang chủ", href: "/tutor/home" },
     { key: "schedule", trigger: "Lịch dạy", href: "/tutor/schedule" },
+    {
+      key: "tutor-requests",
+      trigger: "Yêu cầu dạy kèm",
+      href: "/tutor/tutor-request",
+    },
     { key: "courses", trigger: "Lớp học của tôi", href: "/tutor/courses" },
-    { key: "students", trigger: "Học sinh", href: "/tutor/students" },
     { key: "resources", trigger: "Tài liệu", href: "/tutor/resources" },
+    {
+      key: "requests",
+      trigger: "Yêu cầu của học sinh",
+      href: "/tutor/requests",
+    },
     { key: "earnings", trigger: "Thu nhập", href: "/tutor/earnings" },
   ];
 
@@ -38,16 +47,18 @@ export default function TutorLayout({
             }
           />
           <div className="ml-auto hidden shrink-0 items-center gap-6 md:flex">
-            <div className="relative min-w-40">
-              <SearchBox />
-            </div>
             <NotificationPopover />
             <div className="flex items-center gap-4 border-l border-border pl-6">
-              <div className="hidden text-right sm:block">
-                <p className="text-sm font-bold text-foreground">Thầy Minh</p>
-                <p className="text-xs text-muted-foreground">Gia sư toán học</p>
-              </div>
-              <TutorPopover />
+              <TutorHeaderUserInfo />
+              <UserProfilePopover
+                menuItems={[
+                  { href: "/tutor/profile/information", label: "Hồ sơ cá nhân", iconType: "profile" },
+                  { href: "/tutor/home", label: "Bảng điều khiển", iconType: "dashboard" },
+                  { href: "/tutor/settings", label: "Cài đặt", iconType: "settings" },
+                ]}
+                defaultName="Gia sư"
+                ariaLabel="Mở menu gia sư"
+              />
             </div>
           </div>
         </div>

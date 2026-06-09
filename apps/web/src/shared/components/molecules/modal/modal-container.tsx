@@ -11,6 +11,9 @@ const ModalContainer = ({
   confirmText,
   cancelText = 'Cancel',
   formId = 'input-form',
+  contentClassName,
+  hideDefaultFooter,
+  customHeader,
 }: ModalContainerProps) => {
   const modalContext = useModalContext();
 
@@ -39,6 +42,9 @@ const ModalContainer = ({
       open={isOpen}
       isSubmitting={isSubmitting}
       onOpenChange={handleOpenChange}
+      contentClassName={contentClassName}
+      hideDefaultFooter={hideDefaultFooter}
+      customHeader={customHeader}
     >
       {children}
     </ModalPresenter>

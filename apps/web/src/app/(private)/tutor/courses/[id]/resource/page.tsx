@@ -6,11 +6,8 @@ import {
   ScoreStatsSection,
 } from "@/src/features/tutor/courses-detail/components";
 import { ClipboardCheck, ClipboardList } from "lucide-react";
-import { useParams } from "next/navigation";
 
 export default function ResourcePage() {
-  const params = useParams();
-  const courseId = params.id as string;
 
   const documents = [
     {

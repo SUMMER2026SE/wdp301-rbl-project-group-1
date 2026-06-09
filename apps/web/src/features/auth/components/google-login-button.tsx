@@ -36,7 +36,14 @@ export default function GoogleLoginButton() {
                 }),
               );
 
-              router.push("/student/home");
+              const userRole = response.data.user.role;
+              if (userRole === "ADMIN") {
+                router.push("/admin");
+              } else if (userRole === "TUTOR") {
+                router.push("/tutor/home");
+              } else {
+                router.push("/student/home");
+              }
             } catch {
               toast.error("Đăng nhập bằng Google thất bại. Vui lòng thử lại.");
             }

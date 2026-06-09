@@ -446,6 +446,48 @@ import NavigationBar from "@/src/shared/components/organisms/navigation-bar/navi
 
 ---
 
+### `ScheduleCalendar`
+**Import:** `@/src/shared/components/organisms/schedule-calendar/schedule-calendar`  
+**Dùng:** Hiển thị lịch học và quản lý thời gian rảnh cố định. Hỗ trợ 2 chế độ: `weekly` (xem lịch theo tuần) và `fixed` (chỉnh sửa lịch rảnh cố định T2-CN).
+
+```tsx
+import { ScheduleCalendar } from "@/src/shared/components/organisms/schedule-calendar/schedule-calendar";
+
+// 1. Chế độ Weekly (Hiển thị lưới lịch học hàng tuần, chỉ xem)
+<ScheduleCalendar
+  mode="weekly"
+  classes={scheduleClasses}              // Mảng ScheduleClass[]
+  selectedFilter="all"                   // Lọc theo subject/class
+  getClassesForDate={getClassesForDate}  // Hàm map data theo ngày
+  onClassClick={(cls) => console.log(cls)}
+/>
+
+// 2. Chế độ Fixed (Tương tác bật/tắt lịch rảnh cố định)
+<ScheduleCalendar
+  mode="fixed"
+  initialAvailableSlots={{ "0_08:00": true, "2_14:00": true }} // 0 = Thứ 2, 6 = CN
+  onAvailableSlotsChange={(slots) => setFixedSlots(slots)}
+  getClassesForDate={getFixedClassesForDate} // Hàm map data theo thứ trong tuần
+  classes={scheduleClasses}                  // Render lớp học cố định đè lên trên
+/>
+
+// 3. Chế độ Fixed Readonly (Chỉ xem lịch rảnh của người khác, e.g. Student xem Tutor)
+<ScheduleCalendar
+  mode="fixed"
+  readonly={true}
+  initialAvailableSlots={tutorFixedSlots}
+  getClassesForDate={getFixedClassesForDate}
+  classes={tutorClasses}
+/>
+```
+
+**Đặc điểm nổi bật:**
+- Tự động chia ca (Sáng: 7h-12h, Chiều: 13h-18h, Tối: 18h-23h).
+- Ở chế độ `fixed`, ô bị bận sẽ có **họa tiết sọc chéo** trực quan để dễ phân biệt với ô rảnh (màu trắng).
+- Dùng chung cho cả Tutor và Student thông qua các wrapper riêng biệt (`features/.../components/schedule-calendar`).
+
+---
+
 ## Hướng dẫn tạo Feature Form (Pattern chuẩn)
 
 Ví dụ: Form đăng ký trong một feature modal:
@@ -531,3 +573,4 @@ export function MyFeatureModal() {
 | `InputForm` | organism | ❌ | ❌ (tự tạo) | `organisms/input-form/input-form` |
 | `MultiStepFormContainer` | organism | ✅ | ❌ | `organisms/multi-step-form/multi-step-form-container` |
 | `NavigationBar` | organism | ✅ | ❌ | `organisms/navigation-bar/navigation-bar` |
+| `ScheduleCalendar` | organism | ✅ | ❌ | `organisms/schedule-calendar/schedule-calendar` |

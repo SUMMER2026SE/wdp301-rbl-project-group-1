@@ -14,7 +14,7 @@ const STAR_RATINGS = [
 
 export interface FilterSubjectsConfig {
   label?: string;
-  items: string[];
+  items: { id: string; label: string }[];
   selected: string[];
   onChange: (selected: string[]) => void;
 }
@@ -43,6 +43,7 @@ export interface FilterRatingConfig {
 
 export interface FilterSidebarProps {
   subjects?: FilterSubjectsConfig;
+  grades?: FilterSecondaryConfig;
   secondary?: FilterSecondaryConfig;
   price?: FilterPriceConfig;
   rating?: FilterRatingConfig;
@@ -52,6 +53,7 @@ export interface FilterSidebarProps {
 
 export function FilterSidebar({
   subjects,
+  grades,
   secondary,
   price,
   rating,
@@ -59,13 +61,22 @@ export function FilterSidebar({
   className,
 }: FilterSidebarProps) {
   const [expandedSubjects, setExpandedSubjects] = useState(false);
+  const [expandedGrades, setExpandedGrades] = useState(false);
 
-  const handleSubjectChange = (item: string, checked: boolean) => {
+  const handleSubjectChange = (id: string, checked: boolean) => {
     if (!subjects) return;
     const next = checked
-      ? [...subjects.selected, item]
-      : subjects.selected.filter((s) => s !== item);
+      ? [...subjects.selected, id]
+      : subjects.selected.filter((s) => s !== id);
     subjects.onChange(next);
+  };
+
+  const handleGradeChange = (id: string, checked: boolean) => {
+    if (!grades) return;
+    const next = checked
+      ? [...grades.selected, id]
+      : grades.selected.filter((s) => s !== id);
+    grades.onChange(next);
   };
 
   const handleSecondaryChange = (id: string, checked: boolean) => {
@@ -108,17 +119,17 @@ export function FilterSidebar({
                 .slice(0, expandedSubjects ? subjects.items.length : 5)
                 .map((item) => (
                   <label
-                    key={item}
+                    key={item.id}
                     className="flex items-center gap-3 cursor-pointer group"
                   >
                     <Checkbox
-                      checked={subjects.selected.includes(item)}
+                      checked={subjects.selected.includes(item.id)}
                       onCheckedChange={(checked) =>
-                        handleSubjectChange(item, !!checked)
+                        handleSubjectChange(item.id, !!checked)
                       }
                     />
                     <span className="text-sm text-foreground group-hover:text-primary transition-colors">
-                      {item}
+                      {item.label}
                     </span>
                   </label>
                 ))}
@@ -130,6 +141,45 @@ export function FilterSidebar({
                   className="text-sm text-primary font-medium mt-1 text-left h-auto p-0 justify-start"
                 >
                   {expandedSubjects ? "Ẩn bớt" : "Xem thêm"}
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Grades section */}
+        {grades && (
+          <div className="mb-6 border-t border-border pt-4">
+            <h3 className="font-semibold text-foreground mb-3">
+              {grades.label}
+            </h3>
+            <div className="flex flex-col gap-2">
+              {grades.items
+                .slice(0, expandedGrades ? grades.items.length : 5)
+                .map((item) => (
+                  <label
+                    key={item.id}
+                    className="flex items-center gap-3 cursor-pointer group"
+                  >
+                    <Checkbox
+                      checked={grades.selected.includes(item.id)}
+                      onCheckedChange={(checked) =>
+                        handleGradeChange(item.id, !!checked)
+                      }
+                    />
+                    <span className="text-sm text-foreground group-hover:text-primary transition-colors">
+                      {item.label}
+                    </span>
+                  </label>
+                ))}
+              {grades.items.length > 5 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setExpandedGrades(!expandedGrades)}
+                  className="text-sm text-primary font-medium mt-1 text-left h-auto p-0 justify-start"
+                >
+                  {expandedGrades ? "Ẩn bớt" : "Xem thêm"}
                 </Button>
               )}
             </div>

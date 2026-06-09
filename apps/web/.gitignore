@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ContextOS install artefacts
+.codex/marketplaces/contextos/
+.claude/settings.json
+.gemini/
+
+
+# START Ruler Generated Files
+/AGENTS.md
+/AGENTS.md.bak
+# END Ruler Generated Files
+
+# bmad files
+*.bmad
+.bmad/
+.agent/skills/bmad-*/
+.agents/skills/bmad-*/
+.github/agents/bmad-*.md
+_bmad/
+
+# Ruler
+.ruler/

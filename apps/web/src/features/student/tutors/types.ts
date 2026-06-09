@@ -56,6 +56,8 @@ export interface Tutor {
   education: string;
   pricePerHour: number;
   skills: string[];
+  subjects: string[];
+  grades: string[];
   bio?: string;
   teachingExperience?: TeachingExperience[];
   certifications?: Certification[];

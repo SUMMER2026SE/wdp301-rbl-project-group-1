@@ -1,58 +1,60 @@
-import {
-  Card,
-  CardContent,
-} from "@/src/shared/components/ui/card";
-import { Input } from "@/src/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/src/shared/components/ui/select";
-import { Search } from "lucide-react";
+import { SearchBox } from "@/src/shared/components/molecules/search-box/search-box";
+import { SortSelect } from "@/src/shared/components/molecules/sort-select/sort-select";
+import { Table } from "@tanstack/react-table";
+import type { TutorApplication } from "./tutor-approvals.types";
 
-export function TutorApprovalFilters() {
+interface TutorApprovalFiltersProps {
+  table?: Table<TutorApplication>;
+}
+
+export function TutorApprovalFilters({ table }: TutorApprovalFiltersProps) {
   return (
-    <Card className="shadow-sm">
-      <CardContent className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between">
-        <div className="relative w-full md:max-w-96">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Tìm kiếm theo tên gia sư..."
-            className="pl-9"
-            type="search"
-          />
-        </div>
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between pb-4">
+      <div className="w-full md:max-w-96">
+        <SearchBox
+          placeholder="Tìm kiếm theo email gia sư..."
+          value={(table?.getColumn("email")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table?.getColumn("email")?.setFilterValue(event.target.value)
+          }
+        />
+      </div>
 
-        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:w-auto">
-          <Select defaultValue="all-subjects">
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Môn học" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-subjects">Tất cả Môn học</SelectItem>
-              <SelectItem value="math">Toán học</SelectItem>
-              <SelectItem value="physics">Vật lý</SelectItem>
-              <SelectItem value="english">Tiếng Anh</SelectItem>
-              <SelectItem value="literature">Ngữ văn</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex flex-wrap items-center gap-3">
+        <SortSelect
+          label="Môn học:"
+          placeholder="Môn học"
+          value={
+            (table?.getColumn("subjects")?.getFilterValue() as string) ?? "all"
+          }
+          onChange={(value) => {
+            table
+              ?.getColumn("subjects")
+              ?.setFilterValue(value === "all" ? "" : value);
+          }}
+          options={[
+            { value: "all", label: "Tất cả Môn học" },
+            { value: "Toán học", label: "Toán học" },
+            { value: "Vật lý", label: "Vật lý" },
+            { value: "Tiếng Anh", label: "Tiếng Anh" },
+            { value: "Ngữ văn", label: "Ngữ văn" },
+          ]}
+        />
 
-          <Select defaultValue="all-levels">
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="Cấp độ" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all-levels">Tất cả Cấp độ</SelectItem>
-              <SelectItem value="primary">Cấp 1</SelectItem>
-              <SelectItem value="secondary">Cấp 2</SelectItem>
-              <SelectItem value="high-school">Cấp 3</SelectItem>
-              <SelectItem value="university">Đại học</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </CardContent>
-    </Card>
+        <SortSelect
+          label="Cấp độ:"
+          placeholder="Cấp độ"
+          value="all-levels"
+          onChange={() => {}}
+          options={[
+            { value: "all-levels", label: "Tất cả Cấp độ" },
+            { value: "primary", label: "Cấp 1" },
+            { value: "secondary", label: "Cấp 2" },
+            { value: "high-school", label: "Cấp 3" },
+            { value: "university", label: "Đại học" },
+          ]}
+        />
+      </div>
+    </div>
   );
 }

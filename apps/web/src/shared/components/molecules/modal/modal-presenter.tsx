@@ -24,30 +24,43 @@ const ModalPresenter = ({
   open,
   isSubmitting,
   onOpenChange,
+  contentClassName,
+  hideDefaultFooter,
+  customHeader,
 }: ModalPresenterProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
+      <DialogContent className={contentClassName || "sm:max-w-[500px]"}>
+        {customHeader ? (
+          <>
+            <DialogTitle className="sr-only">{title}</DialogTitle>
+            <DialogDescription className="sr-only">{description}</DialogDescription>
+            {customHeader}
+          </>
+        ) : (
+          <DialogHeader>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
+          </DialogHeader>
+        )}
 
         <div className="grid gap-4 py-4">{children}</div>
 
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="outline">
-              {cancelText}
-            </Button>
-          </DialogClose>
-          {confirmText && (
-            <Button type="submit" form={formId} disabled={isSubmitting}>
-              {isSubmitting ? <Spinner /> : confirmText}
-            </Button>
-          )}
-        </DialogFooter>
+        {!hideDefaultFooter && (
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                {cancelText}
+              </Button>
+            </DialogClose>
+            {confirmText && (
+              <Button type="submit" form={formId} disabled={isSubmitting}>
+                {isSubmitting ? <Spinner /> : confirmText}
+              </Button>
+            )}
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

@@ -3,7 +3,7 @@
 import { Avatar } from "@/src/shared/components/atoms/avatar/avatar";
 import { SkillsBadges } from "@/src/shared/components/atoms/skills-badge/skills-badges";
 import { StatBadge } from "@/src/shared/components/molecules/stat-badge/stat-badge";
-import { Calendar, Check, Star, Users } from "lucide-react";
+import { BookOpen, Calendar, Check, GraduationCap, Star, Users } from "lucide-react";
 import type { Tutor } from "../types";
 
 interface TutorInfoHeaderProps {
@@ -37,6 +37,27 @@ export function TutorInfoHeader({ tutor }: TutorInfoHeaderProps) {
           <p className="text-lg text-primary font-medium mb-4">
             {tutor.specialty}
           </p>
+
+          {(tutor.subjects.length > 0 || tutor.grades.length > 0) && (
+            <div className="flex flex-wrap items-center gap-y-3 gap-x-6 text-sm font-medium text-muted-foreground mb-6">
+              {tutor.subjects.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-purple-soft text-purple">
+                    <BookOpen className="size-4" />
+                  </div>
+                  <span>{tutor.subjects.join(", ")}</span>
+                </div>
+              )}
+              {tutor.grades.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="p-1.5 rounded-md bg-indigo-soft text-indigo">
+                    <GraduationCap className="size-4" />
+                  </div>
+                  <span>{tutor.grades.join(", ")}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Stats */}
           <div className="flex flex-wrap gap-4 md:gap-8 mb-6">

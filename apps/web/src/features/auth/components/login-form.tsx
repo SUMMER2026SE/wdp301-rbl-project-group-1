@@ -45,7 +45,14 @@ export default function LoginForm() {
         }),
       );
 
-      router.push("/student/home");
+      const userRole = response.data.user.role;
+      if (userRole === "ADMIN") {
+        router.push("/admin");
+      } else if (userRole === "TUTOR") {
+        router.push("/tutor/home");
+      } else {
+        router.push("/student/home");
+      }
     } catch {
       toast.error(
         "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại.",

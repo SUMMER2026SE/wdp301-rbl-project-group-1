@@ -60,6 +60,7 @@ export type InputFieldDetail =
 export type InputFormContainerProps<TForm extends FieldValues> = {
   resolver?: UseFormProps<TForm>['resolver'];
   defaultValues: UseFormProps<TForm>['defaultValues'];
+  mode?: UseFormProps<TForm>['mode'];
   onSubmit: (data: TForm) => void;
   children: React.ReactNode;
   id?: string;
