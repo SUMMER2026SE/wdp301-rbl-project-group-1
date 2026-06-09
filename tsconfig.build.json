@@ -10,6 +10,7 @@
     "src/modules/lesson/**",
     "src/modules/recommendation/**",
     "src/modules/resource/**",
-    "src/modules/enrollment/**"
+    "src/modules/enrollment/**",
+    "prisma.config.ts"
   ]
 }

@@ -1,0 +1,15 @@
+.git
+.gitignore
+.env
+node_modules
+dist
+generated
+Dockerfile
+.dockerignore
+npm-debug.log
+.gitlab-ci.yml
+.prettierrc
+eslint.config.mjs
+README.md
+docs/
+test/
