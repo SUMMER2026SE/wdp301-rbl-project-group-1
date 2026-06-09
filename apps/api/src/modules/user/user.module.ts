@@ -10,18 +10,14 @@ import { UpgradeTutorCommandHandler } from './application/commands/upgrade-tutor
 import { GetProfileQueryHandler } from './application/queries/get-profile/get-profile.handler';
 import { GetTutorByIdQueryHandler } from './application/queries/get-tutor-by-id/get-tutor-by-id.handler';
 import { GetTutorsQueryHandler } from './application/queries/get-tutors/get-tutors.handler';
-import { GetUserProfileByIdQueryHandler } from './application/queries/get-user-profile-by-id/get-user-profile-by-id.handler';
+import { GetUserProfileByIdHandler } from './application/queries/get-user-profile-by-id/get-user-profile-by-id.handler';
 import { GetUsersQueryHandler } from './application/queries/get-users/get-users.handler';
 import { SyncTutorViewToRabbitMqHandler } from './application/events/sync-tutor-view-to-rabbitmq.handler';
 
-import { IProfileRepository } from './domain/repositories/profile.repository.interface';
-import { IStudentRepository } from './domain/repositories/student.repository.interface';
 import { ITutorRepository } from './domain/repositories/tutor.repository.interface';
 import { IUserIdentityRepository } from './domain/repositories/user-identity.repository.interface';
 import { IUserRepository } from './domain/repositories/user.repository.interface';
 
-import { PrismaProfileRepository } from './infrastructure/repositories/profile.repository.impl';
-import { PrismaStudentRepository } from './infrastructure/repositories/student.repository.impl';
 import { PrismaTutorRepository } from './infrastructure/repositories/tutor.repository.impl';
 import { PrismaUserIdentityRepository } from './infrastructure/repositories/user-identity.repository.impl';
 import { PrismaUserRepository } from './infrastructure/repositories/user.repository.impl';
@@ -37,7 +33,7 @@ import { UserController } from './presentation/controllers/user.controller';
     GetTutorByIdQueryHandler,
     GetTutorsQueryHandler,
     GetUsersQueryHandler,
-    GetUserProfileByIdQueryHandler,
+    GetUserProfileByIdHandler,
     UpdateProfileHandler,
     ChangeAvatarHandler,
     UpgradeTutorCommandHandler,
@@ -49,22 +45,14 @@ import { UserController } from './presentation/controllers/user.controller';
       useClass: PrismaUserRepository,
     },
     {
-      provide: IProfileRepository,
-      useClass: PrismaProfileRepository,
+      provide: ITutorRepository,
+      useClass: PrismaTutorRepository,
     },
     {
       provide: IUserIdentityRepository,
       useClass: PrismaUserIdentityRepository,
     },
-    {
-      provide: ITutorRepository,
-      useClass: PrismaTutorRepository,
-    },
-    {
-      provide: IStudentRepository,
-      useClass: PrismaStudentRepository,
-    },
   ],
-  exports: [IUserRepository, IProfileRepository, IUserIdentityRepository],
+  exports: [IUserRepository, IUserIdentityRepository],
 })
 export class UserModule {}

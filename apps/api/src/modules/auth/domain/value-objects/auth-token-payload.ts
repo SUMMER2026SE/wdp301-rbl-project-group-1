@@ -4,6 +4,7 @@ export type AuthTokenPayload = {
   sub: string;
   email: string;
   role: UserRole;
+  jti?: string;
 };
 
 export type ResetTokenPayload = {

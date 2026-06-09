@@ -8,7 +8,7 @@
       "**/*.hbs",
       {
         "include": "../generated/**/*",
-        "outDir": "./dist",
+        "outDir": "./dist/generated",
         "watchAssets": true
       }
     ]

@@ -29,7 +29,10 @@ export class PrismaUserRepository implements IUserRepository {
     const where: Prisma.UserWhereInput = {};
 
     if (params.search) {
-      where.email = { contains: params.search, mode: 'insensitive' };
+      where.OR = [
+        { email: { contains: params.search, mode: 'insensitive' } },
+        { nickname: { contains: params.search, mode: 'insensitive' } },
+      ];
     }
 
     const filterMap: Record<string, (value: string) => Prisma.UserWhereInput> =
@@ -81,14 +84,6 @@ export class PrismaUserRepository implements IUserRepository {
               data.role === PrismaUserRole.TUTOR
                 ? { upsert: { create: tutorData, update: tutorData } }
                 : undefined,
-            student:
-              data.role === PrismaUserRole.STUDENT
-                ? { connectOrCreate: { where: { id: user.id }, create: {} } }
-                : undefined,
-            parent:
-              data.role === PrismaUserRole.PARENT
-                ? { connectOrCreate: { where: { id: user.id }, create: {} } }
-                : undefined,
           } as Prisma.UserUpdateInput,
         })
       : await this.client.user.create({
@@ -98,10 +93,6 @@ export class PrismaUserRepository implements IUserRepository {
               data.role === PrismaUserRole.TUTOR
                 ? { create: tutorData }
                 : undefined,
-            student:
-              data.role === PrismaUserRole.STUDENT ? { create: {} } : undefined,
-            parent:
-              data.role === PrismaUserRole.PARENT ? { create: {} } : undefined,
           } as Prisma.UserCreateInput,
         });
 
@@ -145,5 +136,32 @@ export class PrismaUserRepository implements IUserRepository {
       items: users.map((user) => this.mapper.toDomain(user)),
       total,
     };
+  }
+
+  /** Update student M:M grades via Prisma implicit relation set */
+  async updateStudentGrades(userId: string, gradeIds: string[]): Promise<void> {
+    await this.client.user.update({
+      where: { id: userId },
+      data: {
+        grades: {
+          set: gradeIds.map((id) => ({ id })),
+        },
+      },
+    });
+  }
+
+  /** Update student M:M subjects via Prisma implicit relation set */
+  async updateStudentSubjects(
+    userId: string,
+    subjectIds: string[],
+  ): Promise<void> {
+    await this.client.user.update({
+      where: { id: userId },
+      data: {
+        subjects: {
+          set: subjectIds.map((id) => ({ id })),
+        },
+      },
+    });
   }
 }

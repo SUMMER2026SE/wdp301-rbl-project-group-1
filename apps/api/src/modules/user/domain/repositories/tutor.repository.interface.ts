@@ -8,6 +8,8 @@ export interface TutorPaginatedParams extends QueryParams {
   specialization?: string;
   minPrice?: number;
   maxPrice?: number;
+  subjectIds?: string[];
+  gradeIds?: string[];
 }
 
 export interface TutorWithProfile {

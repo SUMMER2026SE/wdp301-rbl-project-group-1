@@ -1,7 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { Gender } from 'src/shared/domain/enums/enums';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
-import { Profile } from '../../domain/entities/profile.entity';
+import { User } from '../../domain/entities/user.entity';
 
 export const ProfileResponseSchema = z
   .object({
@@ -34,16 +34,17 @@ export const ProfileResponseSchema = z
   .meta({ id: 'ProfileResponseDto' });
 
 export class ProfileResponseDto extends createZodDto(ProfileResponseSchema) {
-  static fromDomain(profile: Profile): ProfileResponseDto {
+  /** Build from the consolidated User entity (profile fields are on User now) */
+  static fromDomain(user: User): ProfileResponseDto {
     const dto = new ProfileResponseDto();
-    dto.nickname = profile.nickname;
-    dto.avatarUrl = profile.avatarUrl;
-    dto.phone = profile.phone;
-    dto.dateOfBirth = profile.dateOfBirth
-      ? profile.dateOfBirth.toISOString().slice(0, 10)
+    dto.nickname = user.nickname ?? undefined;
+    dto.avatarUrl = user.avatarUrl ?? undefined;
+    dto.phone = user.phone ?? undefined;
+    dto.dateOfBirth = user.dateOfBirth
+      ? user.dateOfBirth.toISOString().slice(0, 10)
       : undefined;
-    dto.gender = profile.gender;
-    dto.address = profile.address;
+    dto.gender = user.gender ?? undefined;
+    dto.address = user.address ?? undefined;
     return dto;
   }
 }

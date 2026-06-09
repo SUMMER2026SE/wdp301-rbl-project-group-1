@@ -65,23 +65,20 @@ export class GetUsersQueryHandler
         orderBy: orderBy as Prisma.UserOrderByWithRelationInput,
         skip: query.query.skip,
         take: query.query.limit,
-        include: { profile: true },
       }),
     ]);
 
-    const data: GetUsersResultData[] = users.map(
-      (user: Prisma.UserGetPayload<{ include: { profile: true } }>) => ({
-        id: user.id,
-        email: user.email,
-        role: user.role,
-        nickname: user.profile?.nickname ?? null,
-        isActive: user.isActive,
-        isVerified: user.isVerified,
-        isFlag: user.isFlag,
-        reportCount: user.reportCount,
-        createdAt: user.createdAt,
-      }),
-    );
+    const data: GetUsersResultData[] = users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      nickname: user.nickname ?? null,
+      isActive: user.isActive,
+      isVerified: user.isVerified,
+      isFlag: user.isFlag,
+      reportCount: user.reportCount,
+      createdAt: user.createdAt,
+    }));
 
     return createQueryResult(data, total, query.query);
   }

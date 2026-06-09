@@ -18,11 +18,61 @@ datasource db {
 // ENUMS
 //////////////////////////////////////////////////
 
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+
+  @@map("attendance_status")
+}
+
+enum SessionStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+
+  @@map("session_status")
+}
+
+//////////////////////////////////////////////////
+
+enum RequestStatus {
+  OPEN
+  CLOSED
+  CANCELLED
+
+  @@map("request_status")
+}
+
+enum BidStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+
+  @@map("bid_status")
+}
+
+enum TutoringMode {
+  ONLINE
+  AT_HOME
+
+  @@map("tutoring_mode")
+}
+
+enum BookingStatus {
+  PENDING
+  AWAITING_PAYMENT
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+
+  @@map("booking_status")
+}
+
 enum UserRole {
   ADMIN
   TUTOR
   STUDENT
-  PARENT
 
   @@map("user_role")
 }
@@ -35,49 +85,6 @@ enum Gender {
   @@map("gender")
 }
 
-enum OtpType {
-  RESET_PASSWORD
-  TWO_FACTOR
-  VERIFY_EMAIL
-}
-
-enum CourseStatus {
-  DRAFT
-  PENDING_APPROVAL
-  PUBLISHED
-  ONGOING
-  CLOSED
-  REJECTED
-
-  @@map("course_status")
-}
-
-enum EnrollmentStatus {
-  PENDING
-  ACTIVE
-  COMPLETED
-  CANCELLED
-
-  @@map("enrollment_status")
-}
-
-enum LessonStatus {
-  SCHEDULED
-  ONGOING
-  COMPLETED
-  CANCELLED
-
-  @@map("lesson_status")
-}
-
-enum AttendanceStatus {
-  PRESENT
-  ABSENT
-  LATE
-
-  @@map("attendance_status")
-}
-
 enum PaymentStatus {
   PENDING
   PAID
@@ -87,14 +94,13 @@ enum PaymentStatus {
 }
 
 enum PaymentReferenceType {
-  COURSE_ENROLLMENT
+  TUTOR_BOOKING
 
   @@map("payment_reference_type")
 }
 
 enum NotificationType {
   SYSTEM
-  COURSE
   FORUM
 
   @@map("notification_type")
@@ -116,22 +122,6 @@ enum TutorApplicationStatus {
   @@map("tutor_application_status")
 }
 
-enum CourseApplicationStatus {
-  PENDING
-  APPROVED
-  REJECTED
-
-  @@map("course_application_status")
-}
-
-enum CourseLevel {
-  BEGINNER
-  INTERMEDIATE
-  ADVANCED
-
-  @@map("course_level")
-}
-
 enum TagCategory {
   KNOWLEDGE
   SKILL
@@ -145,38 +135,6 @@ enum ResourceType {
   DOCUMENT
 
   @@map("resource_type")
-}
-
-enum AssessmentType {
-  QUIZ
-  EXAM
-
-  @@map("assessment_type")
-}
-
-enum QuestionType {
-  MULTIPLE_CHOICE
-  SINGLE_CHOICE
-  TRUE_FALSE
-  TEXT_ANSWER
-
-  @@map("question_type")
-}
-
-enum QuestionDifficulty {
-  EASY
-  MEDIUM
-  HARD
-
-  @@map("question_difficulty")
-}
-
-enum GradingPolicy {
-  HIGHEST
-  AVERAGE
-  LATEST
-
-  @@map("grading_policy")
 }
 
 enum AuthProvider {
@@ -213,6 +171,10 @@ enum MessageType {
 // USER SYSTEM
 //////////////////////////////////////////////////
 
+/// Consolidated User model — merges former Profile (1:1) and Student (1:1) fields.
+/// Profile fields: nickname, avatarUrl, phone, dateOfBirth, gender, address
+/// Student fields: school, learningGoal
+/// Many-to-many: subjects, grades (formerly StudentSubject/StudentGrade)
 model User {
   id       String   @id @default(cuid())
   email    String   @unique
@@ -228,16 +190,34 @@ model User {
 
   recommendation Json?
 
-  profile    Profile?
-  identities UserIdentity[]
+  // --- Profile fields (merged from Profile model) ---
+  nickname    String?
+  avatarUrl   String?   @map("avatar_url")
+  phone       String?   @map("phone")
+  dateOfBirth DateTime? @map("date_of_birth")
+  gender      Gender?   @map("gender")
+  address     String?   @map("address")
 
+  // --- Student fields (merged from Student model) ---
+  school       String?
+  learningGoal String? @map("learning_goal")
+
+  // --- Relations ---
+  identities    UserIdentity[]
   refreshTokens RefreshToken[]
 
   tutor            Tutor?
-  student          Student?
-  parent           Parent?
   tutorApplication TutorApplication?
 
+  // Student many-to-many (replaces StudentSubject/StudentGrade junction tables)
+  subjects Subject[] @relation("StudentSubjects")
+  grades   Grade[]   @relation("StudentGrades")
+
+  // Student domain relations (formerly on Student model)
+  bookings      Booking[]      @relation("StudentBookings")
+  tutorRequests TutorRequest[]
+
+  // General relations
   posts         Post[]
   comments      Comment[]
   notifications NotificationTarget[]
@@ -248,6 +228,9 @@ model User {
 
   conversations ConversationParticipant[]
   messages      Message[]
+
+  sessionAttendances SessionAttendance[]
+  availabilities     UserAvailability[]
 
   @@map("user")
 }
@@ -273,22 +256,8 @@ model UserIdentity {
   @@map("user_identity")
 }
 
-model Profile {
-  id     String @id @default(cuid())
-  userId String @unique @map("user_id")
-
-  nickname    String
-  avatarUrl   String?  @map("avatar_url")
-  phone       String   @map("phone")
-  dateOfBirth DateTime @map("date_of_birth")
-  gender      Gender?  @map("gender")
-  address     String?  @map("address")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("profile")
-}
-
+/// Tutor profile — kept as separate model due to domain-specific fields and many relations.
+/// Many-to-many: subjects, grades (replaces TutorSubject/TutorGrade junction tables)
 model Tutor {
   id   String @id @map("id")
   user User   @relation(fields: [id], references: [id])
@@ -302,11 +271,11 @@ model Tutor {
   reviewCount    Int     @default(0) @map("review_count")
   studentCount   Int     @default(0) @map("student_count")
 
-  courses            Course[]
-  courseApplications CourseApplication[]
-
-  subjects TutorSubject[]
-  grades   TutorGrade[]
+  // Implicit many-to-many (replaces TutorSubject/TutorGrade)
+  subjects  Subject[]  @relation("TutorSubjects")
+  grades    Grade[]    @relation("TutorGrades")
+  bookings  Booking[]
+  tutorBids TutorBid[]
 
   @@map("tutor")
 }
@@ -332,140 +301,13 @@ model TutorApplication {
 
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  subjects TutorApplicationSubject[]
-  grades   TutorApplicationGrade[]
+  // Implicit many-to-many (replaces TutorApplicationSubject/TutorApplicationGrade)
+  subjects Subject[] @relation("TutorApplicationSubjects")
+  grades   Grade[]   @relation("TutorApplicationGrades")
 
   @@index([status])
   @@index([createdAt])
   @@map("tutor_application")
-}
-
-model TutorSubject {
-  tutorId   String @map("tutor_id")
-  subjectId String @map("subject_id")
-
-  tutor   Tutor   @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([tutorId, subjectId])
-  @@map("tutor_subject")
-}
-
-model TutorGrade {
-  tutorId String @map("tutor_id")
-  gradeId String @map("grade_id")
-
-  tutor Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-  grade Grade @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-
-  @@id([tutorId, gradeId])
-  @@map("tutor_grade")
-}
-
-model TutorApplicationSubject {
-  tutorApplicationId String @map("tutor_application_id")
-  subjectId          String @map("subject_id")
-
-  tutorApplication TutorApplication @relation(fields: [tutorApplicationId], references: [id], onDelete: Cascade)
-  subject          Subject          @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([tutorApplicationId, subjectId])
-  @@map("tutor_application_subject")
-}
-
-model TutorApplicationGrade {
-  tutorApplicationId String @map("tutor_application_id")
-  gradeId            String @map("grade_id")
-
-  tutorApplication TutorApplication @relation(fields: [tutorApplicationId], references: [id], onDelete: Cascade)
-  grade            Grade            @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-
-  @@id([tutorApplicationId, gradeId])
-  @@map("tutor_application_grade")
-}
-
-model CourseApplication {
-  id       String @id @default(cuid())
-  courseId String @unique @map("course_id")
-  tutorId  String @map("tutor_id")
-
-  status    CourseApplicationStatus @default(PENDING)
-  adminNote String?                 @map("admin_note")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  tutor  Tutor  @relation(fields: [tutorId], references: [id], onDelete: Cascade)
-
-  @@index([status])
-  @@index([createdAt])
-  @@map("course_application")
-}
-
-model Student {
-  id   String @id
-  user User   @relation(fields: [id], references: [id])
-
-  school       String?
-  learningGoal String? @map("learning_goal")
-
-  enrollments       Enrollment[]
-  reviews           CourseReview[]
-  lessonAttendances LessonAttendance[]
-  attempts          Attempt[]
-  gradebookRecords  GradebookRecord[]
-
-  parents  ParentStudent[]
-  subjects StudentSubject[]
-  grades   StudentGrade[]
-
-  @@map("student")
-}
-
-model StudentSubject {
-  studentId String @map("student_id")
-  subjectId String @map("subject_id")
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  subject Subject @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-
-  @@id([studentId, subjectId])
-  @@map("student_subject")
-}
-
-model StudentGrade {
-  studentId String @map("student_id")
-  gradeId   String @map("grade_id")
-
-  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  grade   Grade   @relation(fields: [gradeId], references: [id], onDelete: Cascade)
-
-  @@id([studentId, gradeId])
-  @@map("student_grade")
-}
-
-model Parent {
-  id   String @id
-  user User   @relation(fields: [id], references: [id])
-
-  phone   String?
-  address String?
-
-  children ParentStudent[]
-
-  @@map("parent")
-}
-
-model ParentStudent {
-  parentId  String @map("parent_id")
-  studentId String @map("student_id")
-
-  parent  Parent  @relation(fields: [parentId], references: [id])
-  student Student @relation(fields: [studentId], references: [id])
-
-  @@id([parentId, studentId])
-  @@map("parent_student")
 }
 
 //////////////////////////////////////////////////
@@ -482,38 +324,12 @@ model RefreshToken {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("refresh_token")
 }
 
-model Otp {
-  id String @id @default(cuid())
-
-  email  String
-  userId String? @map("user_id") // optional nếu user đã tồn tại
-
-  codeHash String  @map("code_hash") // hash OTP (không lưu plain text)
-  type     OtpType
-
-  expiresAt DateTime @map("expires_at")
-  isUsed    Boolean  @default(false) @map("is_used")
-
-  attempts    Int @default(0)
-  maxAttempts Int @default(5) @map("max_attempts")
-
-  lastSentAt DateTime? @map("last_sent_at")
-  ipAddress  String?   @map("ip_address")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([email, type])
-  @@index([userId])
-  @@index([expiresAt])
-  @@map("otp")
-}
-
 //////////////////////////////////////////////////
-// COURSE SYSTEM
+// CLASS SYSTEM
 //////////////////////////////////////////////////
 
 // ================= SUBJECT =================
@@ -523,12 +339,15 @@ model Subject {
   name String // "Toán"
   slug String @unique // "toan"
 
-  courses           Course[]
-  tutorApplications TutorApplicationSubject[]
-  studentSubjects   StudentSubject[]
-  tutorSubjects     TutorSubject[]
-
   createdAt DateTime @default(now()) @map("created_at")
+
+  // Implicit many-to-many back-references
+  tutors            Tutor[]            @relation("TutorSubjects")
+  students          User[]             @relation("StudentSubjects")
+  tutorApplications TutorApplication[] @relation("TutorApplicationSubjects")
+
+  bookings      Booking[]
+  tutorRequests TutorRequest[]
 
   @@map("subject")
 }
@@ -541,12 +360,13 @@ model Grade {
   slug  String @unique // "lop-11"
   order Int // để sort (10, 11, 12)
 
-  courses           Course[]
-  tutorApplications TutorApplicationGrade[]
-  studentGrades     StudentGrade[]
-  tutorGrades       TutorGrade[]
-
   createdAt DateTime @default(now()) @map("created_at")
+
+  // Implicit many-to-many back-references
+  tutors            Tutor[]            @relation("TutorGrades")
+  students          User[]             @relation("StudentGrades")
+  tutorApplications TutorApplication[] @relation("TutorApplicationGrades")
+  tutorRequests     TutorRequest[]
 
   @@map("grade")
 }
@@ -560,136 +380,9 @@ model Tag {
 
   category TagCategory
 
-  courses CourseTag[]
-
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("tag")
-}
-
-// ================= COURSE =================
-model Course {
-  id      String @id @default(cuid())
-  tutorId String @map("tutor_id")
-
-  title       String
-  description String?
-  price       Float?
-
-  subjectId String @map("subject_id")
-  gradeId   String @map("grade_id")
-
-  level CourseLevel
-
-  status    CourseStatus
-  createdAt DateTime     @default(now()) @map("created_at")
-
-  // RELATIONS
-  tutor   Tutor   @relation(fields: [tutorId], references: [id])
-  subject Subject @relation(fields: [subjectId], references: [id])
-  grade   Grade   @relation(fields: [gradeId], references: [id])
-
-  tags CourseTag[]
-
-  lessons          Lesson[]
-  enrollments      Enrollment[]
-  reviews          CourseReview[]
-  resources        CourseResource[]
-  assessments      Assessment[]
-  questionBanks    QuestionBank[]
-  gradebookRecords GradebookRecord[]
-  application      CourseApplication?
-
-  // INDEX (quan trọng)
-  @@index([subjectId])
-  @@index([gradeId])
-  @@index([level])
-  @@map("course")
-}
-
-model CourseTag {
-  courseId String @map("course_id")
-  tagId    String @map("tag_id")
-
-  course Course @relation(fields: [courseId], references: [id])
-  tag    Tag    @relation(fields: [tagId], references: [id])
-
-  @@id([courseId, tagId])
-  @@map("course_tag")
-}
-
-model Lesson {
-  id       String @id @default(cuid())
-  courseId String @map("course_id")
-
-  title      String
-  content    String?
-  meetingUrl String?      @map("meeting_url")
-  videoUrl   String?      @map("video_url")
-  startTime  DateTime     @map("start_time")
-  endTime    DateTime     @map("end_time")
-  orderIndex Int          @map("order_index")
-  status     LessonStatus @default(SCHEDULED)
-  createdAt  DateTime     @default(now()) @map("created_at")
-
-  course      Course             @relation(fields: [courseId], references: [id])
-  attendances LessonAttendance[]
-  resources   LessonResource[]
-  assessments Assessment[]
-
-  @@map("lesson")
-}
-
-model LessonAttendance {
-  id String @id @default(cuid())
-
-  studentId String @map("student_id")
-
-  status AttendanceStatus @map("attendance_status")
-  note   String?
-
-  markedAt  DateTime @default(now()) @map("marked_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  lessonId String? @map("lesson_id")
-  lesson   Lesson? @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  student  Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  @@unique([lessonId, studentId])
-  @@index([studentId])
-  @@index([status])
-  @@map("lesson_attendance")
-}
-
-model Enrollment {
-  id        String @id @default(cuid())
-  studentId String @map("student_id")
-  courseId  String @map("course_id")
-
-  status     EnrollmentStatus
-  enrolledAt DateTime         @default(now()) @map("enrolled_at")
-
-  student Student @relation(fields: [studentId], references: [id])
-  course  Course  @relation(fields: [courseId], references: [id])
-
-  @@unique([studentId, courseId])
-  @@index([courseId])
-  @@map("enrollment")
-}
-
-model CourseReview {
-  id        String @id @default(cuid())
-  courseId  String @map("course_id")
-  studentId String @map("student_id")
-
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now()) @map("created_at")
-
-  course  Course  @relation(fields: [courseId], references: [id])
-  student Student @relation(fields: [studentId], references: [id])
-
-  @@map("course_review")
 }
 
 //////////////////////////////////////////////////
@@ -710,197 +403,9 @@ model Resource {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  courseResources CourseResource[]
-  lessonResources LessonResource[]
-
   @@index([userId])
   @@index([deletedAt])
   @@map("resource")
-}
-
-model CourseResource {
-  courseId   String @map("course_id")
-  resourceId String @map("resource_id")
-
-  course   Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@id([courseId, resourceId])
-  @@map("course_resource")
-}
-
-model LessonResource {
-  lessonId   String @map("lesson_id")
-  resourceId String @map("resource_id")
-
-  lesson   Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@id([lessonId, resourceId])
-  @@map("lesson_resource")
-}
-
-//////////////////////////////////////////////////
-// ASSESSMENT SYSTEM
-//////////////////////////////////////////////////
-
-model Assessment {
-  id       String  @id @default(cuid())
-  courseId String  @map("course_id")
-  lessonId String? @map("lesson_id")
-
-  title       String
-  description String?
-  type        AssessmentType
-
-  maxAttempts    Int?          @map("max_attempts")
-  timeLimit      Int?          @map("time_limit") // minutes
-  isRandomized   Boolean       @default(false) @map("is_randomized")
-  shuffleOptions Boolean       @default(false) @map("shuffle_options")
-  antiCheat      Boolean       @default(false) @map("anti_cheat")
-  passScore      Float?        @map("pass_score")
-  gradingPolicy  GradingPolicy @default(HIGHEST) @map("grading_policy")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  course Course  @relation(fields: [courseId], references: [id])
-  lesson Lesson? @relation(fields: [lessonId], references: [id])
-
-  questions        Question[]
-  attempts         Attempt[]
-  bankConfigs      AssessmentBankConfig[]
-  gradebookRecords GradebookRecord[]
-
-  @@map("assessment")
-}
-
-model Question {
-  id           String  @id @default(cuid())
-  assessmentId String? @map("assessment_id")
-  bankId       String? @map("bank_id")
-
-  type       QuestionType
-  difficulty QuestionDifficulty @default(MEDIUM)
-  content    String
-  points     Float              @default(1)
-  orderIndex Int                @map("order_index")
-
-  assessment Assessment?   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  bank       QuestionBank? @relation(fields: [bankId], references: [id], onDelete: Cascade)
-
-  options        Option[]
-  attemptAnswers AttemptAnswer[]
-
-  @@map("question")
-}
-
-model Option {
-  id         String @id @default(cuid())
-  questionId String @map("question_id")
-
-  content    String
-  isCorrect  Boolean @default(false) @map("is_correct")
-  orderIndex Int     @map("order_index")
-
-  question Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  @@map("option")
-}
-
-model Attempt {
-  id           String @id @default(cuid())
-  assessmentId String @map("assessment_id")
-  studentId    String @map("student_id")
-
-  startTime DateTime  @default(now()) @map("start_time")
-  endTime   DateTime? @map("end_time")
-
-  score    Float?
-  isPassed Boolean? @map("is_passed")
-
-  assessment Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  student    Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-
-  answers         AttemptAnswer[]
-  gradebookRecord GradebookRecord? @relation("BestAttempt")
-
-  @@map("attempt")
-}
-
-model AttemptAnswer {
-  id         String @id @default(cuid())
-  attemptId  String @map("attempt_id")
-  questionId String @map("question_id")
-
-  optionIds  String[] @map("option_ids") // For Multiple/Single choice
-  textAnswer String?  @map("text_answer") // For Text Answer
-
-  isCorrect Boolean? @map("is_correct")
-  points    Float?
-
-  attempt  Attempt  @relation(fields: [attemptId], references: [id], onDelete: Cascade)
-  question Question @relation(fields: [questionId], references: [id])
-
-  @@map("attempt_answer")
-}
-
-model QuestionBank {
-  id          String  @id @default(cuid())
-  courseId    String  @map("course_id")
-  title       String
-  description String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  course            Course                 @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  questions         Question[]
-  assessmentConfigs AssessmentBankConfig[]
-
-  @@map("question_bank")
-}
-
-model AssessmentBankConfig {
-  id           String @id @default(cuid())
-  assessmentId String @map("assessment_id")
-  bankId       String @map("bank_id")
-
-  difficulty        QuestionDifficulty?
-  count             Int
-  pointsPerQuestion Float               @default(1) @map("points_per_question")
-
-  assessment Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  bank       QuestionBank @relation(fields: [bankId], references: [id], onDelete: Cascade)
-
-  @@map("assessment_bank_config")
-}
-
-model GradebookRecord {
-  id           String @id @default(cuid())
-  studentId    String @map("student_id")
-  courseId     String @map("course_id")
-  assessmentId String @map("assessment_id")
-
-  finalScore Float   @map("final_score")
-  isPassed   Boolean @map("is_passed")
-
-  bestAttemptId String? @unique @map("best_attempt_id")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  student     Student    @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  course      Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  assessment  Assessment @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
-  bestAttempt Attempt?   @relation("BestAttempt", fields: [bestAttemptId], references: [id])
-
-  @@unique([studentId, assessmentId])
-  @@map("gradebook_record")
 }
 
 //////////////////////////////////////////////////
@@ -1108,30 +613,226 @@ model Report {
 
 //////////////////////////////////////////////////
 // AI RECOMMENDATION SYSTEM (Managed by Python)
+// itemType is always "TUTOR" — course recommendations removed.
+// features JSONB schema for TutorItem:
+//   { subjectSlugs: string[], gradeSlugs: string[], specialization: string,
+//     experience: int, pricePerHour: float, availabilitySlots: [{dayOfWeek, startTime, endTime}] }
+// metrics JSONB schema:
+//   { rating: float, reviewCount: int, studentCount: int, bookingCount: int }
+// User.recommendation JSONB schema:
+//   { explicitPreferences: { subjectSlugs, gradeSlugs },
+//     implicitPreferences: { viewedTutorIds, bookedTutorIds },
+//     embeddingVector: float[] }
 //////////////////////////////////////////////////
 
-model Item {
+model TutorItem {
   id              String                      @id
-  itemType        String                      @map("itemType")
-  basicInfo       Json                        @map("basicInfo")
+  /// Always "TUTOR"
+  itemType        String                      @default("TUTOR") @map("item_type")
+  /// { name, avatarUrl }
+  basicInfo       Json                        @map("basic_info")
+  /// { subjectSlugs, gradeSlugs, specialization, experience, pricePerHour, availabilitySlots }
   features        Json
+  /// { rating, reviewCount, studentCount, bookingCount }
   metrics         Json
-  embeddingVector Unsupported("vector(384)")? @map("embeddingVector")
-  createdAt       DateTime                    @default(now()) @map("createdAt")
-  updatedAt       DateTime                    @updatedAt @map("updatedAt")
+  embeddingVector Unsupported("vector(384)")? @map("embedding_vector")
+  createdAt       DateTime                    @default(now()) @map("created_at")
+  updatedAt       DateTime                    @updatedAt @map("updated_at")
 
-  @@map("items")
+  @@index([itemType])
+  @@map("tutor_items")
 }
 
-model Interaction {
+/// Tutor interaction events from NestJS via RabbitMQ.
+/// type values: VIEW_PROFILE | BOOKING_CREATED | BOOKING_COMPLETED | RATING | BID_ACCEPTED
+/// value is a float weight (see INTERACTION_WEIGHTS in Python layer)
+model TutorInteraction {
   id        Int      @id @default(autoincrement())
-  userId    String   @map("userId")
-  itemId    String   @map("itemId")
-  itemType  String   @map("itemType")
+  userId    String   @map("user_id")
+  tutorId   String   @map("tutor_id")
   type      String
+  /// Pre-computed weight: VIEW=0.05, BOOKING_CREATED=0.40, BOOKING_COMPLETED=0.50, RATING=0.30, BID_ACCEPTED=0.20
   value     Float    @default(1.0)
   context   Json?
-  createdAt DateTime @default(now()) @map("createdAt")
+  createdAt DateTime @default(now()) @map("created_at")
 
-  @@map("interactions")
+  @@index([userId])
+  @@index([tutorId])
+  @@index([userId, tutorId])
+  @@index([type])
+  @@map("tutor_interactions")
+}
+
+//////////////////////////////////////////////////
+// REVERSE MATCHING SYSTEM
+//////////////////////////////////////////////////
+
+model TutorRequest {
+  id        String  @id @default(cuid())
+  studentId String  @map("student_id")
+  subjectId String? @map("subject_id")
+  gradeId   String? @map("grade_id")
+
+  title       String
+  description String
+  mode        TutoringMode
+  budget        Float?
+  totalSessions Int?    @map("total_sessions")
+
+  status RequestStatus @default(OPEN)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  student User     @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subject Subject? @relation(fields: [subjectId], references: [id])
+  grade   Grade?   @relation(fields: [gradeId], references: [id])
+
+  bids          TutorBid[]
+  scheduleRules ScheduleRule[]
+  booking       Booking?
+
+  sessions Session[]
+
+  @@index([studentId])
+  @@index([subjectId])
+  @@index([gradeId])
+  @@index([status])
+  @@map("tutor_request")
+}
+
+model TutorBid {
+  id        String @id @default(cuid())
+  requestId String @map("request_id")
+  tutorId   String @map("tutor_id")
+
+  proposedPrice Float?  @map("proposed_price")
+  message       String?
+
+  status BidStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  request TutorRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  tutor   Tutor        @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@unique([requestId, tutorId])
+  @@index([requestId])
+  @@index([tutorId])
+  @@map("tutor_bid")
+}
+
+model UserAvailability {
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, dayOfWeek])
+  @@map("user_availability")
+}
+
+model ScheduleRule {
+  id        String  @id @default(cuid())
+  bookingId String? @map("booking_id")
+  requestId String? @map("request_id")
+
+  dayOfWeek Int    @map("day_of_week")
+  startTime String @map("start_time")
+  endTime   String @map("end_time")
+
+  booking Booking?      @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  request TutorRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([bookingId])
+  @@index([requestId])
+  @@map("schedule_rule")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  bookingId String?  @map("booking_id")
+  title     String?
+  order     Int?
+  startTime DateTime @map("start_time")
+  endTime   DateTime @map("end_time")
+
+  status     SessionStatus @default(SCHEDULED)
+  meetingUrl String?       @map("meeting_url")
+  notes      String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  booking Booking? @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+
+  attendances    SessionAttendance[]
+  tutorRequest   TutorRequest?       @relation(fields: [tutorRequestId], references: [id])
+  tutorRequestId String?
+
+  @@index([bookingId])
+  @@index([startTime])
+  @@map("session")
+}
+
+model SessionAttendance {
+  id        String @id @default(cuid())
+  sessionId String @map("session_id")
+  studentId String @map("student_id")
+
+  status AttendanceStatus @default(PRESENT)
+  notes  String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  student User    @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, studentId])
+  @@map("session_attendance")
+}
+
+model Booking {
+  id        String  @id @default(cuid())
+  requestId String? @unique @map("request_id")
+  studentId String  @map("student_id")
+  tutorId   String  @map("tutor_id")
+  subjectId String? @map("subject_id")
+
+  startDate     DateTime? @map("start_date")
+  totalSessions Int?      @map("total_sessions")
+
+  mode   TutoringMode
+  status BookingStatus @default(PENDING)
+
+  meetingUrl String? @map("meeting_url")
+  address    String? @map("address")
+
+  price         Float?
+  paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
+  message       String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  request       TutorRequest?  @relation(fields: [requestId], references: [id], onDelete: SetNull)
+  student       User           @relation("StudentBookings", fields: [studentId], references: [id])
+  tutor         Tutor          @relation(fields: [tutorId], references: [id])
+  subject       Subject?       @relation(fields: [subjectId], references: [id])
+  scheduleRules ScheduleRule[]
+
+  sessions Session[]
+
+  @@index([studentId])
+  @@index([tutorId])
+  @@map("booking")
 }

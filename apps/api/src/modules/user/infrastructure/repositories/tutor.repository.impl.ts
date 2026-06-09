@@ -66,18 +66,9 @@ export class PrismaTutorRepository implements ITutorRepository {
     if (params.search) {
       const search = params.search;
       andConditions.push({
-        OR: [
-          {
-            profile: {
-              nickname: { contains: search, mode: 'insensitive' },
-            },
-          },
-          {
-            tutor: {
-              specialization: { contains: search, mode: 'insensitive' },
-            },
-          },
-        ],
+        tutor: {
+          specialization: { contains: search, mode: 'insensitive' },
+        },
       });
     }
 
@@ -103,6 +94,36 @@ export class PrismaTutorRepository implements ITutorRepository {
       });
     }
 
+    if (params.subjectIds && params.subjectIds.length > 0) {
+      andConditions.push({
+        tutor: {
+          subjects: {
+            some: {
+              OR: [
+                { id: { in: params.subjectIds } },
+                { slug: { in: params.subjectIds } },
+              ],
+            },
+          },
+        },
+      });
+    }
+
+    if (params.gradeIds && params.gradeIds.length > 0) {
+      andConditions.push({
+        tutor: {
+          grades: {
+            some: {
+              OR: [
+                { id: { in: params.gradeIds } },
+                { slug: { in: params.gradeIds } },
+              ],
+            },
+          },
+        },
+      });
+    }
+
     if (andConditions.length > 0) {
       where.AND = andConditions;
     }
@@ -110,7 +131,6 @@ export class PrismaTutorRepository implements ITutorRepository {
     const sortOrder = params.sortOrder ?? 'asc';
     const orderByMap: Record<string, Prisma.UserOrderByWithRelationInput> = {
       createdAt: { createdAt: sortOrder },
-      nickname: { profile: { nickname: sortOrder } },
       pricePerHour: { tutor: { pricePerHour: sortOrder } },
       rating: { tutor: { rating: sortOrder } },
       reviewCount: { tutor: { reviewCount: sortOrder } },
@@ -129,27 +149,45 @@ export class PrismaTutorRepository implements ITutorRepository {
         orderBy,
         skip: params.skip,
         take: params.limit,
-        include: { profile: true, tutor: true },
+        include: { tutor: true },
       }),
     ]);
 
-    const data: TutorWithProfile[] = users.map((user) => ({
-      tutor: Tutor.create(user.id, {
-        userId: user.id,
-        bio: user.tutor?.bio ?? null,
-        specialization: user.tutor?.specialization ?? null,
-        experience: user.tutor?.experience ?? null,
-        education: user.tutor?.education ?? null,
-        pricePerHour: user.tutor?.pricePerHour ?? null,
-        rating: user.tutor?.rating ?? 0,
-        reviewCount: user.tutor?.reviewCount ?? 0,
-        studentCount: user.tutor?.studentCount ?? 0,
-      }),
-      profile: {
-        nickname: user.profile?.nickname ?? null,
-        avatarUrl: user.profile?.avatarUrl ?? null,
-      },
-    }));
+    const data: TutorWithProfile[] = users.map((user: unknown) => {
+      const u = user as {
+        id: string;
+        nickname: string | null;
+        avatarUrl: string | null;
+        tutor: {
+          bio: string | null;
+          specialization: string | null;
+          experience: number | null;
+          education: string | null;
+          pricePerHour: number | null;
+          rating: number;
+          reviewCount: number;
+          studentCount: number;
+        } | null;
+      };
+
+      return {
+        tutor: Tutor.create(u.id, {
+          userId: u.id,
+          bio: u.tutor?.bio ?? null,
+          specialization: u.tutor?.specialization ?? null,
+          experience: u.tutor?.experience ?? null,
+          education: u.tutor?.education ?? null,
+          pricePerHour: u.tutor?.pricePerHour ?? null,
+          rating: u.tutor?.rating ?? 0,
+          reviewCount: u.tutor?.reviewCount ?? 0,
+          studentCount: u.tutor?.studentCount ?? 0,
+        }),
+        profile: {
+          nickname: u.nickname ?? null,
+          avatarUrl: u.avatarUrl ?? null,
+        },
+      };
+    });
 
     return createQueryResult(data, total, params);
   }

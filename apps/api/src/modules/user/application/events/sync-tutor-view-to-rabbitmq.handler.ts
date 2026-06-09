@@ -13,9 +13,8 @@ export class SyncTutorViewToRabbitMqHandler implements IEventHandler<TutorViewed
   async handle(event: TutorViewedDomainEvent) {
     await this.messageBroker.publishEvent(EVENTS.INTERACTION_LOGGED, {
       userId: event.viewerId,
-      itemId: event.tutorId,
-      itemType: 'TUTOR',
-      interactionType: 'VIEW',
+      tutorId: event.tutorId,
+      interactionType: 'VIEW_PROFILE',
       value: 1.0,
     });
   }

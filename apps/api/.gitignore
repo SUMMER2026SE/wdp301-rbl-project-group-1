@@ -58,3 +58,7 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 /generated/prisma
 # Added by code-review-graph
 .code-review-graph/
+.contextos/
+.mcp.json
+.codex
+.cursor

@@ -46,7 +46,8 @@ async function bootstrap() {
     setupSwagger(app);
   }
 
-  await app.listen(process.env.PORT ?? 8080);
+  const port = process.env.PORT ?? 8080;
+  await app.listen(port, '0.0.0.0');
 }
 
 void bootstrap().catch((err) => {

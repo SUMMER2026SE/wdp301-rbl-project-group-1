@@ -55,6 +55,8 @@ export class TutorController {
       specialization: query.specialization,
       minPrice: query.minPrice,
       maxPrice: query.maxPrice,
+      subjectIds: query.subjectIds,
+      gradeIds: query.gradeIds,
     };
 
     const result = await this.queryBus.execute<

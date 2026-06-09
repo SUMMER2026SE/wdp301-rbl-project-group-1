@@ -24,13 +24,13 @@ export class GetRecommendedTutorsHandler implements IQueryHandler<GetRecommended
 
     if (recommendedIds.length === 0) return [];
 
-    // 2. Hydrate with full data from Prisma (mirrors TutorProfileResult + user identity)
+    // 2. Hydrate with full data from Prisma (implicit M:M, consolidated user)
     const tutors = await this.prisma.tutor.findMany({
       where: { id: { in: recommendedIds } },
       include: {
-        user: { include: { profile: true } },
-        subjects: { include: { subject: true } },
-        grades: { include: { grade: true } },
+        user: true,
+        subjects: true,
+        grades: true,
       },
     });
 
@@ -43,8 +43,8 @@ export class GetRecommendedTutorsHandler implements IQueryHandler<GetRecommended
       if (!t) continue;
       result.push({
         id: t.id,
-        name: t.user.profile?.nickname ?? t.user.email,
-        avatarUrl: t.user.profile?.avatarUrl ?? null,
+        name: t.user.nickname ?? t.user.email,
+        avatarUrl: t.user.avatarUrl ?? null,
         bio: t.bio ?? null,
         specialization: t.specialization ?? null,
         experience: t.experience ?? null,
@@ -54,14 +54,14 @@ export class GetRecommendedTutorsHandler implements IQueryHandler<GetRecommended
         reviewCount: t.reviewCount,
         studentCount: t.studentCount,
         subjects: t.subjects.map((s) => ({
-          id: s.subject.id,
-          name: s.subject.name,
-          slug: s.subject.slug,
+          id: s.id,
+          name: s.name,
+          slug: s.slug,
         })),
         grades: t.grades.map((g) => ({
-          id: g.grade.id,
-          name: g.grade.name,
-          slug: g.grade.slug,
+          id: g.id,
+          name: g.name,
+          slug: g.slug,
         })),
       });
     }

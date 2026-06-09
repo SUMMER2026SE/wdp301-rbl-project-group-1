@@ -20,4 +20,9 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
   findById(id: string): Promise<User | null>;
   findAll(params: FindAllUsersParams): Promise<FindAllUsersResult>;
+
+  /** Update student M:M grades via implicit relation */
+  updateStudentGrades(userId: string, gradeIds: string[]): Promise<void>;
+  /** Update student M:M subjects via implicit relation */
+  updateStudentSubjects(userId: string, subjectIds: string[]): Promise<void>;
 }

@@ -6,9 +6,20 @@ default:
 
 variables:
   npm_config_cache: "$CI_PROJECT_DIR/.npm"
+  
+  # Cấu hình Google Artifact Registry
+  ARTIFACT_REGISTRY: asia-southeast1-docker.pkg.dev/edura-495704/edura-repo
+  DOCKER_IMAGE_NAME: $ARTIFACT_REGISTRY/edura-api:$CI_COMMIT_REF_SLUG
+  DOCKER_IMAGE_LATEST: $ARTIFACT_REGISTRY/edura-api:latest
+  
+  # Thông tin Workload Identity Federation
+  WORKLOAD_IDENTITY_PROVIDER: "projects/580325392054/locations/global/workloadIdentityPools/gitlab-pool/providers/gitlab-provider"
+  SERVICE_ACCOUNT: "gitlab-ci-deploy@edura-495704.iam.gserviceaccount.com"
 
 stages:
   - test
+  - build
+  - deploy
 
 cache:
   key:
@@ -50,4 +61,73 @@ build_check:
     - npm run build
   rules:
     - if: '$CI_MERGE_REQUEST_ID'
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|edura)$/'
+
+# -----------------------------------------------------------
+# BUILD DOCKER IMAGE
+# -----------------------------------------------------------
+build_docker:
+  stage: build
+  image: google/cloud-sdk:alpine
+  services:
+    - docker:24.0.5-dind
+  id_tokens:
+    GCP_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - echo "Cài đặt Docker CLI..."
+    - apk add --no-cache docker-cli
+
+    - echo "Xác thực với Google Cloud bằng Workload Identity Federation..."
+    - echo ${GCP_OIDC_TOKEN} > /tmp/oidc_token.txt
+    - gcloud iam workload-identity-pools create-cred-config ${WORKLOAD_IDENTITY_PROVIDER} --service-account=${SERVICE_ACCOUNT} --credential-source-file=/tmp/oidc_token.txt --output-file=/tmp/gcp_cred.json
+    - gcloud auth login --cred-file=/tmp/gcp_cred.json
+    
+    - echo "Cấu hình Docker login vào Artifact Registry..."
+    - gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
+    
+    - echo "Build Docker image..."
+    - docker build -t $DOCKER_IMAGE_NAME .
+    - echo "Push Docker image lên Registry..."
+    - docker push $DOCKER_IMAGE_NAME
+    
+    # Chỉ tag thành latest nếu đang ở nhánh mặc định (main)
+    - |
+      if [ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]; then
+        docker tag $DOCKER_IMAGE_NAME $DOCKER_IMAGE_LATEST
+        docker push $DOCKER_IMAGE_LATEST
+      fi
+  rules:
+    - if: '$CI_COMMIT_BRANCH =~ /^(main|master|edura)$/'
+
+# -----------------------------------------------------------
+# DEPLOY TO GOOGLE CLOUD RUN
+# -----------------------------------------------------------
+deploy_to_cloud_run:
+  stage: deploy
+  image: google/cloud-sdk:latest
+  id_tokens:
+    GCP_OIDC_TOKEN:
+      aud: https://gitlab.com
+  script:
+    - echo "Xác thực với Google Cloud bằng Workload Identity Federation..."
+    - echo ${GCP_OIDC_TOKEN} > /tmp/oidc_token.txt
+    - gcloud iam workload-identity-pools create-cred-config ${WORKLOAD_IDENTITY_PROVIDER} --service-account=${SERVICE_ACCOUNT} --credential-source-file=/tmp/oidc_token.txt --output-file=/tmp/gcp_cred.json
+    - gcloud auth login --cred-file=/tmp/gcp_cred.json
+    - gcloud config set project edura-495704
+    
+    - echo "Deploy lên Cloud Run..."
+    - >
+      gcloud run deploy edura-api 
+      --image $DOCKER_IMAGE_NAME 
+      --region asia-southeast1 
+      --platform managed 
+      --allow-unauthenticated 
+      --memory 2Gi 
+      --cpu 1 
+      --min-instances 0 
+      --max-instances 1 
+  environment:
+    name: production
+  rules:
     - if: '$CI_COMMIT_BRANCH =~ /^(main|master|edura)$/'

@@ -5,9 +5,9 @@
 export const EVENTS = {
   USER_CREATED: 'user_created',
   TUTOR_CREATED: 'tutor_created',
-  COURSE_CREATED: 'course_created',
-  COURSE_UPDATED: 'course_updated',
-  ENROLLMENT_CREATED: 'enrollment_created',
+  TUTOR_UPDATED: 'tutor_updated',
+  BOOKING_CREATED: 'booking_created',
+  BOOKING_COMPLETED: 'booking_completed',
   INTERACTION_LOGGED: 'interaction_logged',
 } as const;
 

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import { IJwtService } from '../../application/services/jwt.service';
 
 @Injectable()
@@ -12,10 +13,13 @@ export class JwtServiceImpl implements IJwtService {
 
   async sign(payload: Record<string, unknown>): Promise<string> {
     const expiresIn = this.configService.get<string>('auth.accessTokenExpires');
-    return this.jwt.signAsync(payload, {
-      secret: this.configService.get<string>('auth.secretKey'),
-      expiresIn: expiresIn as unknown as undefined,
-    });
+    return this.jwt.signAsync(
+      { ...payload, jti: randomUUID() },
+      {
+        secret: this.configService.get<string>('auth.secretKey'),
+        expiresIn: expiresIn as unknown as undefined,
+      },
+    );
   }
 
   async verify<T extends object = Record<string, unknown>>(
@@ -30,10 +34,13 @@ export class JwtServiceImpl implements IJwtService {
     const expiresIn = this.configService.get<string>(
       'auth.refreshTokenExpires',
     );
-    return this.jwt.signAsync(payload, {
-      secret: this.configService.get<string>('auth.refreshSecretKey'),
-      expiresIn: expiresIn as unknown as undefined,
-    });
+    return this.jwt.signAsync(
+      { ...payload, jti: randomUUID() },
+      {
+        secret: this.configService.get<string>('auth.refreshSecretKey'),
+        expiresIn: expiresIn as unknown as undefined,
+      },
+    );
   }
 
   async verifyRefresh<T extends object = Record<string, unknown>>(

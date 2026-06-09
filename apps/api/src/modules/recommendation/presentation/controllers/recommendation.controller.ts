@@ -4,12 +4,9 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { BaseResponse } from '../../../../shared/presentation/responses/base-response';
 import { ApiOkResponseWrapped } from '../../../../shared/presentation/decorators/api-response.decorator';
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
-import { GetRecommendedCoursesQuery } from '../../application/queries/get-recommended-courses/get-recommended-courses.query';
-import type { GetRecommendedCoursesResult } from '../../application/queries/get-recommended-courses/get-recommended-courses.result';
 import { GetRecommendedTutorsQuery } from '../../application/queries/get-recommended-tutors/get-recommended-tutors.query';
 import type { GetRecommendedTutorsResult } from '../../application/queries/get-recommended-tutors/get-recommended-tutors.result';
 import {
-  RecommendedCourseItemDto,
   RecommendedTutorItemDto,
 } from '../schemas/recommendation-response.dto';
 
@@ -18,25 +15,6 @@ import {
 @ApiBearerAuth()
 export class RecommendationController {
   constructor(private readonly queryBus: QueryBus) {}
-
-  @Get('courses')
-  @ApiOperation({
-    operationId: 'getRecommendedCourses',
-    summary: 'Get personalized course recommendations for the current user',
-    description:
-      'Returns a list of courses ranked by similarity to the user preference vector from the AI service.',
-  })
-  @ApiOkResponseWrapped(RecommendedCourseItemDto, { isArray: true })
-  async getRecommendedCourses(
-    @CurrentUser() user: { userId: string },
-  ): Promise<BaseResponse<GetRecommendedCoursesResult>> {
-    const result = await this.queryBus.execute<
-      GetRecommendedCoursesQuery,
-      GetRecommendedCoursesResult
-    >(new GetRecommendedCoursesQuery(user.userId));
-
-    return BaseResponse.ok(result);
-  }
 
   @Get('tutors')
   @ApiOperation({

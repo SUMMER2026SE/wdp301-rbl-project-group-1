@@ -14,13 +14,13 @@ import { RATE_LIMIT_KEY } from '../decorators/decorator.constants';
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private static readonly DEFAULT_LIMIT = 10;
+  private static readonly DEFAULT_LIMIT = 100;
   private static readonly DEFAULT_TTL_SECONDS = 60;
 
   constructor(
     @Inject(CACHE_SERVICE) private readonly cacheService: ICache,
     private readonly reflector: Reflector,
-  ) {}
+  ) { }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<{
@@ -45,21 +45,31 @@ export class RateLimitGuard implements CanActivate {
     const routePath = this.resolveRoutePath(request);
     const key = `rate:${request.method ?? 'UNKNOWN'}:${routePath}:${clientIp}`;
 
-    const current = await (this.cacheService as RedisService)
-      .getClient()
-      .incr(key);
-
-    if (current === 1) {
-      await (this.cacheService as RedisService)
+    try {
+      const current = await (this.cacheService as RedisService)
         .getClient()
-        .expire(key, ttlSeconds);
-    }
+        .incr(key);
 
-    if (current > limit) {
-      throw new HttpException(
-        'Too many requests',
-        HttpStatus.TOO_MANY_REQUESTS,
-      );
+      if (current === 1) {
+        await (this.cacheService as RedisService)
+          .getClient()
+          .expire(key, ttlSeconds);
+      }
+
+      if (current > limit) {
+        throw new HttpException(
+          'Too many requests',
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      // Fail-open: if Redis is unreachable or times out, we allow the request 
+      // rather than crashing the entire API.
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`[RateLimitGuard] Redis error: ${message}`);
     }
 
     return true;

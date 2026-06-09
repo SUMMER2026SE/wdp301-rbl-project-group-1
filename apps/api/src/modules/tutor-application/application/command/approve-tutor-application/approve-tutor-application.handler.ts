@@ -77,7 +77,7 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
     const dispatchedEvents: DomainEvent[] = [];
 
     const { savedUserId } = await this.unitOfWork.execute(async () => {
-      // Build User + Tutor profile from the full application data
+      // Build User with consolidated profile fields + Tutor profile
       const newUser = User.create('', {
         email: application.email,
         password: hashedPassword,
@@ -87,6 +87,9 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
         isFlag: false,
         reportCount: 0,
         createdAt: new Date(),
+        // Profile fields (consolidated into User)
+        nickname: application.email.split('@')[0],
+        avatarUrl: application.avatarUrl ?? null,
       });
 
       const tutorProfile = Tutor.create('', {
@@ -104,24 +107,27 @@ export class ApproveTutorApplicationHandler implements ICommandHandler<
 
       const savedUser = await this.userRepository.save(newUser);
 
+      // Link subjects & grades using implicit many-to-many on Tutor
       const tx = PrismaTransactionContext.getClient() ?? this.prisma;
       if (application.subjectIds && application.subjectIds.length > 0) {
-        await tx.tutorSubject.createMany({
-          data: application.subjectIds.map((subjectId) => ({
-            tutorId: savedUser.id,
-            subjectId,
-          })),
-          skipDuplicates: true,
+        await tx.tutor.update({
+          where: { id: savedUser.id },
+          data: {
+            subjects: {
+              connect: application.subjectIds.map((id) => ({ id })),
+            },
+          },
         });
       }
 
       if (application.gradeIds && application.gradeIds.length > 0) {
-        await tx.tutorGrade.createMany({
-          data: application.gradeIds.map((gradeId) => ({
-            tutorId: savedUser.id,
-            gradeId,
-          })),
-          skipDuplicates: true,
+        await tx.tutor.update({
+          where: { id: savedUser.id },
+          data: {
+            grades: {
+              connect: application.gradeIds.map((id) => ({ id })),
+            },
+          },
         });
       }
 

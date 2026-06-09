@@ -16,6 +16,24 @@ export const GetTutorsQuerySchema = BaseQuerySchema.extend({
     description: 'Maximum price per hour',
     example: 2000000,
   }),
+  subjectIds: z
+    .preprocess(
+      (v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]),
+      z.array(z.string()).optional(),
+    )
+    .meta({
+      description: 'Filter by one or more subject IDs or slugs',
+      example: ['clxsubject00000123456789'],
+    }),
+  gradeIds: z
+    .preprocess(
+      (v) => (v === undefined ? undefined : Array.isArray(v) ? v : [v]),
+      z.array(z.string()).optional(),
+    )
+    .meta({
+      description: 'Filter by one or more grade IDs or slugs',
+      example: ['clxgrade00000123456789'],
+    }),
 }).meta({ id: 'GetTutorsQueryDto' });
 
 export type GetTutorsQueryParams = zod.infer<typeof GetTutorsQuerySchema>;

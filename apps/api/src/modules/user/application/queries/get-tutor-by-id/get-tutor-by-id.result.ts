@@ -10,4 +10,12 @@ export interface GetTutorByIdResult {
   rating: number;
   reviewCount: number;
   studentCount: number;
+  availability: {
+    id: string;
+    dayOfWeek: number;
+    startTime: string;
+    endTime: string;
+    createdAt: string;
+    updatedAt: string;
+  }[];
 }

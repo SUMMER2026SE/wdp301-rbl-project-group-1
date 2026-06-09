@@ -4,7 +4,7 @@ import {
   UserRole as PrismaUserRole,
 } from '../../../../../generated/prisma/client';
 import { IMapper } from '../../../../shared/application/interfaces/mapper.interface';
-import { UserRole } from '../../../../shared/domain/enums/enums';
+import { Gender, UserRole } from '../../../../shared/domain/enums/enums';
 import { User } from '../../domain/entities/user.entity';
 
 export class UserMapper implements IMapper<
@@ -21,6 +21,18 @@ export class UserMapper implements IMapper<
       isFlag: raw.isFlag,
       reportCount: raw.reportCount,
       createdAt: raw.createdAt,
+
+      // Profile fields
+      nickname: raw.nickname,
+      avatarUrl: raw.avatarUrl,
+      phone: raw.phone,
+      dateOfBirth: raw.dateOfBirth,
+      gender: raw.gender ? (raw.gender as unknown as Gender) : null,
+      address: raw.address,
+
+      // Student fields
+      school: raw.school,
+      learningGoal: raw.learningGoal,
     });
   }
 
@@ -34,6 +46,18 @@ export class UserMapper implements IMapper<
       isFlag: domain.isFlag,
       reportCount: domain.reportCount,
       createdAt: domain.createdAt,
+
+      // Profile fields
+      nickname: domain.nickname ?? null,
+      avatarUrl: domain.avatarUrl ?? null,
+      phone: domain.phone ?? null,
+      dateOfBirth: domain.dateOfBirth ?? null,
+      gender: domain.gender ?? null,
+      address: domain.address ?? null,
+
+      // Student fields
+      school: domain.school ?? null,
+      learningGoal: domain.learningGoal ?? null,
     };
   }
 }

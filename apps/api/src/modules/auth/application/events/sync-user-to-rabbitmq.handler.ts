@@ -18,30 +18,32 @@ export class SyncUserToRabbitMqHandler implements IEventHandler<UserCreatedDomai
     let gradeSlugs: string[] = [];
 
     if (event.role === UserRole.STUDENT) {
-      const student = await this.prisma.student.findUnique({
+      // Student subjects/grades are implicit M:M on User
+      const user = await this.prisma.user.findUnique({
         where: { id: event.userId },
         include: {
-          subjects: { include: { subject: true } },
-          grades: { include: { grade: true } },
+          subjects: true,
+          grades: true,
         },
       });
 
-      if (student) {
-        subjectSlugs = student.subjects.map((s) => s.subject.slug);
-        gradeSlugs = student.grades.map((g) => g.grade.slug);
+      if (user) {
+        subjectSlugs = user.subjects.map((s) => s.slug);
+        gradeSlugs = user.grades.map((g) => g.slug);
       }
     } else if (event.role === UserRole.TUTOR) {
+      // Tutor subjects/grades are implicit M:M on Tutor
       const tutor = await this.prisma.tutor.findUnique({
         where: { id: event.userId },
         include: {
-          subjects: { include: { subject: true } },
-          grades: { include: { grade: true } },
+          subjects: true,
+          grades: true,
         },
       });
 
       if (tutor) {
-        subjectSlugs = tutor.subjects.map((s) => s.subject.slug);
-        gradeSlugs = tutor.grades.map((g) => g.grade.slug);
+        subjectSlugs = tutor.subjects.map((s) => s.slug);
+        gradeSlugs = tutor.grades.map((g) => g.slug);
       }
     }
 

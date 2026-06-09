@@ -13,36 +13,41 @@ export class SyncTutorToRabbitMqHandler implements IEventHandler<TutorCreatedDom
   ) {}
 
   async handle(event: TutorCreatedDomainEvent) {
-    // Fetch tutor and user info to get the name and metadata
-    const user = await this.prisma.user.findUnique({
+    // Fetch tutor with implicit M:M subjects/grades + user for nickname
+    const tutor = await this.prisma.tutor.findUnique({
       where: { id: event.tutorId },
       include: {
-        tutor: {
+        user: {
           include: {
-            subjects: { include: { subject: true } },
-            grades: { include: { grade: true } },
-          },
+            availabilities: true,
+          }
         },
-        profile: true,
+        subjects: true,
+        grades: true,
       },
     });
 
-    if (!user || !user.tutor) return;
+    if (!tutor) return;
 
-    const subjectSlugs = user.tutor.subjects.map((s) => s.subject.slug);
-    const gradeSlugs = user.tutor.grades.map((g) => g.grade.slug);
+    const subjectSlugs = tutor.subjects.map((s) => s.slug);
+    const gradeSlugs = tutor.grades.map((g) => g.slug);
+    const availabilitySlots = tutor.user.availabilities.map((slot) => ({
+      dayOfWeek: slot.dayOfWeek,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }));
 
     await this.messageBroker.publishEvent(EVENTS.TUTOR_CREATED, {
-      id: user.id, // Tutor ID is same as User ID
-      name: user.profile?.nickname || user.email,
-      specialization: user.tutor.specialization,
-      experience: user.tutor.experience,
-      education: user.tutor.education,
-      pricePerHour: user.tutor.pricePerHour
-        ? Number(user.tutor.pricePerHour)
-        : null,
+      id: tutor.id,
+      name: tutor.user.nickname || tutor.user.email,
+      avatarUrl: tutor.user.avatarUrl,
+      specialization: tutor.specialization,
+      experience: tutor.experience,
+      education: tutor.education,
+      pricePerHour: tutor.pricePerHour ? Number(tutor.pricePerHour) : null,
       subjectSlugs,
       gradeSlugs,
+      availabilitySlots,
     });
   }
 }

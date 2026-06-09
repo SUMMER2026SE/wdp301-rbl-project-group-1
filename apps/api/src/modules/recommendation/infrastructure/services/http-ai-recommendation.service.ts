@@ -11,7 +11,10 @@ interface AiCourseResponse {
 
 interface AiTutorResponse {
   user_id: string;
-  tutor_recommendations: string[];
+  tutor_ids: string[];
+  scores?: Record<string, any>;
+  strategy?: string;
+  cold_start?: boolean;
 }
 
 @Injectable()
@@ -49,7 +52,7 @@ export class HttpAiRecommendationService implements IAiRecommendationService {
           `${this.aiServiceUrl}/recommend/tutors/${userId}`,
         ),
       );
-      return response.data.tutor_recommendations ?? [];
+      return response.data.tutor_ids ?? [];
     } catch (error) {
       this.logger.warn(
         `AI service unavailable for tutors (user: ${userId}): ${String(error)}`,

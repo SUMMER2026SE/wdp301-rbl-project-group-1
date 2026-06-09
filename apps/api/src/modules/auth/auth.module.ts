@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CqrsModule } from '@nestjs/cqrs';
 import { JwtModule } from '@nestjs/jwt';
@@ -12,6 +12,8 @@ import { LogoutCommandHandler } from './application/commands/logout/logout.handl
 import { RefreshTokenCommandHandler } from './application/commands/refresh-token/refresh-token.handler';
 import { RegisterCommandHandler } from './application/commands/register/register.handler';
 import { ResetPasswordCommandHandler } from './application/commands/reset-password/reset-password.handler';
+import { SendVerifyEmailOtpCommandHandler } from './application/commands/send-verify-email-otp/send-verify-email-otp.handler';
+import { VerifyEmailCommandHandler } from './application/commands/verify-email/verify-email.handler';
 import { VerifyOtpCommandHandler } from './application/commands/verify-otp/verify-otp.handler';
 import { GetMeQueryHandler } from './application/queries/get-me/get-me.handler';
 import { IAuthRepository } from './domain/repositories/auth.repository.interface';
@@ -21,8 +23,6 @@ import { AuthController } from './presentation/controllers/auth.controller';
 import { IHashService } from './application/services/hash.service';
 import { IJwtService } from './application/services/jwt.service';
 import { IOtpService } from './application/services/otp.service';
-import { IOtpRepository } from './domain/repositories/otp.repository';
-import { PrismaOtpRepository } from './infrastructure/repositories/otp.repository.impl';
 import { GoogleOAuthService } from './infrastructure/services/google-auth.service';
 import { BcryptService } from './infrastructure/services/hash.service';
 import { JwtServiceImpl } from './infrastructure/services/jwt.service';
@@ -31,6 +31,7 @@ import { JwtStrategy } from './presentation/strategies/jwt.strategy';
 import { ResetTokenStrategy } from './presentation/strategies/reset-token.strategy';
 
 import { UserModule } from '../user/user.module';
+import { TutorApplicationModule } from '../tutor-application/tutor-application.module';
 
 import { SyncUserToRabbitMqHandler } from './application/events/sync-user-to-rabbitmq.handler';
 
@@ -43,6 +44,8 @@ const CommandHandlers = [
   ForgotPasswordCommandHandler,
   VerifyOtpCommandHandler,
   ResetPasswordCommandHandler,
+  SendVerifyEmailOtpCommandHandler,
+  VerifyEmailCommandHandler,
 ];
 
 const QueryHandlers = [GetMeQueryHandler];
@@ -54,6 +57,7 @@ const EventHandlers = [SyncUserToRabbitMqHandler];
     CqrsModule,
     PassportModule,
     UserModule,
+    forwardRef(() => TutorApplicationModule),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => {
@@ -88,10 +92,6 @@ const EventHandlers = [SyncUserToRabbitMqHandler];
     {
       provide: IAuthRepository,
       useClass: PrismaAuthRepository,
-    },
-    {
-      provide: IOtpRepository,
-      useClass: PrismaOtpRepository,
     },
     {
       provide: IOtpService,

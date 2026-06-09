@@ -1,9 +1,10 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
+import * as crypto from 'crypto';
 import { AuthTokenPayload } from 'src/modules/auth/domain/value-objects/auth-token-payload';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
-import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
+
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
 import { IAuthRepository } from '../../../domain/repositories/auth.repository.interface';
@@ -18,8 +19,6 @@ export class LoginCommandHandler
 {
   constructor(
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
-    @Inject(IProfileRepository)
-    private readonly profileRepository: IProfileRepository,
     @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
     @Inject(IHashService) private readonly hashService: IHashService,
     @Inject(IJwtService) private readonly jwtService: IJwtService,
@@ -42,16 +41,23 @@ export class LoginCommandHandler
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isVerified) {
+      throw new UnauthorizedException(
+        'Email is not verified. Please verify your email first.',
+      );
+    }
+
     const payload: AuthTokenPayload = {
       sub: String(user.id),
       email: user.email,
       role: user.role,
     };
 
-    const profile = await this.profileRepository.findByUserId(user.id);
-
     const accessToken = await jwtService.sign(payload);
-    const refreshToken = await jwtService.signRefresh(payload);
+    const refreshToken = await jwtService.signRefresh({
+      ...payload,
+      jti: crypto.randomUUID(),
+    });
 
     const refreshPayload = await jwtService.verifyRefresh<
       AuthTokenPayload & { exp?: number }
@@ -78,7 +84,7 @@ export class LoginCommandHandler
         id: user.id,
         email: user.email,
         role: user.role,
-        nickname: profile?.nickname ?? '',
+        nickname: user.nickname ?? '',
         isActive: user.isActive,
         isVerified: user.isVerified,
         isFlag: user.isFlag,

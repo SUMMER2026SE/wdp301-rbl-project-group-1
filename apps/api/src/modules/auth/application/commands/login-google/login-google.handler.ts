@@ -1,13 +1,12 @@
 import { Inject } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
-import { randomBytes } from 'crypto';
+
 import { AuthTokenPayload } from 'src/modules/auth/domain/value-objects/auth-token-payload';
-import { AuthProvider, UserRole } from 'src/shared/domain/enums/enums';
+import { AuthProvider } from 'src/shared/domain/enums/enums';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { UnauthorizedException } from '../../../../../shared/domain/exceptions/domain-exception';
 import { UserIdentity } from '../../../../user/domain/entities/user-identity.entity';
-import { User } from '../../../../user/domain/entities/user.entity';
-import { IProfileRepository } from '../../../../user/domain/repositories/profile.repository.interface';
+
 import { IUserIdentityRepository } from '../../../../user/domain/repositories/user-identity.repository.interface';
 import { IUserRepository } from '../../../../user/domain/repositories/user.repository.interface';
 import { RefreshToken } from '../../../domain/entities/refresh-token.entity';
@@ -30,8 +29,6 @@ export class LoginGoogleCommandHandler
     @Inject(IUserRepository) private readonly userRepository: IUserRepository,
     @Inject(IUserIdentityRepository)
     private readonly userIdentityRepository: IUserIdentityRepository,
-    @Inject(IProfileRepository)
-    private readonly profileRepository: IProfileRepository,
     @Inject(IAuthRepository) private readonly authRepository: IAuthRepository,
     @Inject(IHashService) private readonly hashService: IHashService,
     @Inject(IJwtService) private readonly jwtService: IJwtService,
@@ -65,22 +62,9 @@ export class LoginGoogleCommandHandler
     }
 
     if (!user) {
-      const generatedPassword = await this.hashService.hash(
-        randomBytes(32).toString('hex'),
+      throw new UnauthorizedException(
+        'Tài khoản chưa được đăng ký. Vui lòng đăng ký trước.',
       );
-
-      const userToSave = User.create('', {
-        email: googleUser.email,
-        password: generatedPassword,
-        role: UserRole.STUDENT,
-        isActive: true,
-        isVerified: Boolean(googleUser.emailVerified),
-        isFlag: false,
-        reportCount: 0,
-        createdAt: new Date(),
-      });
-
-      user = await this.userRepository.save(userToSave);
     } else if (googleUser.emailVerified && !user.isVerified) {
       user.verify();
       user = await this.userRepository.save(user);
@@ -112,8 +96,6 @@ export class LoginGoogleCommandHandler
       role: user.role,
     };
 
-    const profile = await this.profileRepository.findByUserId(user.id);
-
     const accessToken = await jwtService.sign(payload);
     const refreshToken = await jwtService.signRefresh(payload);
 
@@ -142,7 +124,8 @@ export class LoginGoogleCommandHandler
         id: user.id,
         email: user.email,
         role: user.role,
-        nickname: profile?.nickname ?? '',
+        // nickname is now directly on User (merged from Profile)
+        nickname: user.nickname ?? '',
         isActive: user.isActive,
         isVerified: user.isVerified,
         isFlag: user.isFlag,

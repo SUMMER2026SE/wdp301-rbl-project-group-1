@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && node -e \"try{require('child_process').execSync('ctx --version',{stdio:'ignore'})}catch{process.exit(1)}\" || npm install -g @minhpnq1807/contextos",
     "c": "node -e \"const fs=require('fs');const f='generated/prisma/client.ts';let c=fs.readFileSync(f,'utf8');c=c.replace(/import \\\\* as process from 'node:process'[\\\\s\\\\S]*?globalThis\\\\['__dirname'\\\\][^\\\\n]*\\\\n/,\\\"import * as process from 'node:process'\\\\nimport * as path from 'node:path'\\\\nglobalThis['__dirname'] = __dirname\\\\n\\\");fs.writeFileSync(f,c);console.log('Patched generated/prisma/client.ts for CJS compatibility');\""
   },
   "moduleNameMapper": {
@@ -53,6 +53,7 @@
     "axios": "^1.16.1",
     "bcrypt": "^6.0.0",
     "cloudinary": "^2.9.0",
+    "exceljs": "^4.4.0",
     "fastify": "^5.8.4",
     "google-auth-library": "^10.6.2",
     "googleapis": "^171.4.0",

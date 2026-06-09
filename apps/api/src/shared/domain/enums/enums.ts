@@ -17,42 +17,39 @@ export enum OtpType {
   TWO_FACTOR = 'TWO_FACTOR',
 }
 
-export enum CourseStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
-  ONGOING = 'ONGOING',
-  CLOSED = 'CLOSED',
-}
-
-export enum EnrollmentStatus {
-  PENDING = 'PENDING',
-  ACTIVE = 'ACTIVE',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
-
-export enum LessonStatus {
-  SCHEDULED = 'SCHEDULED',
-  ONGOING = 'ONGOING',
-  COMPLETED = 'COMPLETED',
-  CANCELLED = 'CANCELLED',
-}
-
-export enum AttendanceStatus {
-  PRESENT = 'PRESENT',
-  ABSENT = 'ABSENT',
-  LATE = 'LATE',
-}
-
 export enum PaymentStatus {
   PENDING = 'PENDING',
   PAID = 'PAID',
   FAILED = 'FAILED',
 }
 
+export enum TutoringMode {
+  ONLINE = 'ONLINE',
+  AT_HOME = 'AT_HOME',
+}
+
+export enum BookingStatus {
+  PENDING = 'PENDING',
+  AWAITING_PAYMENT = 'AWAITING_PAYMENT',
+  CONFIRMED = 'CONFIRMED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum RequestStatus {
+  OPEN = 'OPEN',
+  CLOSED = 'CLOSED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum BidStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED',
+}
+
 export enum NotificationType {
   SYSTEM = 'SYSTEM',
-  COURSE = 'COURSE',
   FORUM = 'FORUM',
 }
 
@@ -68,7 +65,7 @@ export enum AuthProvider {
 }
 
 export enum PaymentReferenceType {
-  COURSE_ENROLLMENT = 'COURSE_ENROLLMENT',
+  TUTOR_BOOKING = 'TUTOR_BOOKING',
 }
 
 export enum ResourceType {
@@ -76,4 +73,17 @@ export enum ResourceType {
   VIDEO = 'VIDEO',
   LINK = 'LINK',
   DOCUMENT = 'DOCUMENT',
+}
+
+export enum SessionStatus {
+  SCHEDULED = 'SCHEDULED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+}
+
+export enum AttendanceStatus {
+  PRESENT = 'PRESENT',
+  ABSENT = 'ABSENT',
+  LATE = 'LATE',
+  EXCUSED = 'EXCUSED',
 }

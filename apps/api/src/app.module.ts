@@ -2,10 +2,11 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { AcademicCatalogModule } from 'src/modules/academic-catalog/academic-catalog.module';
-import { CourseModule } from 'src/modules/course/course.module';
-import { EnrollmentModule } from 'src/modules/enrollment/enrollment.module';
+// TODO: Re-enable when Prisma models are defined
+// import { CourseModule } from 'src/modules/course/course.module';
 import { HealthModule } from 'src/modules/health/health.module';
-import { LessonModule } from 'src/modules/lesson/lesson.module';
+// import { AssessmentModule } from 'src/modules/assessment/assessment.module';
+// import { LessonModule } from 'src/modules/lesson/lesson.module';
 import { NotificationModule } from 'src/modules/notification/notification.module';
 import { TutorApplicationModule } from 'src/modules/tutor-application/tutor-application.module';
 import { UserModule } from 'src/modules/user/user.module';
@@ -18,7 +19,10 @@ import { DatabaseModule } from './shared/infrastructure/database/database.module
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { PaymentModule } from './modules/payment/payment.module';
-import { ResourceModule } from './modules/resource/resource.module';
+import { ScheduleAvailabilityModule } from './modules/schedule-availability/schedule-availability.module';
+import { BookingModule } from './modules/booking/booking.module';
+import { TutorRequestModule } from './modules/tutor-request/tutor-request.module';
+// import { ResourceModule } from './modules/resource/resource.module';
 import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
 
@@ -34,12 +38,16 @@ import { RecommendationModule } from './modules/recommendation/recommendation.mo
     UserModule,
     NotificationModule,
     AcademicCatalogModule,
-    CourseModule,
-    EnrollmentModule,
-    LessonModule,
+    // CourseModule,
+    // EnrollmentModule,
+    // LessonModule,
+    // AssessmentModule,
     TutorApplicationModule,
     PaymentModule,
-    ResourceModule,
+    ScheduleAvailabilityModule,
+    BookingModule,
+    TutorRequestModule,
+    // ResourceModule,
     RecommendationModule,
   ],
   providers: [
