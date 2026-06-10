@@ -1,3 +1,4 @@
+import type { RecommendedTutorItemDto } from "../../../recommendation/recommendationApi";
 import type { AcademicCatalogItem, TutorResponseDto } from "../tutorApi";
 import type { Tutor } from "../types";
 
@@ -45,6 +46,38 @@ export const mapTutorResponseToTutor = (tutor: TutorResponseDto): Tutor => {
     skills: specialization ? [specialization] : [],
     subjects: mapCatalogNames(tutor.subjects, tutor.subject),
     grades: mapCatalogNames(tutor.grades, tutor.grade),
+    bio: tutor.bio ?? undefined,
+    studentCount:
+      tutor.studentCount !== undefined && tutor.studentCount !== null
+        ? `${tutor.studentCount}`
+        : undefined,
+  };
+};
+
+export const mapRecommendedTutorResponseToTutor = (
+  tutor: RecommendedTutorItemDto,
+): Tutor => {
+  const name = tutor.name?.trim() || "Gia sư";
+  const specialization = tutor.specialization?.trim() || "";
+  const experienceText =
+    typeof tutor.experience === "number"
+      ? `${tutor.experience} năm kinh nghiệm`
+      : FALLBACK_TEXT;
+
+  return {
+    id: tutor.id,
+    name,
+    avatar: buildAvatarUrl(name, tutor.avatarUrl),
+    isOnline: false,
+    rating: tutor.rating ?? 0,
+    reviewCount: tutor.reviewCount ?? 0,
+    specialty: specialization || FALLBACK_TEXT,
+    experience: experienceText,
+    education: tutor.education ?? FALLBACK_TEXT,
+    pricePerHour: tutor.pricePerHour ?? 0,
+    skills: specialization ? [specialization] : [],
+    subjects: mapCatalogNames(tutor.subjects),
+    grades: mapCatalogNames(tutor.grades),
     bio: tutor.bio ?? undefined,
     studentCount:
       tutor.studentCount !== undefined && tutor.studentCount !== null
