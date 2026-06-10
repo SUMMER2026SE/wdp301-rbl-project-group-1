@@ -1,5 +1,11 @@
-import { BookingStatus, TutoringMode } from '../../../../shared/domain/enums/enums';
-import { QueryParams, QueryResult } from '../../../../shared/domain/common/query';
+import {
+  BookingStatus,
+  TutoringMode,
+} from '../../../../shared/domain/enums/enums';
+import {
+  QueryParams,
+  QueryResult,
+} from '../../../../shared/domain/common/query';
 import { Booking } from '../entities/booking.entity';
 
 export type FindBookingsParams = QueryParams & {

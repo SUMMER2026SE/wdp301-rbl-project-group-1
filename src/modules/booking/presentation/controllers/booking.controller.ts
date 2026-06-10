@@ -51,7 +51,6 @@ import { MySessionResultData } from '../../application/queries/get-my-sessions/g
 import { QueryResult } from '../../../../shared/domain/common/query';
 import { SessionResponseDto } from '../schemas/session-response.dto';
 import { GetMySessionsQueryDto } from '../schemas/get-my-sessions-query.dto';
-import { BookingStatus } from '../../../../shared/domain/enums/enums';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -94,7 +93,7 @@ export class BookingController {
         search: query.search,
         sortBy: query.sortBy,
         sortOrder: query.sortOrder,
-        status: query.status ?? BookingStatus.CONFIRMED,
+        status: query.status,
         mode: query.mode,
       }),
     );

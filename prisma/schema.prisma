@@ -30,6 +30,8 @@ enum SessionStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+  AWAITING_CONFIRMATION
+  RESCHEDULE_REQUESTED
 
   @@map("session_status")
 }
@@ -232,6 +234,13 @@ model User {
   sessionAttendances SessionAttendance[]
   availabilities     UserAvailability[]
 
+  // New relations
+  progressReports  ProgressReport[] @relation("StudentProgressReports")
+  reviews          Review[]         @relation("StudentReviews")
+  disputesReported DisputeTicket[]  @relation("DisputeReporter")
+  disputesTargeted DisputeTicket[]  @relation("DisputeTarget")
+  messagesSent     DisputeMessage[] @relation("MessageSender")
+
   @@map("user")
 }
 
@@ -276,6 +285,12 @@ model Tutor {
   grades    Grade[]    @relation("TutorGrades")
   bookings  Booking[]
   tutorBids TutorBid[]
+
+  // New relations
+  wallet          Wallet?
+  withdrawals     WithdrawalRequest[]
+  progressReports ProgressReport[]    @relation("TutorProgressReports")
+  reviews         Review[]            @relation("TutorReviews")
 
   @@map("tutor")
 }
@@ -401,7 +416,8 @@ model Resource {
   updatedAt DateTime  @updatedAt @map("updated_at")
   deletedAt DateTime? @map("deleted_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionResources SessionResource[]
 
   @@index([userId])
   @@index([deletedAt])
@@ -585,6 +601,10 @@ model Payment {
   status        PaymentStatus
   paymentMethod String?       @map("payment_method")
 
+  discountAmount Float?     @default(0) @map("discount_amount")
+  promotionId    String?    @map("promotion_id")
+  promotion      Promotion? @relation(fields: [promotionId], references: [id])
+
   orderCode     Int     @unique @default(autoincrement()) @map("order_code")
   checkoutUrl   String? @map("checkout_url")
   transactionId String? @map("transaction_id")
@@ -673,11 +693,11 @@ model TutorRequest {
   subjectId String? @map("subject_id")
   gradeId   String? @map("grade_id")
 
-  title       String
-  description String
-  mode        TutoringMode
+  title         String
+  description   String
+  mode          TutoringMode
   budget        Float?
-  totalSessions Int?    @map("total_sessions")
+  totalSessions Int?         @map("total_sessions")
 
   status RequestStatus @default(OPEN)
 
@@ -778,6 +798,8 @@ model Session {
   attendances    SessionAttendance[]
   tutorRequest   TutorRequest?       @relation(fields: [tutorRequestId], references: [id])
   tutorRequestId String?
+  disputeTickets DisputeTicket[]
+  resources      SessionResource[]
 
   @@index([bookingId])
   @@index([startTime])
@@ -791,6 +813,9 @@ model SessionAttendance {
 
   status AttendanceStatus @default(PRESENT)
   notes  String?
+
+  confirmedAt  DateTime? @map("confirmed_at")
+  studentNotes String?   @map("student_notes")
 
   createdAt DateTime @default(now()) @map("created_at")
 
@@ -821,6 +846,13 @@ model Booking {
   paymentStatus PaymentStatus @default(PENDING) @map("payment_status")
   message       String?
 
+  previousBookingId String?   @map("previous_booking_id")
+  previousBooking   Booking?  @relation("BookingExtension", fields: [previousBookingId], references: [id])
+  nextBookings      Booking[] @relation("BookingExtension")
+
+  promotionId String?    @map("promotion_id")
+  promotion   Promotion? @relation(fields: [promotionId], references: [id])
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -830,9 +862,230 @@ model Booking {
   subject       Subject?       @relation(fields: [subjectId], references: [id])
   scheduleRules ScheduleRule[]
 
-  sessions Session[]
+  sessions        Session[]
+  progressReports ProgressReport[]
+  reviews         Review[]
+  disputeTickets  DisputeTicket[]
 
   @@index([studentId])
   @@index([tutorId])
   @@map("booking")
+}
+
+//////////////////////////////////////////////////
+// EXPANSION MODULES
+//////////////////////////////////////////////////
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  PLATFORM_FEE
+
+  @@map("transaction_type")
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+
+  @@map("transaction_status")
+}
+
+enum WithdrawalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+
+  @@map("withdrawal_status")
+}
+
+enum DisputeStatus {
+  OPEN
+  IN_REVIEW
+  RESOLVED_REFUNDED
+  RESOLVED_REJECTED
+
+  @@map("dispute_status")
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED_AMOUNT
+
+  @@map("discount_type")
+}
+
+model ProgressReport {
+  id        String @id @default(cuid())
+  bookingId String @map("booking_id")
+  tutorId   String @map("tutor_id")
+  studentId String @map("student_id")
+
+  title   String
+  content String
+  score   Float?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  tutor   Tutor   @relation("TutorProgressReports", fields: [tutorId], references: [id])
+  student User    @relation("StudentProgressReports", fields: [studentId], references: [id])
+
+  @@index([bookingId])
+  @@index([tutorId])
+  @@index([studentId])
+  @@map("progress_report")
+}
+
+model Wallet {
+  id               String @id @default(cuid())
+  tutorId          String @unique @map("tutor_id")
+  availableBalance Float  @default(0) @map("available_balance")
+  pendingBalance   Float  @default(0) @map("pending_balance")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tutor        Tutor         @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@map("wallet")
+}
+
+model Transaction {
+  id       String @id @default(cuid())
+  walletId String @map("wallet_id")
+
+  amount Float
+  type   TransactionType
+  status TransactionStatus @default(PENDING)
+
+  referenceType String? @map("reference_type")
+  referenceId   String? @map("reference_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  wallet Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([walletId])
+  @@map("transaction")
+}
+
+model WithdrawalRequest {
+  id      String @id @default(cuid())
+  tutorId String @map("tutor_id")
+
+  amount      Float
+  bankCode    String @map("bank_code")
+  bankAccount String @map("bank_account")
+
+  status WithdrawalStatus @default(PENDING)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  tutor Tutor @relation(fields: [tutorId], references: [id], onDelete: Cascade)
+
+  @@index([tutorId])
+  @@map("withdrawal_request")
+}
+
+model Review {
+  id        String @id @default(cuid())
+  bookingId String @map("booking_id")
+  tutorId   String @map("tutor_id")
+  studentId String @map("student_id")
+
+  rating  Int
+  comment String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  booking Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  tutor   Tutor   @relation("TutorReviews", fields: [tutorId], references: [id])
+  student User    @relation("StudentReviews", fields: [studentId], references: [id])
+
+  @@index([bookingId])
+  @@index([tutorId])
+  @@map("review")
+}
+
+model DisputeTicket {
+  id        String  @id @default(cuid())
+  bookingId String? @map("booking_id")
+  sessionId String? @map("session_id")
+
+  reporterId String  @map("reporter_id")
+  targetId   String? @map("target_id")
+
+  reason String
+  status DisputeStatus @default(OPEN)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  booking  Booking? @relation(fields: [bookingId], references: [id], onDelete: SetNull)
+  session  Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  reporter User     @relation("DisputeReporter", fields: [reporterId], references: [id])
+  target   User?    @relation("DisputeTarget", fields: [targetId], references: [id])
+
+  messages DisputeMessage[]
+
+  @@index([reporterId])
+  @@map("dispute_ticket")
+}
+
+model DisputeMessage {
+  id       String @id @default(cuid())
+  ticketId String @map("ticket_id")
+  senderId String @map("sender_id")
+
+  content String
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket DisputeTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  sender User          @relation("MessageSender", fields: [senderId], references: [id])
+
+  @@index([ticketId])
+  @@map("dispute_message")
+}
+
+model SessionResource {
+  sessionId  String @map("session_id")
+  resourceId String @map("resource_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session  Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  resource Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+
+  @@id([sessionId, resourceId])
+  @@map("session_resource")
+}
+
+model Promotion {
+  id   String @id @default(cuid())
+  code String @unique
+
+  discountType  DiscountType @map("discount_type")
+  discountValue Float        @map("discount_value")
+  maxDiscount   Float?       @map("max_discount")
+
+  startDate DateTime? @map("start_date")
+  endDate   DateTime? @map("end_date")
+
+  usageLimit Int? @map("usage_limit")
+  usedCount  Int  @default(0) @map("used_count")
+
+  isActive Boolean @default(true) @map("is_active")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  bookings Booking[]
+  payments Payment[]
+
+  @@map("promotion")
 }

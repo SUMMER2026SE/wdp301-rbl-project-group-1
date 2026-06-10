@@ -20,7 +20,7 @@ export class SyncTutorToRabbitMqHandler implements IEventHandler<TutorCreatedDom
         user: {
           include: {
             availabilities: true,
-          }
+          },
         },
         subjects: true,
         grades: true,

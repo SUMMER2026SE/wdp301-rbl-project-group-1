@@ -11,7 +11,10 @@ import {
   FindBookingsParams,
   IBookingRepository,
 } from '../../domain/repositories/booking.repository.interface';
-import { createQueryResult, QueryResult } from '../../../../shared/domain/common/query';
+import {
+  createQueryResult,
+  QueryResult,
+} from '../../../../shared/domain/common/query';
 
 type BookingRecord = Prisma.BookingGetPayload<{
   include: {

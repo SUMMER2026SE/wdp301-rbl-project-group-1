@@ -20,7 +20,7 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     @Inject(CACHE_SERVICE) private readonly cacheService: ICache,
     private readonly reflector: Reflector,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<{
@@ -66,7 +66,7 @@ export class RateLimitGuard implements CanActivate {
       if (error instanceof HttpException) {
         throw error;
       }
-      // Fail-open: if Redis is unreachable or times out, we allow the request 
+      // Fail-open: if Redis is unreachable or times out, we allow the request
       // rather than crashing the entire API.
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`[RateLimitGuard] Redis error: ${message}`);

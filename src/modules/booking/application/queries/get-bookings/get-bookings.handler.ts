@@ -47,11 +47,12 @@ export class GetBookingsQueryHandler implements IQueryHandler<GetBookingsQuery> 
             slug: item.subject.slug,
           }
         : null,
-      scheduleRules: item.scheduleRules?.map((rule) => ({
-        dayOfWeek: rule.dayOfWeek,
-        startTime: rule.startTime,
-        endTime: rule.endTime,
-      })) || [],
+      scheduleRules:
+        item.scheduleRules?.map((rule) => ({
+          dayOfWeek: rule.dayOfWeek,
+          startTime: rule.startTime,
+          endTime: rule.endTime,
+        })) || [],
     }));
 
     return createQueryResult(data, result.total, query.params);
