@@ -14,6 +14,7 @@ import { BookingRequest } from "../mocks/requests.mock";
 import { RequestStatusBadge } from "./request-status-badge";
 import { RequestDetailModal } from "./request-detail-modal";
 import { MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 
 interface RequestsTableProps {
   requests: BookingRequest[];
@@ -91,7 +92,14 @@ export function RequestsTable({ requests, role }: RequestsTableProps) {
               </TableCell>
               
               <TableCell className="py-4 text-right">
-                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity items-center">
+                  {req.status === "awaiting_payment" && role === "student" && (
+                    <Button asChild size="sm" className="h-8 px-3 text-xs font-medium rounded-lg bg-primary hover:bg-primary/90 shadow-sm">
+                      <Link href={`/payment/checkout?bookingId=${req.id}&amount=${req.price}&courseTitle=${encodeURIComponent(req.courseName)}&tutorName=${encodeURIComponent(req.counterpartName)}`}>
+                        Thanh toán
+                      </Link>
+                    </Button>
+                  )}
                   <RequestDetailModal
                     request={req}
                     role={role}

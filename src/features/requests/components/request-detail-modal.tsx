@@ -34,7 +34,7 @@ const CustomHeader = ({ title }: { title: string }) => (
 );
 
 import { useAcceptBookingMutation, useRejectBookingMutation } from "../../booking/bookingApi";
-import { useGetTutorRequestQuery, useAcceptTutorBidMutation } from "../../tutor-request/tutorRequestApi";
+import { useGetTutorRequestQuery, useAcceptTutorBidMutation, TutorBidResponseDto } from "../../tutor-request/tutorRequestApi";
 import { toast } from "sonner";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
@@ -70,12 +70,18 @@ export function RequestDetailModal({ request, role, trigger }: RequestDetailModa
 
   const router = useRouter();
 
-  const handleAcceptBid = async (bidId: string) => {
+  const handleAcceptBid = async (bid: TutorBidResponseDto) => {
     try {
-      await acceptTutorBid({ requestId: request.id, bidId }).unwrap();
-      toast.success("Đã chọn gia sư! Đang chờ thanh toán.");
+      const res = await acceptTutorBid({ requestId: request.id, bidId: bid.id }).unwrap();
+      toast.success("Đã chọn gia sư! Đang chuyển hướng thanh toán...");
       refetch();
 
+      if (res.data?.bookingId) {
+        const amount = bid.proposedPrice ?? request.price;
+        router.push(
+          `/payment/checkout?bookingId=${res.data.bookingId}&amount=${amount}&courseTitle=${encodeURIComponent("Học với gia sư " + (bid.tutor?.name || "Gia sư"))}&courseSubject=${encodeURIComponent(request.courseName)}`
+        );
+      }
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Có lỗi xảy ra khi chấp nhận gia sư");
@@ -223,7 +229,7 @@ export function RequestDetailModal({ request, role, trigger }: RequestDetailModa
                           ) : bid.status === "PENDING" && displayStatus === "pending" && role === "student" ? (
                             <Button 
                               size="sm" 
-                              onClick={() => handleAcceptBid(bid.id)}
+                              onClick={() => handleAcceptBid(bid)}
                               disabled={isAcceptingBid}
                               className="rounded-lg shadow-sm"
                             >
