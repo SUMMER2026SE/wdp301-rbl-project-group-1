@@ -42,6 +42,12 @@ import {
 } from '../schemas/mark-session-attendance.dto';
 import { MarkSessionAttendanceCommand } from '../../application/commands/mark-session-attendance/mark-session-attendance.command';
 import { MarkSessionAttendanceResult } from '../../application/commands/mark-session-attendance/mark-session-attendance.result';
+import {
+  TakeAttendanceDto,
+  TakeAttendanceResponseDto,
+} from '../schemas/take-attendance.dto';
+import { TakeAttendanceCommand } from '../../application/commands/take-attendance/take-attendance.command';
+import { TakeAttendanceResult } from '../../application/commands/take-attendance/take-attendance.result';
 import { GetBookingsQuery } from '../../application/queries/get-bookings/get-bookings.query';
 import { GetBookingByIdQuery } from '../../application/queries/get-booking-by-id/get-booking-by-id.query';
 import { GetMySessionsQuery } from '../../application/queries/get-my-sessions/get-my-sessions.query';
@@ -288,5 +294,38 @@ export class BookingController {
     );
 
     return BaseResponse.ok(MarkSessionAttendanceResponseDto.fromResult(result));
+  }
+
+  @Post('sessions/:sessionId/attendance')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'takeAttendance',
+    summary: 'Tutor takes attendance for a session',
+    description:
+      'Tutor takes attendance for the lesson. Create/update the SessionAttendance record and change the Session status to AWAITING_CONFIRMATION.',
+  })
+  @ApiCreatedResponseWrapped(TakeAttendanceResponseDto, {
+    description:
+      'Attendance recorded successfully. Session status set to AWAITING_CONFIRMATION.',
+  })
+  async takeAttendance(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: TakeAttendanceDto,
+  ): Promise<BaseResponse<TakeAttendanceResponseDto>> {
+    const result = await this.commandBus.execute<
+      TakeAttendanceCommand,
+      TakeAttendanceResult
+    >(
+      new TakeAttendanceCommand(
+        sessionId,
+        user.userId,
+        dto.status,
+        dto.notes ?? null,
+      ),
+    );
+
+    return BaseResponse.created(TakeAttendanceResponseDto.fromResult(result));
   }
 }
