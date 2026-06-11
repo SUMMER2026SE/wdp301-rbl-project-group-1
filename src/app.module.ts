@@ -14,17 +14,18 @@ import { RateLimitGuard } from 'src/shared/presentation/guards/rate-limit.guard'
 import { AuthModule } from './modules/auth/auth.module';
 import { JwtAuthGuard } from './modules/auth/presentation/guards/jwt-auth.guard';
 import { RolesGuard } from './modules/auth/presentation/guards/roles.guard';
+import { BookingModule } from './modules/booking/booking.module';
+import { PaymentModule } from './modules/payment/payment.module';
+import { ScheduleAvailabilityModule } from './modules/schedule-availability/schedule-availability.module';
+import { StorageModule } from './modules/storage/storage.module';
+import { TutorRequestModule } from './modules/tutor-request/tutor-request.module';
 import { AppConfigModule } from './shared/infrastructure/config/config.module';
 import { DatabaseModule } from './shared/infrastructure/database/database.module';
 import { LoggerModule } from './shared/infrastructure/logger/logger.module';
-import { StorageModule } from './modules/storage/storage.module';
-import { PaymentModule } from './modules/payment/payment.module';
-import { ScheduleAvailabilityModule } from './modules/schedule-availability/schedule-availability.module';
-import { BookingModule } from './modules/booking/booking.module';
-import { TutorRequestModule } from './modules/tutor-request/tutor-request.module';
 // import { ResourceModule } from './modules/resource/resource.module';
-import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
+import { ReviewModule } from './modules/review/review.module';
+import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { RecommendationModule } from './modules/recommendation/recommendation.mo
     TutorRequestModule,
     // ResourceModule,
     RecommendationModule,
+    ReviewModule,
   ],
   providers: [
     {
