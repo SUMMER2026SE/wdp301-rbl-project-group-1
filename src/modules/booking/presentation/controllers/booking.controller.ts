@@ -66,6 +66,12 @@ import {
   RescheduleSessionResponseDto,
 } from '../schemas/reschedule-session.dto';
 import { ConfirmSessionAttendanceCommand } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.command';
+import { CancelSessionCommand } from '../../application/commands/cancel-session/cancel-session.command';
+import { CancelSessionResult } from '../../application/commands/cancel-session/cancel-session.result';
+import {
+  CancelSessionDto,
+  CancelSessionResponseDto,
+} from '../schemas/cancel-session.dto';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -376,6 +382,31 @@ export class BookingController {
 @Controller('sessions')
 export class BookingSessionController {
   constructor(private readonly commandBus: CommandBus) {}
+
+  @Patch(':sessionId/cancel')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'cancelSession',
+    summary: 'Cancel a session',
+    description:
+      'Student or tutor cancels a session. The system calculates whether the cancellation is before or after the 24-hour penalty threshold.',
+  })
+  @ApiOkResponseWrapped(CancelSessionResponseDto, {
+    description: 'Session cancelled successfully.',
+  })
+  async cancelSession(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: CancelSessionDto,
+  ): Promise<BaseResponse<CancelSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      CancelSessionCommand,
+      CancelSessionResult
+    >(new CancelSessionCommand(sessionId, user.userId, dto.reason));
+
+    return BaseResponse.ok(CancelSessionResponseDto.fromResult(result));
+  }
 
   @Patch(':sessionId/reschedule/approve')
   @Roles(UserRole.STUDENT, UserRole.TUTOR)
