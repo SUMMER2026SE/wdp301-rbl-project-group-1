@@ -6,9 +6,7 @@ import { ApiOkResponseWrapped } from '../../../../shared/presentation/decorators
 import { CurrentUser } from '../../../auth/presentation/decorators/current-user.decorator';
 import { GetRecommendedTutorsQuery } from '../../application/queries/get-recommended-tutors/get-recommended-tutors.query';
 import type { GetRecommendedTutorsResult } from '../../application/queries/get-recommended-tutors/get-recommended-tutors.result';
-import {
-  RecommendedTutorItemDto,
-} from '../schemas/recommendation-response.dto';
+import { RecommendedTutorItemDto } from '../schemas/recommendation-response.dto';
 
 @ApiTags('Recommendations')
 @Controller('recommendations')

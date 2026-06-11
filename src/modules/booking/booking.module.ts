@@ -14,16 +14,15 @@ import { GetBookingByIdHandler } from './application/queries/get-booking-by-id/g
 import { GetMySessionsHandler } from './application/queries/get-my-sessions/get-my-sessions.handler';
 import { GetTutorSessionsHandler } from './application/queries/get-tutor-sessions/get-tutor-sessions.handler';
 
-import { MarkSessionAttendanceHandler } from './application/commands/mark-session-attendance/mark-session-attendance.handler';
-
 import { BookingPaymentConfirmedHandler } from './application/event-handlers/payment-confirmed.handler';
+import { ConfirmSessionAttendanceHandler } from './application/commands/confirm-session-attendance/confirm-session-attendance.handler';
 
 const CommandHandlers = [
   CreateDirectBookingHandler,
   AcceptBookingHandler,
   RejectBookingHandler,
   TakeAttendanceHandler,
-  MarkSessionAttendanceHandler,
+  ConfirmSessionAttendanceHandler,
   RescheduleSessionHandler,
 ];
 

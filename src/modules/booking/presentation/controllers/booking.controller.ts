@@ -39,11 +39,10 @@ import {
 import { CreateDirectBookingDto } from '../schemas/create-direct-booking.dto';
 import { GetBookingsQueryDto } from '../schemas/get-bookings-query.dto';
 import {
-  MarkSessionAttendanceDto,
-  MarkSessionAttendanceResponseDto,
+  ConfirmSessionAttendanceDto,
+  ConfirmSessionAttendanceResponseDto,
 } from '../schemas/mark-session-attendance.dto';
-import { MarkSessionAttendanceCommand } from '../../application/commands/mark-session-attendance/mark-session-attendance.command';
-import { MarkSessionAttendanceResult } from '../../application/commands/mark-session-attendance/mark-session-attendance.result';
+import { ConfirmSessionAttendanceResult } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.result';
 import {
   TakeAttendanceDto,
   TakeAttendanceResponseDto,
@@ -63,6 +62,7 @@ import {
   RescheduleSessionDto,
   RescheduleSessionResponseDto,
 } from '../schemas/reschedule-session.dto';
+import { ConfirmSessionAttendanceCommand } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.command';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -304,35 +304,35 @@ export class BookingController {
     return BaseResponse.ok(RescheduleSessionResponseDto.fromResult(result));
   }
 
-  @Patch('sessions/:sessionId/attendance')
-  @Roles(UserRole.TUTOR)
+  @Patch('sessions/:sessionId/confirm')
+  @Roles(UserRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'markSessionAttendance',
     summary: 'Tutor marks a session as complete with attendance status',
   })
-  @ApiOkResponseWrapped(MarkSessionAttendanceResponseDto, {
+  @ApiOkResponseWrapped(ConfirmSessionAttendanceResponseDto, {
     description: 'Session attendance marked successfully.',
   })
   async markSessionAttendance(
     @CurrentUser() user: { userId: string },
     @Param('sessionId') sessionId: string,
-    @Body() dto: MarkSessionAttendanceDto,
-  ): Promise<BaseResponse<MarkSessionAttendanceResponseDto>> {
+    @Body() dto: ConfirmSessionAttendanceDto,
+  ): Promise<BaseResponse<ConfirmSessionAttendanceResponseDto>> {
     const result = await this.commandBus.execute<
-      MarkSessionAttendanceCommand,
-      MarkSessionAttendanceResult
+      ConfirmSessionAttendanceCommand,
+      ConfirmSessionAttendanceResult
     >(
-      new MarkSessionAttendanceCommand(
+      new ConfirmSessionAttendanceCommand(
         sessionId,
         user.userId,
-        dto.studentId,
-        dto.status,
         dto.notes ?? null,
       ),
     );
 
-    return BaseResponse.ok(MarkSessionAttendanceResponseDto.fromResult(result));
+    return BaseResponse.ok(
+      ConfirmSessionAttendanceResponseDto.fromResult(result),
+    );
   }
 
   @Post('sessions/:sessionId/attendance')

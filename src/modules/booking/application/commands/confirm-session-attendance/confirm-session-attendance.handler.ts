@@ -9,14 +9,14 @@ import {
   SessionStatus,
   BookingStatus,
 } from '../../../../../shared/domain/enums/enums';
-import { MarkSessionAttendanceCommand } from './mark-session-attendance.command';
-import { MarkSessionAttendanceResult } from './mark-session-attendance.result';
+import { ConfirmSessionAttendanceResult } from './confirm-session-attendance.result';
+import { ConfirmSessionAttendanceCommand } from './confirm-session-attendance.command';
 
-@CommandHandler(MarkSessionAttendanceCommand)
-export class MarkSessionAttendanceHandler
+@CommandHandler(ConfirmSessionAttendanceCommand)
+export class ConfirmSessionAttendanceHandler
   implements
-    ICommandHandler<MarkSessionAttendanceCommand>,
-    ICommand<MarkSessionAttendanceCommand, MarkSessionAttendanceResult>
+    ICommandHandler<ConfirmSessionAttendanceCommand>,
+    ICommand<ConfirmSessionAttendanceCommand, ConfirmSessionAttendanceResult>
 {
   constructor(
     private readonly prisma: PrismaService,
@@ -24,8 +24,8 @@ export class MarkSessionAttendanceHandler
   ) {}
 
   async execute(
-    command: MarkSessionAttendanceCommand,
-  ): Promise<MarkSessionAttendanceResult> {
+    command: ConfirmSessionAttendanceCommand,
+  ): Promise<ConfirmSessionAttendanceResult> {
     const session = await this.prisma.session.findUnique({
       where: { id: command.sessionId },
       include: {
@@ -39,9 +39,9 @@ export class MarkSessionAttendanceHandler
       );
     }
 
-    if (session.booking?.tutorId !== command.tutorId) {
+    if (session.booking?.studentId !== command.studentId) {
       throw new ForbiddenException(
-        'Only the assigned tutor can mark attendance for this session',
+        'Only the assigned studentId can mark attendance for this session',
       );
     }
 
@@ -57,11 +57,11 @@ export class MarkSessionAttendanceHandler
         create: {
           sessionId: command.sessionId,
           studentId: command.studentId,
-          status: command.status as AttendanceStatus,
+          status: AttendanceStatus.PRESENT,
           notes: command.notes,
         },
         update: {
-          status: command.status as AttendanceStatus,
+          status: AttendanceStatus.PRESENT,
           notes: command.notes,
         },
       });
@@ -72,6 +72,33 @@ export class MarkSessionAttendanceHandler
         await tx.session.update({
           where: { id: session.id },
           data: { status: SessionStatus.COMPLETED },
+        });
+
+        const tutorId = session.booking?.tutorId;
+        if (!tutorId) {
+          throw new NotFoundException(
+            `No tutor associated with session ${command.sessionId}`,
+          );
+        }
+        const tutor = tutorId
+          ? await tx.tutor.findUnique({
+              where: { id: tutorId },
+            })
+          : null;
+        const totalPrice =
+          (tutor?.pricePerHour ?? 0) *
+          ((session.endTime.getTime() - session.startTime.getTime()) /
+            (1000 * 60 * 60));
+        await tx.wallet.upsert({
+          where: { tutorId },
+          create: {
+            tutorId,
+            availableBalance: totalPrice,
+            pendingBalance: 0,
+          },
+          update: {
+            availableBalance: { increment: totalPrice },
+          },
         });
       }
 
@@ -105,7 +132,7 @@ export class MarkSessionAttendanceHandler
       return att;
     });
 
-    return new MarkSessionAttendanceResult(
+    return new ConfirmSessionAttendanceResult(
       attendance.id,
       attendance.sessionId,
       attendance.studentId,

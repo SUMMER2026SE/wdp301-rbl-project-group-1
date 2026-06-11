@@ -1,28 +1,19 @@
 import { createZodDto } from 'nestjs-zod';
-import { AttendanceStatus } from '../../../../shared/domain/enums/enums';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
-import { MarkSessionAttendanceResult } from '../../application/commands/mark-session-attendance/mark-session-attendance.result';
+import { ConfirmSessionAttendanceResult } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.result';
 
-export const MarkSessionAttendanceSchema = z.object({
-  studentId: z.string().meta({
-    example: 'clxstudent00000123456789',
-    description: 'ID of the student attending the session',
-  }),
-  status: z.nativeEnum(AttendanceStatus).meta({
-    example: AttendanceStatus.PRESENT,
-    description: 'Attendance status',
-  }),
+export const confirmSessionAttendanceSchema = z.object({
   notes: z.string().optional().meta({
     example: 'Student performed well in algebra concepts',
-    description: 'Optional notes by the tutor',
+    description: 'Optional notes by the student',
   }),
 });
 
-export class MarkSessionAttendanceDto extends createZodDto(
-  MarkSessionAttendanceSchema,
+export class ConfirmSessionAttendanceDto extends createZodDto(
+  confirmSessionAttendanceSchema,
 ) {}
 
-export const MarkSessionAttendanceResponseSchema = z.object({
+export const ConfirmSessionAttendanceResponseSchema = z.object({
   id: z.string(),
   sessionId: z.string(),
   studentId: z.string(),
@@ -31,12 +22,12 @@ export const MarkSessionAttendanceResponseSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
-export class MarkSessionAttendanceResponseDto extends createZodDto(
-  MarkSessionAttendanceResponseSchema,
+export class ConfirmSessionAttendanceResponseDto extends createZodDto(
+  ConfirmSessionAttendanceResponseSchema,
 ) {
   static fromResult(
-    result: MarkSessionAttendanceResult,
-  ): MarkSessionAttendanceResponseDto {
+    result: ConfirmSessionAttendanceResult,
+  ): ConfirmSessionAttendanceResponseDto {
     return {
       id: result.id,
       sessionId: result.sessionId,
