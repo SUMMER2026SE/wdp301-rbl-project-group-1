@@ -3,6 +3,8 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { CreateDirectBookingHandler } from './application/commands/create-direct-booking/create-direct-booking.handler';
 import { AcceptBookingHandler } from './application/commands/accept-booking/accept-booking.handler';
 import { RejectBookingHandler } from './application/commands/reject-booking/reject-booking.handler';
+import { TakeAttendanceHandler } from './application/commands/take-attendance/take-attendance.handler';
+import { RescheduleSessionHandler } from './application/commands/reschedule-session/reschedule-session.handler';
 import { IBookingRepository } from './domain/repositories/booking.repository.interface';
 import { PrismaBookingRepository } from './infrastructure/repositories/booking.repository.impl';
 import { BookingController } from './presentation/controllers/booking.controller';
@@ -20,7 +22,9 @@ const CommandHandlers = [
   CreateDirectBookingHandler,
   AcceptBookingHandler,
   RejectBookingHandler,
+  TakeAttendanceHandler,
   MarkSessionAttendanceHandler,
+  RescheduleSessionHandler,
 ];
 
 const QueryHandlers = [

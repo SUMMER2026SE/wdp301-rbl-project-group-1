@@ -1,3 +1,7 @@
+
+
+<!-- Source: AGENTS.md -->
+
 # 🚀 Backend AI Instruction – Edura API
 
 ## 🧠 Overview
@@ -403,3 +407,13 @@ Fall back to Grep/Glob/Read **only** when the graph doesn't cover what you need.
 2. Use `detect_changes` for code review.
 3. Use `get_affected_flows` to understand impact.
 4. Use `query_graph` pattern="tests_for" to check coverage.
+
+
+
+<!-- Source: .ruler/AGENTS.md -->
+
+# AGENTS.md
+
+Centralised AI agent instructions. Add coding guidelines, style guides, and project context here.
+
+Ruler concatenates all .md files in this directory (and subdirectories), starting with AGENTS.md (if present), then remaining files in sorted order.

@@ -29,6 +29,8 @@ import { AcceptBookingCommand } from '../../application/commands/accept-booking/
 import { AcceptBookingResult } from '../../application/commands/accept-booking/accept-booking.result';
 import { RejectBookingCommand } from '../../application/commands/reject-booking/reject-booking.command';
 import { RejectBookingResult } from '../../application/commands/reject-booking/reject-booking.result';
+import { RescheduleSessionCommand } from '../../application/commands/reschedule-session/reschedule-session.command';
+import { RescheduleSessionResult } from '../../application/commands/reschedule-session/reschedule-session.result';
 import {
   BookingStatusUpdateResponseDto,
   CreateDirectBookingResponseDto,
@@ -57,6 +59,10 @@ import { MySessionResultData } from '../../application/queries/get-my-sessions/g
 import { QueryResult } from '../../../../shared/domain/common/query';
 import { SessionResponseDto } from '../schemas/session-response.dto';
 import { GetMySessionsQueryDto } from '../schemas/get-my-sessions-query.dto';
+import {
+  RescheduleSessionDto,
+  RescheduleSessionResponseDto,
+} from '../schemas/reschedule-session.dto';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -263,6 +269,39 @@ export class BookingController {
     >(new RejectBookingCommand(id, user.userId));
 
     return BaseResponse.ok(BookingStatusUpdateResponseDto.fromResult(result));
+  }
+
+  @Post('sessions/:sessionId/reschedule')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'rescheduleSession',
+    summary: 'Student or tutor requests a session reschedule',
+    description:
+      'Creates a reschedule request for the session and moves it to RESCHEDULE_REQUESTED.',
+  })
+  @ApiOkResponseWrapped(RescheduleSessionResponseDto, {
+    description: 'Session reschedule request recorded successfully.',
+  })
+  async rescheduleSession(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: RescheduleSessionDto,
+  ): Promise<BaseResponse<RescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      RescheduleSessionCommand,
+      RescheduleSessionResult
+    >(
+      new RescheduleSessionCommand(
+        sessionId,
+        user.userId,
+        dto.proposedStartTime,
+        dto.proposedEndTime,
+        dto.reason,
+      ),
+    );
+
+    return BaseResponse.ok(RescheduleSessionResponseDto.fromResult(result));
   }
 
   @Patch('sessions/:sessionId/attendance')

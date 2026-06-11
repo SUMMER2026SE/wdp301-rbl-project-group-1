@@ -786,9 +786,12 @@ model Session {
   startTime DateTime @map("start_time")
   endTime   DateTime @map("end_time")
 
-  status     SessionStatus @default(SCHEDULED)
-  meetingUrl String?       @map("meeting_url")
-  notes      String?
+  status            SessionStatus @default(SCHEDULED)
+  meetingUrl        String?       @map("meeting_url")
+  notes             String?
+  proposedStartTime DateTime?     @map("proposed_start_time")
+  proposedEndTime   DateTime?     @map("proposed_end_time")
+  proposedReason    String?       @map("proposed_reason")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
