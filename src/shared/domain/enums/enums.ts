@@ -89,3 +89,10 @@ export enum AttendanceStatus {
   LATE = 'LATE',
   EXCUSED = 'EXCUSED',
 }
+
+export enum MessageType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+  FILE = 'FILE',
+  SYSTEM = 'SYSTEM',
+}

@@ -26,6 +26,7 @@ import { LoggerModule } from './shared/infrastructure/logger/logger.module';
 import { RecommendationModule } from './modules/recommendation/recommendation.module';
 import { ReviewModule } from './modules/review/review.module';
 import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
+import { ChatModule } from './modules/chat/chat.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbi
     // ResourceModule,
     RecommendationModule,
     ReviewModule,
+    ChatModule,
   ],
   providers: [
     {

@@ -8,11 +8,15 @@ import {
 import { AppModule } from './app.module';
 import { setupSwagger } from './shared/infrastructure/documentation/swagger/swagger.setup';
 
+import { IoAdapter } from '@nestjs/platform-socket.io';
+
 async function bootstrap() {
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule,
     new FastifyAdapter(),
   );
+
+  app.useWebSocketAdapter(new IoAdapter(app));
 
   const corsOrigins = process.env.CORS_ORIGINS?.split(',')
     .map((origin) => origin.trim())
