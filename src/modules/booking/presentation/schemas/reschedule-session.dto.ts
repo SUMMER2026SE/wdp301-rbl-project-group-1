@@ -1,5 +1,6 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
+import { ApproveRescheduleSessionResult } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.result';
 import { RescheduleSessionResult } from '../../application/commands/reschedule-session/reschedule-session.result';
 
 export const RescheduleSessionSchema = z
@@ -73,6 +74,57 @@ export class RescheduleSessionResponseDto extends createZodDto(
     const dto = new RescheduleSessionResponseDto();
     dto.sessionId = result.sessionId;
     dto.status = result.status;
+    dto.proposedStartTime = result.proposedStartTime;
+    dto.proposedEndTime = result.proposedEndTime;
+    dto.proposedReason = result.proposedReason;
+    return dto;
+  }
+}
+
+export const ApproveRescheduleSessionResponseSchema = z
+  .object({
+    sessionId: z.string().meta({
+      example: 'clxsession00000123456789',
+      description: 'Updated session ID',
+    }),
+    status: z.enum(['SCHEDULED']).meta({
+      example: 'SCHEDULED',
+      description: 'Session status after approving the reschedule request',
+    }),
+    startTime: z.string().datetime().meta({
+      example: '2026-06-15T09:00:00.000Z',
+      description: 'Approved session start time',
+    }),
+    endTime: z.string().datetime().meta({
+      example: '2026-06-15T10:30:00.000Z',
+      description: 'Approved session end time',
+    }),
+    proposedStartTime: z.string().datetime().nullable().meta({
+      example: null,
+      description: 'Cleared proposed start time after approval',
+    }),
+    proposedEndTime: z.string().datetime().nullable().meta({
+      example: null,
+      description: 'Cleared proposed end time after approval',
+    }),
+    proposedReason: z.string().nullable().meta({
+      example: null,
+      description: 'Cleared proposed reason after approval',
+    }),
+  })
+  .meta({ id: 'ApproveRescheduleSessionResponseDto' });
+
+export class ApproveRescheduleSessionResponseDto extends createZodDto(
+  ApproveRescheduleSessionResponseSchema,
+) {
+  static fromResult(
+    result: ApproveRescheduleSessionResult,
+  ): ApproveRescheduleSessionResponseDto {
+    const dto = new ApproveRescheduleSessionResponseDto();
+    dto.sessionId = result.sessionId;
+    dto.status = result.status as 'SCHEDULED';
+    dto.startTime = result.startTime;
+    dto.endTime = result.endTime;
     dto.proposedStartTime = result.proposedStartTime;
     dto.proposedEndTime = result.proposedEndTime;
     dto.proposedReason = result.proposedReason;

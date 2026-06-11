@@ -29,6 +29,8 @@ import { AcceptBookingCommand } from '../../application/commands/accept-booking/
 import { AcceptBookingResult } from '../../application/commands/accept-booking/accept-booking.result';
 import { RejectBookingCommand } from '../../application/commands/reject-booking/reject-booking.command';
 import { RejectBookingResult } from '../../application/commands/reject-booking/reject-booking.result';
+import { ApproveRescheduleSessionCommand } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.command';
+import { ApproveRescheduleSessionResult } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.result';
 import { RescheduleSessionCommand } from '../../application/commands/reschedule-session/reschedule-session.command';
 import { RescheduleSessionResult } from '../../application/commands/reschedule-session/reschedule-session.result';
 import {
@@ -59,6 +61,7 @@ import { QueryResult } from '../../../../shared/domain/common/query';
 import { SessionResponseDto } from '../schemas/session-response.dto';
 import { GetMySessionsQueryDto } from '../schemas/get-my-sessions-query.dto';
 import {
+  ApproveRescheduleSessionResponseDto,
   RescheduleSessionDto,
   RescheduleSessionResponseDto,
 } from '../schemas/reschedule-session.dto';
@@ -366,5 +369,37 @@ export class BookingController {
     );
 
     return BaseResponse.created(TakeAttendanceResponseDto.fromResult(result));
+  }
+}
+
+@ApiTags('Sessions')
+@Controller('sessions')
+export class BookingSessionController {
+  constructor(private readonly commandBus: CommandBus) {}
+
+  @Patch(':sessionId/reschedule/approve')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'approveSessionReschedule',
+    summary: 'Approve a session reschedule request',
+    description:
+      'Accepts the proposed schedule, updates startTime and endTime, and moves the session back to SCHEDULED.',
+  })
+  @ApiOkResponseWrapped(ApproveRescheduleSessionResponseDto, {
+    description: 'Session reschedule request approved successfully.',
+  })
+  async approveSessionReschedule(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+  ): Promise<BaseResponse<ApproveRescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      ApproveRescheduleSessionCommand,
+      ApproveRescheduleSessionResult
+    >(new ApproveRescheduleSessionCommand(sessionId, user.userId));
+
+    return BaseResponse.ok(
+      ApproveRescheduleSessionResponseDto.fromResult(result),
+    );
   }
 }

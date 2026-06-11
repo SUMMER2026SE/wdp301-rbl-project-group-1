@@ -4,10 +4,14 @@ import { CreateDirectBookingHandler } from './application/commands/create-direct
 import { AcceptBookingHandler } from './application/commands/accept-booking/accept-booking.handler';
 import { RejectBookingHandler } from './application/commands/reject-booking/reject-booking.handler';
 import { TakeAttendanceHandler } from './application/commands/take-attendance/take-attendance.handler';
+import { ApproveRescheduleSessionHandler } from './application/commands/approve-reschedule-session/approve-reschedule-session.handler';
 import { RescheduleSessionHandler } from './application/commands/reschedule-session/reschedule-session.handler';
 import { IBookingRepository } from './domain/repositories/booking.repository.interface';
 import { PrismaBookingRepository } from './infrastructure/repositories/booking.repository.impl';
-import { BookingController } from './presentation/controllers/booking.controller';
+import {
+  BookingController,
+  BookingSessionController,
+} from './presentation/controllers/booking.controller';
 
 import { GetBookingsQueryHandler } from './application/queries/get-bookings/get-bookings.handler';
 import { GetBookingByIdHandler } from './application/queries/get-booking-by-id/get-booking-by-id.handler';
@@ -24,6 +28,7 @@ const CommandHandlers = [
   TakeAttendanceHandler,
   ConfirmSessionAttendanceHandler,
   RescheduleSessionHandler,
+  ApproveRescheduleSessionHandler,
 ];
 
 const QueryHandlers = [
@@ -37,7 +42,7 @@ const EventHandlers = [BookingPaymentConfirmedHandler];
 
 @Module({
   imports: [CqrsModule],
-  controllers: [BookingController],
+  controllers: [BookingController, BookingSessionController],
   providers: [
     ...CommandHandlers,
     ...QueryHandlers,
