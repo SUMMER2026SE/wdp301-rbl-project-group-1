@@ -83,6 +83,13 @@ export enum SessionStatus {
   RESCHEDULE_REQUESTED = 'RESCHEDULE_REQUESTED',
 }
 
+export enum DisputeStatus {
+  OPEN = 'OPEN',
+  IN_REVIEW = 'IN_REVIEW',
+  RESOLVED_REFUNDED = 'RESOLVED_REFUNDED',
+  RESOLVED_REJECTED = 'RESOLVED_REJECTED',
+}
+
 export enum AttendanceStatus {
   PRESENT = 'PRESENT',
   ABSENT = 'ABSENT',

@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { CreateDirectBookingHandler } from './application/commands/create-direct-booking/create-direct-booking.handler';
 import { AcceptBookingHandler } from './application/commands/accept-booking/accept-booking.handler';
+import { CreateDirectBookingHandler } from './application/commands/create-direct-booking/create-direct-booking.handler';
 import { RejectBookingHandler } from './application/commands/reject-booking/reject-booking.handler';
 import { TakeAttendanceHandler } from './application/commands/take-attendance/take-attendance.handler';
 import { ApproveRescheduleSessionHandler } from './application/commands/approve-reschedule-session/approve-reschedule-session.handler';
@@ -14,8 +14,8 @@ import {
   BookingSessionController,
 } from './presentation/controllers/booking.controller';
 
-import { GetBookingsQueryHandler } from './application/queries/get-bookings/get-bookings.handler';
 import { GetBookingByIdHandler } from './application/queries/get-booking-by-id/get-booking-by-id.handler';
+import { GetBookingsQueryHandler } from './application/queries/get-bookings/get-bookings.handler';
 import { GetMySessionsHandler } from './application/queries/get-my-sessions/get-my-sessions.handler';
 import { GetTutorSessionsHandler } from './application/queries/get-tutor-sessions/get-tutor-sessions.handler';
 

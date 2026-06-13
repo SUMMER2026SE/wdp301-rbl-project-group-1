@@ -27,6 +27,7 @@ import { RecommendationModule } from './modules/recommendation/recommendation.mo
 import { ReviewModule } from './modules/review/review.module';
 import { RabbitmqModule } from './shared/infrastructure/messaging/rabbitmq/rabbitmq.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { DisputeModule } from './modules/dispute/dispute.module';
 
 @Module({
   imports: [
@@ -53,6 +54,7 @@ import { ChatModule } from './modules/chat/chat.module';
     RecommendationModule,
     ReviewModule,
     ChatModule,
+    DisputeModule,
   ],
   providers: [
     {
