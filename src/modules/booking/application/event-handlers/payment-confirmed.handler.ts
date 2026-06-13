@@ -6,6 +6,8 @@ import { EVENTS } from '../../../../shared/application/constants/events.constant
 import {
   PaymentReferenceType,
   BookingStatus,
+  ConversationType,
+  ParticipantRole,
 } from '../../../../shared/domain/enums/enums';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 
@@ -57,6 +59,9 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
         subjectSlug: booking.subject?.slug,
       });
 
+      // Auto-create a DIRECT conversation between student and tutor if not exists
+      await this.ensureDirectConversation(booking.studentId, booking.tutorId);
+
       this.logger.log(
         `Booking ${event.referenceId} successfully updated to CONFIRMED`,
       );
@@ -65,5 +70,43 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
         `Error updating booking ${event.referenceId} status: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
+  }
+
+  private async ensureDirectConversation(
+    studentId: string,
+    tutorId: string,
+  ): Promise<void> {
+    const existing = await this.prisma.conversation.findFirst({
+      where: {
+        type: ConversationType.DIRECT,
+        AND: [
+          { participants: { some: { userId: studentId } } },
+          { participants: { some: { userId: tutorId } } },
+        ],
+      },
+    });
+
+    if (existing) {
+      this.logger.log(
+        `Direct conversation already exists between student ${studentId} and tutor ${tutorId}`,
+      );
+      return;
+    }
+
+    const conversation = await this.prisma.conversation.create({
+      data: {
+        type: ConversationType.DIRECT,
+        participants: {
+          create: [
+            { userId: studentId, role: ParticipantRole.MEMBER },
+            { userId: tutorId, role: ParticipantRole.MEMBER },
+          ],
+        },
+      },
+    });
+
+    this.logger.log(
+      `Auto-created direct conversation ${conversation.id} between student ${studentId} and tutor ${tutorId}`,
+    );
   }
 }

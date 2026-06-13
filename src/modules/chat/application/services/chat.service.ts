@@ -126,4 +126,18 @@ export class ChatService {
 
     return messages;
   }
+
+  /**
+   * Mark a conversation as read up to a given message for a user
+   */
+  async markRead(
+    userId: string,
+    conversationId: string,
+    lastMessageId: string,
+  ): Promise<void> {
+    await this.prisma.conversationParticipant.update({
+      where: { conversationId_userId: { conversationId, userId } },
+      data: { lastReadMessageId: lastMessageId },
+    });
+  }
 }

@@ -103,3 +103,13 @@ export enum MessageType {
   FILE = 'FILE',
   SYSTEM = 'SYSTEM',
 }
+
+export enum ConversationType {
+  DIRECT = 'DIRECT',
+  GROUP = 'GROUP',
+}
+
+export enum ParticipantRole {
+  MEMBER = 'MEMBER',
+  ADMIN = 'ADMIN',
+}
