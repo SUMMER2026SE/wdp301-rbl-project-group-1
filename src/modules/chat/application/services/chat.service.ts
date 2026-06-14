@@ -140,4 +140,18 @@ export class ChatService {
       data: { lastReadMessageId: lastMessageId },
     });
   }
+
+  /**
+   * Get IDs of participants in a conversation, excluding the sender
+   */
+  async getOtherParticipantIds(
+    senderId: string,
+    conversationId: string,
+  ): Promise<string[]> {
+    const participants = await this.prisma.conversationParticipant.findMany({
+      where: { conversationId, userId: { not: senderId } },
+      select: { userId: true },
+    });
+    return participants.map((p) => p.userId);
+  }
 }

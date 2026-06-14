@@ -4,7 +4,7 @@ import { MessageType } from '../../../../shared/domain/enums/enums';
 
 export const SendMessageSchema = z
   .object({
-    conversationId: z.string().cuid().meta({
+    conversationId: z.string().meta({
       example: 'cuid12345',
       description: 'The ID of the conversation',
     }),
@@ -20,7 +20,7 @@ export const SendMessageSchema = z
       example: 'https://example.com/file.jpg',
       description: 'The URL of the file (if applicable)',
     }),
-    replyToId: z.string().cuid().optional().meta({
+    replyToId: z.string().optional().meta({
       example: 'cuid67890',
       description: 'The ID of the message being replied to',
     }),

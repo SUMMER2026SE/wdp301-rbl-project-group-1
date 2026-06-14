@@ -104,6 +104,10 @@ enum PaymentReferenceType {
 enum NotificationType {
   SYSTEM
   FORUM
+  BOOKING
+  CHAT
+  PAYMENT
+  REVIEW
 
   @@map("notification_type")
 }
@@ -563,8 +567,10 @@ model Notification {
   id        String           @id @default(cuid())
   title     String
   content   String?
+  body      Json?            // Arbitrary payload for frontend routing (e.g. conversationId, bookingId)
   type      NotificationType
   createdAt DateTime         @default(now()) @map("created_at")
+  expiredAt DateTime?        @map("expired_at")
 
   targets NotificationTarget[]
 

@@ -6,16 +6,17 @@ import { ChatGateway } from './presentation/gateways/chat.gateway';
 import { ChatService } from './application/services/chat.service';
 import { WsJwtGuard } from '../../shared/presentation/guards/ws-jwt.guard';
 import { ConversationController } from './presentation/controllers/conversation.controller';
+import { NotificationModule } from '../notification/notification.module';
 
 // Commands
 import { CreateConversationHandler } from './application/commands/create-conversation/create-conversation.handler';
 import { MarkReadHandler } from './application/commands/mark-read/mark-read.handler';
 import { DeleteMessageHandler } from './application/commands/delete-message/delete-message.handler';
+import { SendMessageCommandHandler } from './application/commands/send-message/send-message.handler';
 
 // Queries
 import { GetConversationsHandler } from './application/queries/get-conversations/get-conversations.handler';
 import { GetMessagesHandler } from './application/queries/get-messages/get-messages.handler';
-import { SendMessageCommandHandler } from './application/commands/send-message/send-message.handler';
 
 const CommandHandlers = [
   CreateConversationHandler,
@@ -30,6 +31,7 @@ const QueryHandlers = [GetConversationsHandler, GetMessagesHandler];
   imports: [
     CqrsModule,
     ConfigModule,
+    NotificationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({

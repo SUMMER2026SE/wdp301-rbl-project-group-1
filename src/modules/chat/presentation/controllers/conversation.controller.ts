@@ -145,9 +145,10 @@ export class ConversationController {
     @Body() dto: SendMessageDto,
   ): Promise<BaseResponse<MessageResponseDto>> {
     dto.conversationId = conversationId;
-    const result = await this.commandBus.execute(
-      new SendMessageCommand(user.userId, dto),
-    );
+    const result = await this.commandBus.execute<
+      SendMessageCommand,
+      MessageResultData
+    >(new SendMessageCommand(user.userId, dto));
     return BaseResponse.created(MessageResponseDto.fromResult(result));
   }
 

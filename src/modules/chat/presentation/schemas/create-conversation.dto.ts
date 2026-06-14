@@ -3,7 +3,7 @@ import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 
 export const CreateConversationSchema = z
   .object({
-    targetUserId: z.string().cuid().meta({
+    targetUserId: z.string().meta({
       example: 'cuid12345',
       description: 'The ID of the user to start a conversation with',
     }),
@@ -25,7 +25,7 @@ export class GetMessagesQueryDto extends createZodDto(GetMessagesQuerySchema) {}
 
 export const MarkReadSchema = z
   .object({
-    lastMessageId: z.string().cuid().meta({
+    lastMessageId: z.string().meta({
       example: 'cuid12345',
       description: 'The ID of the last message read',
     }),

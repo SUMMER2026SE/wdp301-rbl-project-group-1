@@ -51,6 +51,10 @@ export enum BidStatus {
 export enum NotificationType {
   SYSTEM = 'SYSTEM',
   FORUM = 'FORUM',
+  BOOKING = 'BOOKING',
+  CHAT = 'CHAT',
+  PAYMENT = 'PAYMENT',
+  REVIEW = 'REVIEW',
 }
 
 export enum ReportStatus {
