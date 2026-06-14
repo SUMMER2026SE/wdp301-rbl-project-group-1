@@ -28,7 +28,23 @@ export const useChatSocket = (conversationId?: string) => {
           (draft) => {
             // Check if the message is already in the list to avoid duplication
             if (!draft.data.find((m) => m.id === msg.id)) {
-              draft.data.unshift(msg);
+              if (msg.senderId === currentUserId) {
+                // To avoid flicker from optimistic UI, replace the oldest temp message
+                let tempIndex = -1;
+                for (let i = draft.data.length - 1; i >= 0; i--) {
+                  if (draft.data[i].id.startsWith("temp-")) {
+                    tempIndex = i;
+                    break;
+                  }
+                }
+                if (tempIndex !== -1) {
+                  draft.data[tempIndex] = msg;
+                } else {
+                  draft.data.unshift(msg);
+                }
+              } else {
+                draft.data.unshift(msg);
+              }
             }
           }
         )
