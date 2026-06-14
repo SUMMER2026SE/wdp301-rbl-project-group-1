@@ -1,65 +1,90 @@
-import { useEffect, useState, useCallback } from "react";
-import { useSelector } from "react-redux";
+import { useEffect, useCallback, useState } from "react";
+import { useAppDispatch } from "@/src/shared/store/hooks";
 import { useGlobalSocket } from "@/src/shared/context/socket-context";
-import { Message, MessageType } from "../types";
-
-interface RootState {
-  auth?: {
-    user?: {
-      id: string;
-    };
-  };
-}
+import { chatApi } from "../chatApi";
+import { MessageResponseDto } from "../types";
+import { useGetMeQuery } from "@/src/features/auth/authApi";
 
 export const useChatSocket = (conversationId?: string) => {
   const { socket, isConnected, error } = useGlobalSocket();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const currentUserId = useSelector((state: RootState) => state.auth?.user?.id);
+  const dispatch = useAppDispatch();
+  const { data: me } = useGetMeQuery();
+  const currentUserId = me?.data?.id;
+  const [typingUsers, setTypingUsers] = useState<string[]>([]);
 
   useEffect(() => {
     if (!socket || !isConnected || !conversationId) return;
 
-    // Join the room once connected
     socket.emit("join_conversation", { conversationId });
 
-    socket.on("conversation_history", (history: { id: string; content: string; senderId?: string; sender?: { id: string; nickname: string; avatarUrl?: string }; createdAt?: string; type?: string }[]) => {
-      // Map backend data to frontend UI data
-      const mappedMessages: Message[] = history.reverse().map((msg) => ({
-        id: msg.id,
-        content: msg.content,
-        senderId: msg.senderId || msg.sender?.id || "unknown",
-        senderName: msg.sender?.nickname || "Unknown",
-        senderAvatar: msg.sender?.avatarUrl,
-        timestamp: new Date(msg.createdAt || Date.now()),
-        type: (msg.type?.toLowerCase() as MessageType) || "text",
-        isOwn: (msg.senderId || msg.sender?.id) === currentUserId,
-      }));
-      setMessages(mappedMessages);
-    });
+    const handleNewMessage = (msg: MessageResponseDto) => {
+      // Optimistically update RTK Query cache for this conversation
+      // The backend returns messages sorted desc by createdAt, so unshift is appropriate if we want newest first
+      // But typically UI renders bottom-up. Let's just push it to the beginning of the `data` array.
+      dispatch(
+        chatApi.util.updateQueryData(
+          "getConversationMessages",
+          { conversationId, page: 1, limit: 50 },
+          (draft) => {
+            // Check if the message is already in the list to avoid duplication
+            if (!draft.data.find((m) => m.id === msg.id)) {
+              draft.data.unshift(msg);
+            }
+          }
+        )
+      );
 
-    socket.on("new_message", (msg: { id: string; content: string; senderId?: string; sender?: { id: string; nickname: string; avatarUrl?: string }; createdAt?: string; type?: string }) => {
-      const newMsg: Message = {
-        id: msg.id,
-        content: msg.content,
-        senderId: msg.senderId || msg.sender?.id || "unknown",
-        senderName: msg.sender?.nickname || "Unknown",
-        senderAvatar: msg.sender?.avatarUrl,
-        timestamp: new Date(msg.createdAt || Date.now()),
-        type: (msg.type?.toLowerCase() as MessageType) || "text",
-        isOwn: (msg.senderId || msg.sender?.id) === currentUserId,
-      };
-      setMessages((prev) => [...prev, newMsg]);
-    });
+      // Also update the lastMessage in getConversations cache
+      dispatch(
+        chatApi.util.updateQueryData("getConversations", undefined, (draft) => {
+          const conv = draft.find((c) => c.id === conversationId);
+          if (conv) {
+            conv.lastMessage = {
+              id: msg.id,
+              content: msg.content,
+              senderId: msg.senderId,
+              createdAt: msg.createdAt,
+            };
+            conv.updatedAt = msg.createdAt;
+          }
+        })
+      );
+    };
+
+    const handleUserTyping = ({ userId }: { userId: string }) => {
+      if (userId !== currentUserId) {
+        setTypingUsers((prev) =>
+          prev.includes(userId) ? prev : [...prev, userId]
+        );
+      }
+    };
+
+    const handleUserStopTyping = ({ userId }: { userId: string }) => {
+      setTypingUsers((prev) => prev.filter((id) => id !== userId));
+    };
+
+    const handleMessageRead = () => {
+      // We could update the message read status in the cache here
+    };
+
+    socket.on("new_message", handleNewMessage);
+    socket.on("user_typing", handleUserTyping);
+    socket.on("user_stop_typing", handleUserStopTyping);
+    socket.on("message_read", handleMessageRead);
 
     return () => {
-      socket.off("conversation_history");
-      socket.off("new_message");
+      socket.off("new_message", handleNewMessage);
+      socket.off("user_typing", handleUserTyping);
+      socket.off("user_stop_typing", handleUserStopTyping);
+      socket.off("message_read", handleMessageRead);
+      socket.emit("leave_conversation", { conversationId });
+      setTypingUsers([]);
     };
-  }, [socket, isConnected, conversationId, currentUserId]);
+  }, [socket, isConnected, conversationId, dispatch, currentUserId]);
 
   const sendMessage = useCallback(
     (content: string, type: string = "TEXT") => {
-      if (socket && isConnected) {
+      if (socket && isConnected && conversationId) {
         socket.emit("send_message", {
           conversationId,
           content,
@@ -70,10 +95,34 @@ export const useChatSocket = (conversationId?: string) => {
     [conversationId, isConnected, socket]
   );
 
+  const markRead = useCallback(
+    (lastMessageId: string) => {
+      if (socket && isConnected && conversationId) {
+        socket.emit("mark_read", { conversationId, lastMessageId });
+      }
+    },
+    [conversationId, isConnected, socket]
+  );
+
+  const sendTyping = useCallback(() => {
+    if (socket && isConnected && conversationId) {
+      socket.emit("typing", { conversationId });
+    }
+  }, [conversationId, isConnected, socket]);
+
+  const sendStopTyping = useCallback(() => {
+    if (socket && isConnected && conversationId) {
+      socket.emit("stop_typing", { conversationId });
+    }
+  }, [conversationId, isConnected, socket]);
+
   return {
-    messages,
     isConnected,
     error,
+    typingUsers,
     sendMessage,
+    markRead,
+    sendTyping,
+    sendStopTyping,
   };
 };

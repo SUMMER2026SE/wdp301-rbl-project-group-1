@@ -65,3 +65,56 @@ export interface ConversationDetail extends Conversation {
   sharedDocuments: SharedDocument[];
   upcomingSession?: UpcomingSession;
 }
+
+// --- API Response DTOs ---
+
+export interface UserBasicDto {
+  id: string;
+  nickname: string | null;
+  avatarUrl: string | null;
+}
+
+export type ConversationParticipantDto = UserBasicDto;
+
+export interface MessageResponseDto {
+  id: string;
+  conversationId: string;
+  senderId: string | null;
+  content: string;
+  type: string;
+  fileUrl: string | null;
+  replyToId: string | null;
+  isDeleted: boolean;
+  createdAt: string;
+  sender: UserBasicDto | null;
+}
+
+export interface ConversationResponseDto {
+  id: string;
+  type: string;
+  name: string | null;
+  avatarUrl: string | null;
+  updatedAt: string;
+  lastMessage: {
+    id: string;
+    content: string;
+    senderId: string | null;
+    createdAt: string;
+  } | null;
+  unreadCount: number;
+  participants: ConversationParticipantDto[];
+}
+
+export interface CreateConversationDto {
+  targetUserId: string;
+}
+
+export interface MarkReadDto {
+  lastMessageId: string;
+}
+
+export interface GetMessagesParams {
+  conversationId: string;
+  page?: number;
+  limit?: number;
+}

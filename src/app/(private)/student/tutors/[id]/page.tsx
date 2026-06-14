@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import {
   TutorBio,
   TutorCertifications,
@@ -15,12 +15,15 @@ import { ScheduleCalendar } from "@/src/features/student/schedule/components";
 import Link from "next/link";
 import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorEnhance";
 import { useGetTutorPublicSessionsQuery } from "@/src/features/booking/bookingApi";
+import { useCreateConversationMutation } from "@/src/features/chat/chatApi";
 import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
 import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
 import { Tutor } from "@/src/features/student/tutors/types";
+import { toast } from "sonner";
 
 export default function TutorDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const tutorId = params?.id as string;
 
   const { data, isLoading, error } = useGetTutorByIdQuery(
@@ -32,6 +35,23 @@ export default function TutorDetailPage() {
     { tutorId },
     { skip: !tutorId }
   );
+
+  const [createConversation, { isLoading: isContacting }] = useCreateConversationMutation();
+
+  const handleContactChat = async () => {
+    if (!tutorId) return;
+
+    try {
+      await createConversation({ targetUserId: tutorId }).unwrap();
+      // On success, navigate to chat page
+      router.push("/student/chat");
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(
+        error?.data?.message || "Không thể tạo cuộc trò chuyện lúc này. Vui lòng thử lại sau."
+      );
+    }
+  };
 
   if (isLoading || isFetchingSessions) {
     return (
@@ -158,6 +178,8 @@ export default function TutorDetailPage() {
               tutorName={tutor.name}
               price={tutor.pricePerHour}
               tutorAvailableSlots={initialAvailableSlots}
+              onContactChat={handleContactChat}
+              isContacting={isContacting}
             />
           </div>
         </div>
