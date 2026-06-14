@@ -72,6 +72,12 @@ import {
   CancelSessionDto,
   CancelSessionResponseDto,
 } from '../schemas/cancel-session.dto';
+import { RenewBookingCommand } from '../../application/commands/renew-booking/renew-booking.command';
+import { RenewBookingResult } from '../../application/commands/renew-booking/renew-booking.result';
+import {
+  RenewBookingDto,
+  RenewBookingResponseDto,
+} from '../schemas/renew-booking.dto';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -375,6 +381,38 @@ export class BookingController {
     );
 
     return BaseResponse.created(TakeAttendanceResponseDto.fromResult(result));
+  }
+
+  @Post(':id/renew')
+  @Roles(UserRole.STUDENT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'renewBooking',
+    summary: 'Student renews an existing booking',
+    description:
+      'Creates a new Booking cloned from the original (same tutor, subject, mode, schedule) with status PENDING.',
+  })
+  @ApiCreatedResponseWrapped(RenewBookingResponseDto, {
+    description: 'Renewed booking created successfully with status PENDING.',
+  })
+  async renewBooking(
+    @CurrentUser() user: { userId: string },
+    @Param('id') id: string,
+    @Body() dto: RenewBookingDto,
+  ): Promise<BaseResponse<RenewBookingResponseDto>> {
+    const result = await this.commandBus.execute<
+      RenewBookingCommand,
+      RenewBookingResult
+    >(
+      new RenewBookingCommand(
+        id,
+        user.userId,
+        dto.totalSessions,
+        dto.message ?? null,
+      ),
+    );
+
+    return BaseResponse.created(RenewBookingResponseDto.fromResult(result));
   }
 }
 

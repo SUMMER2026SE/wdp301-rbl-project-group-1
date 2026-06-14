@@ -21,6 +21,7 @@ import { GetTutorSessionsHandler } from './application/queries/get-tutor-session
 
 import { BookingPaymentConfirmedHandler } from './application/event-handlers/payment-confirmed.handler';
 import { ConfirmSessionAttendanceHandler } from './application/commands/confirm-session-attendance/confirm-session-attendance.handler';
+import { RenewBookingHandler } from './application/commands/renew-booking/renew-booking.handler';
 
 const CommandHandlers = [
   CreateDirectBookingHandler,
@@ -31,6 +32,7 @@ const CommandHandlers = [
   RescheduleSessionHandler,
   ApproveRescheduleSessionHandler,
   CancelSessionHandler,
+  RenewBookingHandler,
 ];
 
 const QueryHandlers = [
