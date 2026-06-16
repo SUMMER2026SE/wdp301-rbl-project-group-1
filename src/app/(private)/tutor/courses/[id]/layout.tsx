@@ -60,17 +60,7 @@ export default function CourseDetailLayout({
       isActive: pathname === `/tutor/courses/${bookingId}`,
     },
     {
-      label: "Học sinh",
-      href: `/tutor/courses/${bookingId}/student`,
-      isActive: pathname === `/tutor/courses/${bookingId}/student`,
-    },
-    {
-      label: "Lịch học",
-      href: `/tutor/courses/${bookingId}/schedule`,
-      isActive: pathname === `/tutor/courses/${bookingId}/schedule`,
-    },
-    {
-      label: "Tài liệu & Bài tập",
+      label: "Tài liệu",
       href: `/tutor/courses/${bookingId}/resource`,
       isActive: pathname === `/tutor/courses/${bookingId}/resource`,
     },

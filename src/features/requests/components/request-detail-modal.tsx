@@ -52,6 +52,7 @@ export function RequestDetailModal({ request, role, trigger }: RequestDetailModa
     try {
       await acceptBooking({ id: request.id }).unwrap();
       toast.success("Đã chấp nhận yêu cầu. Đang chờ học viên thanh toán.");
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Có lỗi xảy ra khi chấp nhận yêu cầu");
@@ -62,6 +63,7 @@ export function RequestDetailModal({ request, role, trigger }: RequestDetailModa
     try {
       await rejectBooking({ id: request.id }).unwrap();
       toast.success("Đã từ chối yêu cầu!");
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
     } catch (err: unknown) {
       const error = err as { data?: { message?: string } };
       toast.error(error?.data?.message || "Có lỗi xảy ra khi từ chối yêu cầu");
@@ -78,6 +80,7 @@ export function RequestDetailModal({ request, role, trigger }: RequestDetailModa
 
       if (res.data?.bookingId) {
         const amount = bid.proposedPrice ?? request.price;
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
         router.push(
           `/payment/checkout?bookingId=${res.data.bookingId}&amount=${amount}&courseTitle=${encodeURIComponent("Học với gia sư " + (bid.tutor?.name || "Gia sư"))}&courseSubject=${encodeURIComponent(request.courseName)}`
         );

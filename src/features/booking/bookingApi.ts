@@ -11,11 +11,13 @@ const injectedRtkApi = api.injectEndpoints({
           mode: queryArg.mode,
         },
       }),
+      providesTags: [{ type: "Booking", id: "LIST" }],
     }),
     getBookingById: build.query<GetBookingByIdApiResponse, GetBookingByIdApiArg>({
       query: (queryArg) => ({
         url: `/api/bookings/${queryArg.id}`,
       }),
+      providesTags: (_result, _error, arg) => [{ type: "Booking", id: arg.id }],
     }),
     createDirectBooking: build.mutation<
       CreateDirectBookingApiResponse,
@@ -26,6 +28,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.createDirectBookingDto,
       }),
+      invalidatesTags: [{ type: "Booking", id: "LIST" }],
     }),
     acceptBooking: build.mutation<
       AcceptBookingApiResponse,
@@ -35,6 +38,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/bookings/${queryArg.id}/accept`,
         method: "PATCH",
       }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Booking", id: "LIST" },
+        { type: "Booking", id: arg.id },
+      ],
     }),
     rejectBooking: build.mutation<
       RejectBookingApiResponse,
@@ -44,6 +51,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/bookings/${queryArg.id}/reject`,
         method: "PATCH",
       }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Booking", id: "LIST" },
+        { type: "Booking", id: arg.id },
+      ],
     }),
     markSessionAttendance: build.mutation<
       MarkSessionAttendanceApiResponse,
@@ -54,6 +65,16 @@ const injectedRtkApi = api.injectEndpoints({
         method: "PATCH",
         body: queryArg.markSessionAttendanceDto,
       }),
+    }),
+    takeAttendance: build.mutation<TakeAttendanceApiResponse, TakeAttendanceApiArg>({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/attendance`,
+        method: "POST",
+        body: queryArg.takeAttendanceDto,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Booking", id: arg.bookingId },
+      ],
     }),
     getMySessions: build.query<GetMySessionsApiResponse, GetMySessionsApiArg>({
       query: (queryArg) => ({
@@ -231,6 +252,33 @@ export type MarkSessionAttendanceApiArg = {
   markSessionAttendanceDto: MarkSessionAttendanceDto;
 };
 
+export type TakeAttendanceDto = {
+  status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
+  notes?: string;
+};
+
+export type TakeAttendanceResponseDto = {
+  id: string;
+  sessionId: string;
+  studentId: string;
+  status: string;
+  notes: string | null;
+  sessionStatus: string;
+  createdAt: string;
+};
+
+export type TakeAttendanceApiResponse = {
+  success: boolean;
+  message: string;
+  data: TakeAttendanceResponseDto;
+};
+
+export type TakeAttendanceApiArg = {
+  sessionId: string;
+  bookingId: string;
+  takeAttendanceDto: TakeAttendanceDto;
+};
+
 export type GetMySessionsApiResponse = {
   data: {
     id: string;
@@ -274,6 +322,7 @@ export const {
   useAcceptBookingMutation,
   useRejectBookingMutation,
   useMarkSessionAttendanceMutation,
+  useTakeAttendanceMutation,
   useGetMySessionsQuery,
   useGetTutorPublicSessionsQuery,
 } = injectedRtkApi;

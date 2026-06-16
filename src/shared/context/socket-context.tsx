@@ -42,7 +42,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    const socketUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+    const socketUrl = ""; // Uses Next.js rewrites to proxy to NEXT_PUBLIC_API_URL
     
     const newSocket = io(socketUrl, {
       auth: {

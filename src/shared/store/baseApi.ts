@@ -23,7 +23,7 @@ const serializeParams = (params: Record<string, unknown>): string => {
 };
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: process.env.NEXT_PUBLIC_API_URL,
+  baseUrl: "", // Uses Next.js rewrites to proxy to NEXT_PUBLIC_API_URL
   credentials: "include",
   paramsSerializer: serializeParams,
   prepareHeaders: (headers, { getState }) => {
@@ -154,6 +154,6 @@ const baseQueryWithReauth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["User", "Tutor", "TutorApplication", "TutorRequest", "Conversation", "Message", "Notification"],
+  tagTypes: ["User", "Tutor", "TutorApplication", "Booking", "TutorRequest", "Conversation", "Message", "Notification"],
   endpoints: () => ({}),
 });
