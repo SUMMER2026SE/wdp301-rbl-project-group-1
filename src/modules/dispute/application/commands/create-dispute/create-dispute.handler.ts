@@ -10,6 +10,8 @@ import { PrismaService } from '../../../../../shared/infrastructure/database/pri
 import { DisputeStatus } from '../../../../../shared/domain/enums/enums';
 import { CreateDisputeCommand } from './create-dispute.command';
 import { CreateDisputeResult } from './create-dispute.result';
+import { EventBus } from '@nestjs/cqrs';
+import { DisputeCreatedEvent } from '../../../domain/events/dispute-events';
 
 @CommandHandler(CreateDisputeCommand)
 export class CreateDisputeHandler
@@ -17,7 +19,10 @@ export class CreateDisputeHandler
     ICommandHandler<CreateDisputeCommand>,
     ICommand<CreateDisputeCommand, CreateDisputeResult>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(command: CreateDisputeCommand): Promise<CreateDisputeResult> {
     if (!command.bookingId && !command.sessionId) {
@@ -131,8 +136,7 @@ export class CreateDisputeHandler
           },
         });
       });
-
-      return new CreateDisputeResult(
+      const result = new CreateDisputeResult(
         ticket.id,
         ticket.bookingId,
         ticket.sessionId,
@@ -143,6 +147,17 @@ export class CreateDisputeHandler
         ticket.createdAt.toISOString(),
         ticket.updatedAt.toISOString(),
       );
+
+      this.eventBus.publish(
+        new DisputeCreatedEvent(
+          ticket.id,
+          ticket.reporterId,
+          ticket.targetId as string,
+          ticket.reason,
+        ),
+      );
+
+      return result;
     } else {
       // Only bookingId is provided
       const booking = await this.prisma.booking.findUnique({
@@ -196,7 +211,7 @@ export class CreateDisputeHandler
         },
       });
 
-      return new CreateDisputeResult(
+      const result = new CreateDisputeResult(
         ticket.id,
         ticket.bookingId,
         ticket.sessionId,
@@ -207,6 +222,17 @@ export class CreateDisputeHandler
         ticket.createdAt.toISOString(),
         ticket.updatedAt.toISOString(),
       );
+
+      this.eventBus.publish(
+        new DisputeCreatedEvent(
+          ticket.id,
+          ticket.reporterId,
+          ticket.targetId as string,
+          ticket.reason,
+        ),
+      );
+
+      return result;
     }
   }
 }

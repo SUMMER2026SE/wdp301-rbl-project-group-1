@@ -4,6 +4,8 @@ import { ICommand } from '../../../../../shared/application/interfaces/use-case.
 import { ITutorRequestRepository } from '../../../domain/repositories/tutor-request.repository.interface';
 import { CreateTutorRequestCommand } from './create-tutor-request.command';
 import { CreateTutorRequestResult } from './create-tutor-request.result';
+import { EventBus } from '@nestjs/cqrs';
+import { TutorRequestCreatedEvent } from '../../../domain/events/tutor-request-events';
 
 @CommandHandler(CreateTutorRequestCommand)
 export class CreateTutorRequestHandler
@@ -14,6 +16,7 @@ export class CreateTutorRequestHandler
   constructor(
     @Inject(ITutorRequestRepository)
     private readonly tutorRequestRepository: ITutorRequestRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(
@@ -33,7 +36,7 @@ export class CreateTutorRequestHandler
       scheduleRules: command.scheduleRules,
     });
 
-    return new CreateTutorRequestResult(
+    const result = new CreateTutorRequestResult(
       request.id,
       request.studentId,
       request.subjectId,
@@ -46,6 +49,17 @@ export class CreateTutorRequestHandler
       request.totalSessions,
       request.createdAt,
     );
+
+    this.eventBus.publish(
+      new TutorRequestCreatedEvent(
+        request.id,
+        request.studentId,
+        request.subjectId ?? '',
+        request.title,
+      ),
+    );
+
+    return result;
   }
 
   private validateNoDuplicateScheduleRules(

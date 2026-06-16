@@ -4,22 +4,14 @@ import { RenewBookingResult } from '../../application/commands/renew-booking/ren
 
 export const RenewBookingSchema = z
   .object({
-    totalSessions: z
-      .number()
-      .int()
-      .positive()
-      .meta({
-        example: 8,
-        description: 'Number of sessions for the renewed booking',
-      }),
-    message: z
-      .string()
-      .nullable()
-      .optional()
-      .meta({
-        example: 'Muốn tiếp tục học Toán với thầy',
-        description: 'Optional message to the tutor',
-      }),
+    totalSessions: z.number().int().positive().meta({
+      example: 8,
+      description: 'Number of sessions for the renewed booking',
+    }),
+    message: z.string().nullable().optional().meta({
+      example: 'Muốn tiếp tục học Toán với thầy',
+      description: 'Optional message to the tutor',
+    }),
   })
   .meta({ id: 'RenewBookingDto' });
 
@@ -38,15 +30,29 @@ export const RenewBookingResponseSchema = z
     subjectId: z.string().nullable().meta({ example: 'clxsubject001' }),
     mode: z.enum(['ONLINE', 'AT_HOME']).meta({ example: 'ONLINE' }),
     status: z
-      .enum(['PENDING', 'AWAITING_PAYMENT', 'CONFIRMED', 'COMPLETED', 'CANCELLED'])
+      .enum([
+        'PENDING',
+        'AWAITING_PAYMENT',
+        'CONFIRMED',
+        'COMPLETED',
+        'CANCELLED',
+      ])
       .meta({ example: 'PENDING' }),
     totalSessions: z.number().int().meta({ example: 8 }),
-    message: z.string().nullable().meta({ example: 'Muốn tiếp tục học Toán với thầy' }),
-    createdAt: z.string().datetime().meta({ example: '2025-01-01T00:00:00.000Z' }),
+    message: z
+      .string()
+      .nullable()
+      .meta({ example: 'Muốn tiếp tục học Toán với thầy' }),
+    createdAt: z
+      .string()
+      .datetime()
+      .meta({ example: '2025-01-01T00:00:00.000Z' }),
   })
   .meta({ id: 'RenewBookingResponseDto' });
 
-export class RenewBookingResponseDto extends createZodDto(RenewBookingResponseSchema) {
+export class RenewBookingResponseDto extends createZodDto(
+  RenewBookingResponseSchema,
+) {
   static fromResult(result: RenewBookingResult): RenewBookingResponseDto {
     const dto = new RenewBookingResponseDto();
     dto.bookingId = result.bookingId;

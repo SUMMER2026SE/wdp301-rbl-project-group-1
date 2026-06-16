@@ -10,8 +10,18 @@ import { NotificationService } from './application/services/notification.service
 import { NotificationGateway } from './presentation/gateways/notification.gateway';
 import { NotificationController } from './presentation/controllers/notification.controller';
 import { WsJwtGuard } from '../../shared/presentation/guards/ws-jwt.guard';
+import { BookingEventsHandler } from './application/event-handlers/booking-events.handler';
+import { TutorRequestEventsHandler } from './application/event-handlers/tutor-request-events.handler';
+import { ReviewEventsHandler } from './application/event-handlers/review-events.handler';
+import { DisputeEventsHandler } from './application/event-handlers/dispute-events.handler';
 
 const CommandHandlers = [SendEmailHandler];
+const EventHandlers = [
+  BookingEventsHandler,
+  TutorRequestEventsHandler,
+  ReviewEventsHandler,
+  DisputeEventsHandler,
+];
 
 @Module({
   imports: [
@@ -29,6 +39,7 @@ const CommandHandlers = [SendEmailHandler];
   providers: [
     MailerProvider,
     ...CommandHandlers,
+    ...EventHandlers,
     {
       provide: 'IEmailService',
       useClass: SmtpEmailService,

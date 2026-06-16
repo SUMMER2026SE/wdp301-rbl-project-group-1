@@ -5,6 +5,8 @@ import { BookingStatus } from '../../../../../shared/domain/enums/enums';
 import { IBookingRepository } from '../../../domain/repositories/booking.repository.interface';
 import { AcceptBookingCommand } from './accept-booking.command';
 import { AcceptBookingResult } from './accept-booking.result';
+import { EventBus } from '@nestjs/cqrs';
+import { BookingAcceptedEvent } from '../../../domain/events/booking-events';
 
 @CommandHandler(AcceptBookingCommand)
 export class AcceptBookingHandler
@@ -15,6 +17,7 @@ export class AcceptBookingHandler
   constructor(
     @Inject(IBookingRepository)
     private readonly bookingRepository: IBookingRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: AcceptBookingCommand): Promise<AcceptBookingResult> {
@@ -30,6 +33,10 @@ export class AcceptBookingHandler
         `Pending booking with id ${command.bookingId} not found`,
       );
     }
+
+    this.eventBus.publish(
+      new BookingAcceptedEvent(booking.id, booking.studentId, booking.tutorId),
+    );
 
     return new AcceptBookingResult(booking.id, booking.status);
   }

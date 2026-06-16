@@ -90,6 +90,16 @@ export class NotificationGateway
     this.server.to(`user:${userId}`).emit('new_notification', payload);
   }
 
+  /**
+   * Push a notification payload to multiple users.
+   */
+  broadcastNotification(
+    userIds: string[],
+    payload: Record<string, unknown>,
+  ): void {
+    userIds.forEach((userId) => this.notifyUser(userId, payload));
+  }
+
   // ─── Client events ────────────────────────────────────────────────────────
 
   @UseGuards(WsJwtGuard)

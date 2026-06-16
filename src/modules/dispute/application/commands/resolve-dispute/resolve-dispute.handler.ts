@@ -5,6 +5,8 @@ import { PrismaService } from '../../../../../shared/infrastructure/database/pri
 import { DisputeStatus } from '../../../../../shared/domain/enums/enums';
 import { ResolveDisputeCommand } from './resolve-dispute.command';
 import { ResolveDisputeResult } from './resolve-dispute.result';
+import { EventBus } from '@nestjs/cqrs';
+import { DisputeResolvedEvent } from '../../../domain/events/dispute-events';
 
 @CommandHandler(ResolveDisputeCommand)
 export class ResolveDisputeHandler
@@ -12,7 +14,10 @@ export class ResolveDisputeHandler
     ICommandHandler<ResolveDisputeCommand>,
     ICommand<ResolveDisputeCommand, ResolveDisputeResult>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(command: ResolveDisputeCommand): Promise<ResolveDisputeResult> {
     const ticket = await this.prisma.disputeTicket.findUnique({
@@ -44,7 +49,7 @@ export class ResolveDisputeHandler
       data: { status: newStatus },
     });
 
-    return new ResolveDisputeResult(
+    const result = new ResolveDisputeResult(
       updated.id,
       updated.bookingId,
       updated.sessionId,
@@ -55,5 +60,16 @@ export class ResolveDisputeHandler
       updated.createdAt.toISOString(),
       updated.updatedAt.toISOString(),
     );
+
+    this.eventBus.publish(
+      new DisputeResolvedEvent(
+        updated.id,
+        updated.reporterId,
+        updated.targetId as string,
+        command.resolution,
+      ),
+    );
+
+    return result;
   }
 }

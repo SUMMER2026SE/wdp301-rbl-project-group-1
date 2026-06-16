@@ -9,6 +9,8 @@ import { PrismaService } from '../../../../../shared/infrastructure/database/pri
 import { CreateDirectBookingCommand } from './create-direct-booking.command';
 import { CreateDirectBookingResult } from './create-direct-booking.result';
 import { SessionGeneratorService } from '../../../domain/services/session-generator.service';
+import { EventBus } from '@nestjs/cqrs';
+import { BookingCreatedEvent } from '../../../domain/events/booking-events';
 
 @CommandHandler(CreateDirectBookingCommand)
 export class CreateDirectBookingHandler
@@ -16,7 +18,10 @@ export class CreateDirectBookingHandler
     ICommandHandler<CreateDirectBookingCommand>,
     ICommand<CreateDirectBookingCommand, CreateDirectBookingResult>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(
     command: CreateDirectBookingCommand,
@@ -37,6 +42,12 @@ export class CreateDirectBookingHandler
       new Date(), // Default to today as startDate
     );
 
+    const totalPrice = SessionGeneratorService.calculateBookingPrice(
+      tutor.pricePerHour ?? 0,
+      generatedSessions,
+      command.totalSessions,
+    );
+
     // Create booking with schedule rules in transaction
     const booking = await this.prisma.booking.create({
       data: {
@@ -45,7 +56,7 @@ export class CreateDirectBookingHandler
         subjectId: command.subjectId,
         mode: command.mode as TutoringMode,
         status: BookingStatus.PENDING,
-        price: tutor.pricePerHour,
+        price: totalPrice,
         message: command.message,
         totalSessions: command.totalSessions,
         startDate:
@@ -71,6 +82,15 @@ export class CreateDirectBookingHandler
           : undefined,
       },
     });
+
+    this.eventBus.publish(
+      new BookingCreatedEvent(
+        booking.id,
+        booking.studentId,
+        booking.tutorId,
+        booking.message ?? '',
+      ),
+    );
 
     return new CreateDirectBookingResult(
       booking.id,

@@ -1,8 +1,4 @@
-import {
-  ForbiddenException,
-  Inject,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, Inject, NotFoundException } from '@nestjs/common';
 import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import {
@@ -14,6 +10,7 @@ import { PrismaService } from '../../../../../shared/infrastructure/database/pri
 import { IBookingRepository } from '../../../domain/repositories/booking.repository.interface';
 import { RenewBookingCommand } from './renew-booking.command';
 import { RenewBookingResult } from './renew-booking.result';
+import { SessionGeneratorService } from '../../../domain/services/session-generator.service';
 
 @CommandHandler(RenewBookingCommand)
 export class RenewBookingHandler
@@ -37,21 +34,37 @@ export class RenewBookingHandler
       throw new NotFoundException(`Booking with id ${bookingId} not found`);
     }
 
+    const tutor = await this.prisma.tutor.findUnique({
+      where: { id: original.tutorId },
+      select: { pricePerHour: true },
+    });
+
     // 2. Only the student who owns the booking can renew it
     if (original.studentId !== studentId) {
-      throw new ForbiddenException(
-        'You are not allowed to renew this booking',
-      );
+      throw new ForbiddenException('You are not allowed to renew this booking');
     }
 
-    // 3. Clone booking with new totalSessions / message, status = PENDING
+    // 3. Generate sessions based on original schedule rules
+    const generatedSessions = SessionGeneratorService.generateSessions(
+      totalSessions,
+      original.scheduleRules || [],
+      new Date(),
+    );
+
+    const totalPrice = SessionGeneratorService.calculateBookingPrice(
+      tutor?.pricePerHour ?? 0,
+      generatedSessions,
+      totalSessions,
+    );
+
+    // 4. Clone booking with new totalSessions / message, status = PENDING
     const renewed = await this.prisma.booking.create({
       data: {
         studentId: original.studentId,
         tutorId: original.tutorId,
         subjectId: original.subjectId,
-        mode: original.mode as TutoringMode,
-        price: original.price,
+        mode: original.mode,
+        price: totalPrice,
         totalSessions,
         message: message ?? null,
         status: BookingStatus.PENDING,
@@ -68,6 +81,16 @@ export class RenewBookingHandler
               },
             }
           : {}),
+        sessions: generatedSessions.length
+          ? {
+              create: generatedSessions.map((session) => ({
+                startTime: session.startTime,
+                endTime: session.endTime,
+                order: session.order,
+                status: session.status,
+              })),
+            }
+          : undefined,
       },
     });
 

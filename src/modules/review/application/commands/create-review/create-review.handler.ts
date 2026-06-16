@@ -11,6 +11,8 @@ import { BookingStatus } from '../../../../../shared/domain/enums/enums';
 import { IReviewRepository } from '../../../domain/repositories/review.repository.interface';
 import { CreateReviewCommand } from './create-review.command';
 import { CreateReviewResult } from './create-review.result';
+import { EventBus } from '@nestjs/cqrs';
+import { ReviewCreatedEvent } from '../../../domain/events/review-events';
 
 @CommandHandler(CreateReviewCommand)
 export class CreateReviewHandler
@@ -21,6 +23,7 @@ export class CreateReviewHandler
   constructor(
     @Inject(IReviewRepository)
     private readonly reviewRepository: IReviewRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: CreateReviewCommand): Promise<CreateReviewResult> {
@@ -71,7 +74,7 @@ export class CreateReviewHandler
       stats.totalReviews,
     );
 
-    return new CreateReviewResult(
+    const result = new CreateReviewResult(
       review.id,
       review.bookingId,
       review.tutorId,
@@ -80,5 +83,17 @@ export class CreateReviewHandler
       review.comment,
       review.createdAt.toISOString(),
     );
+
+    this.eventBus.publish(
+      new ReviewCreatedEvent(
+        review.id,
+        review.bookingId,
+        review.tutorId,
+        review.studentId,
+        review.rating,
+      ),
+    );
+
+    return result;
   }
 }
