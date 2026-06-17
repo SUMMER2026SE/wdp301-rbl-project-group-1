@@ -10,7 +10,7 @@ export const SessionResponseSchema = z
     title: z.string().nullable(),
     startTime: z.string().datetime(),
     endTime: z.string().datetime(),
-    status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED']),
+    status: z.enum(['SCHEDULED', 'COMPLETED', 'CANCELLED', 'AWAITING_CONFIRMATION']),
     meetingUrl: z.string().nullable(),
     notes: z.string().nullable(),
     order: z.number().nullable(),
@@ -31,7 +31,7 @@ export class SessionResponseDto extends createZodDto(SessionResponseSchema) {
     dto.title = result.title;
     dto.startTime = result.startTime.toISOString();
     dto.endTime = result.endTime.toISOString();
-    dto.status = result.status as 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+    dto.status = result.status as 'SCHEDULED' | 'COMPLETED' | 'CANCELLED' | 'AWAITING_CONFIRMATION';
     dto.meetingUrl = result.meetingUrl;
     dto.notes = result.notes;
     dto.order = result.order;

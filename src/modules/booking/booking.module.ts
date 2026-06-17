@@ -22,6 +22,7 @@ import { GetTutorSessionsHandler } from './application/queries/get-tutor-session
 import { BookingPaymentConfirmedHandler } from './application/event-handlers/payment-confirmed.handler';
 import { ConfirmSessionAttendanceHandler } from './application/commands/confirm-session-attendance/confirm-session-attendance.handler';
 import { RenewBookingHandler } from './application/commands/renew-booking/renew-booking.handler';
+import { MeetingModule } from '../meeting/meeting.module';
 
 const CommandHandlers = [
   CreateDirectBookingHandler,
@@ -45,7 +46,7 @@ const QueryHandlers = [
 const EventHandlers = [BookingPaymentConfirmedHandler];
 
 @Module({
-  imports: [CqrsModule],
+  imports: [CqrsModule, MeetingModule],
   controllers: [BookingController, BookingSessionController],
   providers: [
     ...CommandHandlers,

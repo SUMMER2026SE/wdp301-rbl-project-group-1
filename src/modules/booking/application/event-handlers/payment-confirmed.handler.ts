@@ -11,6 +11,8 @@ import {
 } from '../../../../shared/domain/enums/enums';
 import { PrismaService } from '../../../../shared/infrastructure/database/prisma/prisma.service';
 
+import { MeetingService } from '../../../meeting/application/services/meeting.service';
+
 @EventsHandler(PaymentConfirmedEvent)
 export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConfirmedEvent> {
   private readonly logger = new Logger(BookingPaymentConfirmedHandler.name);
@@ -18,6 +20,7 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
   constructor(
     private readonly prisma: PrismaService,
     @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
+    private readonly meetingService: MeetingService,
   ) {}
 
   async handle(event: PaymentConfirmedEvent) {
@@ -32,7 +35,7 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
     try {
       const booking = await this.prisma.booking.findUnique({
         where: { id: event.referenceId },
-        include: { subject: true },
+        include: { subject: true, tutor: { include: { user: true } } },
       });
 
       if (!booking) {
@@ -45,10 +48,36 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
         return;
       }
 
+      let meetingUrl: string | null = null;
+      try {
+        const title = `Lớp học: ${booking.subject?.name || 'Khác'} - Gia sư ${booking.tutor?.user?.nickname || 'Edura'}`;
+        const meetingResult = await this.meetingService.createMeeting(
+          booking.tutorId,
+          title,
+          booking.startDate || new Date(),
+          new Date((booking.startDate || new Date()).getTime() + 60 * 60 * 1000), // 1 hour duration
+        );
+        meetingUrl = meetingResult.meetingUrl;
+        this.logger.log(`Generated meeting URL for booking ${booking.id}: ${meetingUrl}`);
+      } catch (e) {
+        this.logger.error(
+          `Failed to generate meeting URL for booking ${booking.id}: ${e instanceof Error ? e.message : String(e)}`,
+        );
+      }
+
       await this.prisma.booking.update({
         where: { id: event.referenceId },
         data: {
           status: BookingStatus.CONFIRMED,
+          meetingUrl: meetingUrl,
+          sessions: meetingUrl
+            ? {
+                updateMany: {
+                  where: { bookingId: event.referenceId },
+                  data: { meetingUrl: meetingUrl },
+                },
+              }
+            : undefined,
         },
       });
 

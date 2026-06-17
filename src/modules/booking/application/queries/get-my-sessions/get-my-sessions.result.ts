@@ -1,4 +1,4 @@
-import { SessionStatus } from '../../../../../shared/domain/enums/enums';
+import { SessionStatus, AttendanceStatus } from '../../../../../shared/domain/enums/enums';
 
 export interface MySessionResultData {
   id: string;
@@ -17,4 +17,9 @@ export interface MySessionResultData {
   counterpartName: string;
   subjectName: string;
   subjectId: string;
+
+  attendance?: {
+    status: AttendanceStatus;
+    notes: string | null;
+  };
 }
