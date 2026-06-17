@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
   CheckCircle2,
   FileText,
@@ -6,10 +7,8 @@ import {
   Play,
   PlayCircle,
 } from "lucide-react";
-import { Lesson } from "../../types";
-
 interface LessonItemProps {
-  lesson: Lesson;
+  lesson: any;
   index: number;
 }
 

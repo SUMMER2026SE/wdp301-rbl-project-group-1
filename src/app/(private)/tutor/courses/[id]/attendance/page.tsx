@@ -119,37 +119,40 @@ export default function AttendancePage() {
       (s.status === "COMPLETED" || isPast(new Date(s.endTime)))
   );
 
-  const getDraft = (sessionId: string) =>
-    draft[sessionId] ?? { status: "PRESENT" as AttendanceStatus, notes: "" };
+  const getDraft = (session: typeof eligibleSessions[0]) =>
+    draft[session.id] ?? {
+      status: session.attendance?.status ?? "PRESENT",
+      notes: session.attendance?.notes ?? "",
+    };
 
-  const setStatus = (sessionId: string, status: AttendanceStatus) => {
+  const setStatus = (session: typeof eligibleSessions[0], status: AttendanceStatus) => {
     setDraft((prev) => ({
       ...prev,
-      [sessionId]: { ...getDraft(sessionId), status },
+      [session.id]: { ...getDraft(session), status },
     }));
   };
 
-  const setNotes = (sessionId: string, notes: string) => {
+  const setNotes = (session: typeof eligibleSessions[0], notes: string) => {
     setDraft((prev) => ({
       ...prev,
-      [sessionId]: { ...getDraft(sessionId), notes },
+      [session.id]: { ...getDraft(session), notes },
     }));
   };
 
-  const handleSave = async (sessionId: string) => {
-    const data = getDraft(sessionId);
+  const handleSave = async (session: typeof eligibleSessions[0]) => {
+    const data = getDraft(session);
     const payload: TakeAttendanceDto = {
-      status: data.status,
+      status: data.status as AttendanceStatus,
       notes: data.notes || undefined,
     };
     try {
-      setSavingId(sessionId);
+      setSavingId(session.id);
       await takeAttendance({
-        sessionId,
+        sessionId: session.id,
         bookingId,
         takeAttendanceDto: payload,
       }).unwrap();
-      setSavedSessions((prev) => new Set(prev).add(sessionId));
+      setSavedSessions((prev) => new Set(prev).add(session.id));
       setExpandedId(null);
     } finally {
       setSavingId(null);
@@ -164,12 +167,16 @@ export default function AttendancePage() {
       EXCUSED: 0,
       ABSENT: 0,
     };
-    savedSessions.forEach((id) => {
-      const s = draft[id]?.status ?? "PRESENT";
-      counts[s] = (counts[s] || 0) + 1;
+    eligibleSessions.forEach((session) => {
+      const isSaved = savedSessions.has(session.id) || !!session.attendance;
+      if (isSaved) {
+        const draftData = draft[session.id];
+        const status = (draftData?.status ?? session.attendance?.status ?? "PRESENT") as AttendanceStatus;
+        counts[status] = (counts[status] || 0) + 1;
+      }
     });
     return counts;
-  }, [savedSessions, draft]);
+  }, [eligibleSessions, savedSessions, draft]);
 
   if (isLoading) {
     return (
@@ -236,8 +243,8 @@ export default function AttendancePage() {
             const start = new Date(session.startTime);
             const end = new Date(session.endTime);
             const isExpanded = expandedId === session.id;
-            const isSaved = savedSessions.has(session.id);
-            const currentDraft = getDraft(session.id);
+            const isSaved = savedSessions.has(session.id) || !!session.attendance;
+            const currentDraft = getDraft(session);
             const isThisSaving = savingId === session.id;
 
             return (
@@ -313,7 +320,7 @@ export default function AttendancePage() {
                             key={s}
                             status={s}
                             selected={currentDraft.status === s}
-                            onClick={() => setStatus(session.id, s)}
+                            onClick={() => setStatus(session, s)}
                           />
                         ))}
                       </div>
@@ -326,14 +333,14 @@ export default function AttendancePage() {
                       </label>
                       <Textarea
                         value={currentDraft.notes}
-                        onChange={(e) => setNotes(session.id, e.target.value)}
+                        onChange={(e) => setNotes(session, e.target.value)}
                         placeholder="Nhận xét về buổi học, tình hình học sinh..."
                         className="resize-none h-20 text-sm rounded-xl"
                       />
                     </div>
 
                     <Button
-                      onClick={() => handleSave(session.id)}
+                      onClick={() => handleSave(session)}
                       disabled={isThisSaving || isSaving}
                       size="sm"
                       className="self-end gap-2"

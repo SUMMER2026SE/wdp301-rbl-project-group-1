@@ -1,5 +1,5 @@
 import { baseApi } from "@/src/shared/store/baseApi";
-import type { NotificationDto, NotificationListResponse } from "./types";
+import type { NotificationListResponse } from "./types";
 
 interface BaseResponse<T> {
   success: boolean;

@@ -8,7 +8,6 @@ import { motion, Variants } from "framer-motion";
 import { 
   Calendar, 
   Users, 
-  Wallet, 
   ArrowRight, 
   Video, 
   Clock, 
@@ -21,7 +20,6 @@ import {
 import { useGetMySessionsQuery } from "@/src/features/booking/bookingApi";
 import { useGetMeQuery } from "@/src/features/auth/authApi";
 import { useGetTutorRequestsQuery } from "@/src/features/tutor-request/tutorRequestApi";
-import { useAppSelector } from "@/src/shared/store/hooks";
 import { Button } from "@/src/shared/components/ui/button";
 
 const containerVariants: Variants = {

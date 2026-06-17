@@ -8,7 +8,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/src/shared/components/ui/popover";
-import { Bell, CheckCircle, CheckCircle2, Info, Mail, MessageSquare, Calendar, CreditCard, Star, AlertCircle, X, Trash2 } from "lucide-react";
+import { Bell, Info, MessageSquare, Calendar, CreditCard, Star, AlertCircle, X } from "lucide-react";
 import { useState } from "react";
 import {
   useGetNotificationsQuery,

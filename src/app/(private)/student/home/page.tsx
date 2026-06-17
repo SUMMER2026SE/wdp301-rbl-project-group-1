@@ -20,7 +20,6 @@ import {
 import { useGetMySessionsQuery, useGetBookingsQuery } from "@/src/features/booking/bookingApi";
 import { useGetMeQuery } from "@/src/features/auth/authApi";
 import { useGetRecommendedTutorsQuery } from "@/src/features/recommendation/recommendationApi";
-import { useAppSelector } from "@/src/shared/store/hooks";
 import { Button } from "@/src/shared/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/src/shared/components/ui/avatar";
 

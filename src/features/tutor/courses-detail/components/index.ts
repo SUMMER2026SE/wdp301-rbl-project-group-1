@@ -12,14 +12,6 @@ export {
 } from "./overview";
 export type { ClassResource, TopStudent } from "./overview";
 
-// Học sinh
-export { StudentManagementSection } from "./students";
-export type { Student } from "./students";
-
-// Lịch học
-export { Schedule } from "./schedule";
-export type { FixedSchedule, ScheduleEvent, UpcomingEvent } from "./schedule";
-
 // Tài liệu & Bài Tập
 export {
   AssignmentCard,
@@ -31,4 +23,4 @@ export {
 export type { DocumentCardProps, DocumentIconType } from "./resources";
 
 // Điểm danh
-export { AttendanceStatsSection } from "./attendance";
+export { AttendanceStatsSection, PendingAttendanceSection } from "./attendance";
