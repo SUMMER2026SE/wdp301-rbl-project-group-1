@@ -19,6 +19,21 @@ const injectedRtkApi = api.injectEndpoints({
     getTutorById: build.query<GetTutorByIdApiResponse, GetTutorByIdApiArg>({
       query: (queryArg) => ({ url: `/api/tutors/${queryArg.id}` }),
     }),
+    getTutorReviews: build.query<
+      GetTutorReviewsApiResponse,
+      GetTutorReviewsApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/tutors/${queryArg.tutorId}/reviews`,
+        params: {
+          page: queryArg.page,
+          limit: queryArg.limit,
+          search: queryArg.search,
+          sortBy: queryArg.sortBy,
+          sortOrder: queryArg.sortOrder,
+        },
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -62,6 +77,25 @@ export type GetTutorByIdApiResponse =
 export type GetTutorByIdApiArg = {
   id: string;
 };
+export type GetTutorReviewsApiResponse = {
+  success: boolean;
+  message: string;
+  data: ReviewResponseDto[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+};
+export type GetTutorReviewsApiArg = {
+  tutorId: string;
+  page?: string;
+  limit?: string;
+  search?: string;
+  sortBy?: "createdAt" | "rating";
+  sortOrder?: "asc" | "desc";
+};
 export type TutorResponseDto = {
   id: string;
   nickname: string | null;
@@ -92,4 +126,22 @@ export type AcademicCatalogItem = {
   name: string;
   slug?: string;
 };
-export const { useGetTutorsQuery, useGetTutorByIdQuery } = injectedRtkApi;
+export type ReviewResponseDto = {
+  id: string;
+  bookingId: string;
+  tutorId: string;
+  studentId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  student: {
+    id: string;
+    nickname: string | null;
+    avatarUrl: string | null;
+  };
+};
+export const {
+  useGetTutorsQuery,
+  useGetTutorByIdQuery,
+  useGetTutorReviewsQuery,
+} = injectedRtkApi;

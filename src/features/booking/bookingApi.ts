@@ -13,7 +13,10 @@ const injectedRtkApi = api.injectEndpoints({
       }),
       providesTags: [{ type: "Booking", id: "LIST" }],
     }),
-    getBookingById: build.query<GetBookingByIdApiResponse, GetBookingByIdApiArg>({
+    getBookingById: build.query<
+      GetBookingByIdApiResponse,
+      GetBookingByIdApiArg
+    >({
       query: (queryArg) => ({
         url: `/api/bookings/${queryArg.id}`,
       }),
@@ -85,13 +88,26 @@ const injectedRtkApi = api.injectEndpoints({
         },
       }),
     }),
-    getTutorPublicSessions: build.query<GetMySessionsApiResponse, GetTutorPublicSessionsApiArg>({
+    getTutorPublicSessions: build.query<
+      GetMySessionsApiResponse,
+      GetTutorPublicSessionsApiArg
+    >({
       query: (queryArg) => ({
         url: `/api/bookings/sessions/tutor/${queryArg.tutorId}`,
         params: {
           startDate: queryArg.startDate,
           endDate: queryArg.endDate,
         },
+      }),
+    }),
+    createBookingReview: build.mutation<
+      CreateBookingReviewApiResponse,
+      CreateBookingReviewApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/${queryArg.bookingId}/reviews`,
+        method: "POST",
+        body: queryArg.createReviewDto,
       }),
     }),
   }),
@@ -126,6 +142,15 @@ export type RejectBookingApiResponse =
 export type RejectBookingApiArg = {
   id: string;
 };
+export type CreateBookingReviewApiResponse = {
+  success: boolean;
+  message: string;
+  data: CreateReviewResponseDto;
+};
+export type CreateBookingReviewApiArg = {
+  bookingId: string;
+  createReviewDto: CreateReviewDto;
+};
 
 export type ScheduleRuleDto = {
   /** Day of week, where 0 is Sunday */
@@ -158,7 +183,12 @@ export type CreateDirectBookingResponseDto = {
   tutorId: string;
   subjectId: string | null;
   mode: "ONLINE" | "AT_HOME";
-  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
   message: string | null;
   createdAt: string;
 };
@@ -167,7 +197,12 @@ export type BookingStatusUpdateResponseDto = {
   /** Booking ID */
   bookingId: string;
   /** Updated booking status */
-  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
 };
 export type GetBookingsApiResponse = {
   success: boolean;
@@ -184,7 +219,12 @@ export type GetBookingsApiResponse = {
 export type GetBookingsApiArg = {
   page?: number;
   limit?: number;
-  status?: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status?:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
   mode?: "ONLINE" | "AT_HOME";
 };
 
@@ -204,7 +244,12 @@ export type BookingResponseDto = {
   tutorId: string;
   subjectId: string | null;
   mode: "ONLINE" | "AT_HOME";
-  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
   price: number | null;
   message: string | null;
   createdAt: string;
@@ -315,6 +360,21 @@ export type GetTutorPublicSessionsApiArg = {
   endDate?: string;
 };
 
+export type CreateReviewResponseDto = {
+  id: string;
+  bookingId: string;
+  tutorId: string;
+  studentId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+};
+
+export type CreateReviewDto = {
+  rating: number;
+  comment?: string | null;
+};
+
 export const {
   useGetBookingsQuery,
   useGetBookingByIdQuery,
@@ -325,4 +385,5 @@ export const {
   useTakeAttendanceMutation,
   useGetMySessionsQuery,
   useGetTutorPublicSessionsQuery,
+  useCreateBookingReviewMutation,
 } = injectedRtkApi;

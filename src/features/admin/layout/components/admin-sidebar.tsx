@@ -25,10 +25,23 @@ import { usePathname } from "next/navigation";
 
 export const ADMIN_NAV_LINKS = [
   { label: "Tổng quan", href: "/admin", icon: Home },
-  { label: "Phê duyệt Gia sư", href: "/admin/tutor-approvals", icon: UserCheck },
+  {
+    label: "Phê duyệt Gia sư",
+    href: "/admin/tutor-approvals",
+    icon: UserCheck,
+  },
   { label: "Quản lý Khóa học", href: "/admin/courses", icon: BookOpen },
-  { label: "Kiểm duyệt Nội dung", href: "/admin/moderation", icon: ShieldCheck },
-  { label: "Giao dịch & Rút tiền", href: "/admin/transactions", icon: CircleDollarSign },
+  {
+    label: "Kiểm duyệt Nội dung",
+    href: "/admin/moderation",
+    icon: ShieldCheck,
+  },
+  {
+    label: "Giao dịch & Rút tiền",
+    href: "/admin/transactions",
+    icon: CircleDollarSign,
+  },
+  { label: "Quản lý Đánh giá", href: "/admin/reviews", icon: ShieldCheck },
   { label: "Báo cáo & Khiếu nại", href: "/admin/reports", icon: FileWarning },
 ];
 
