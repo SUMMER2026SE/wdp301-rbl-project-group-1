@@ -6,6 +6,7 @@ import { vi } from "date-fns/locale";
 import { useParams } from "next/navigation";
 import {
   useGetMySessionsQuery,
+  useGetBookingByIdQuery,
   useTakeAttendanceMutation,
   TakeAttendanceDto,
 } from "@/src/features/booking/bookingApi";
@@ -90,6 +91,8 @@ export default function AttendancePage() {
   const params = useParams();
   const bookingId = params.id as string;
 
+  const { data: bookingResponse } = useGetBookingByIdQuery({ id: bookingId });
+  const booking = bookingResponse?.data;
   const { data: sessionsResponse, isLoading } = useGetMySessionsQuery({});
   const [takeAttendance, { isLoading: isSaving }] = useTakeAttendanceMutation();
 
@@ -101,16 +104,23 @@ export default function AttendancePage() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [savingId, setSavingId] = useState<string | null>(null);
 
+  const bookingGroupId = booking?.groupId;
+
   const sessions = useMemo(() => {
     return (
       sessionsResponse?.data
-        ?.filter((s) => s.bookingId === bookingId)
+        ?.filter((s) => {
+          if (bookingGroupId && s.groupId) {
+            return s.groupId === bookingGroupId;
+          }
+          return s.bookingId === bookingId;
+        })
         .sort(
           (a, b) =>
             new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
         ) || []
     );
-  }, [sessionsResponse?.data, bookingId]);
+  }, [sessionsResponse?.data, bookingId, bookingGroupId]);
 
   // Only past+today sessions can have attendance taken
   const eligibleSessions = sessions.filter(

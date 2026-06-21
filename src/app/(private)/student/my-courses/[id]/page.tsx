@@ -17,7 +17,12 @@ import {
   ConfirmAttendanceDialog,
 } from "@/src/features/student/courses-detail/components";
 import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
-import { RenewBookingModal } from "@/src/features/booking/components";
+import { 
+  RenewBookingModal, 
+  RescheduleSessionModal, 
+  ApproveRescheduleButton, 
+  RejectRescheduleButton 
+} from "@/src/features/booking/components";
 
 import { Loader2, Calendar, Clock, Video, CheckCircle2, Play, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/src/shared/components/ui/card";
@@ -65,15 +70,22 @@ export default function CourseDetailPage() {
 
   const { data: sessionsResponse, isLoading: isSessionsLoading } = useGetMySessionsQuery({});
 
+  const bookingGroupId = booking?.groupId;
+
   const sessions = useMemo(() => {
     return (
       sessionsResponse?.data
-        ?.filter((s) => s.bookingId === bookingId)
+        ?.filter((s) => {
+          if (bookingGroupId && s.groupId) {
+            return s.groupId === bookingGroupId;
+          }
+          return s.bookingId === bookingId;
+        })
         .sort(
           (a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime(),
         ) || []
     );
-  }, [sessionsResponse?.data, bookingId]);
+  }, [sessionsResponse?.data, bookingId, bookingGroupId]);
 
   const meetingUrl = useMemo(() => {
     return sessions.find(s => s.meetingUrl)?.meetingUrl || "";
@@ -184,28 +196,31 @@ export default function CourseDetailPage() {
                   const isCompleted = session.status === "COMPLETED";
                   const isCancelled = session.status === "CANCELLED";
                   const isAwaitingConfirmation = session.status === "AWAITING_CONFIRMATION";
+                  const isRescheduleRequested = session.status === "RESCHEDULE_REQUESTED";
+                  
                   const startTime = new Date(session.startTime);
                   const endTime = new Date(session.endTime);
 
                   return (
-                    <Card key={session.id} className={`border-border shadow-sm rounded-2xl overflow-hidden transition-colors ${isCompleted ? 'bg-success-soft/10 dark:bg-success-soft/5' : isAwaitingConfirmation ? 'bg-amber-50 dark:bg-amber-900/10' : 'bg-card'}`}>
+                    <Card key={session.id} className={`border-border shadow-sm rounded-2xl overflow-hidden transition-colors ${isCompleted ? 'bg-success-soft/10 dark:bg-success-soft/5' : isAwaitingConfirmation ? 'bg-amber-50 dark:bg-amber-900/10' : isRescheduleRequested ? 'bg-blue-50 dark:bg-blue-900/10' : 'bg-card'}`}>
                       <CardContent className="p-5 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-                        <div className="flex items-start gap-4">
+                        <div className="flex items-start gap-4 w-full">
                           <div className={`size-10 rounded-full flex items-center justify-center flex-shrink-0 mt-1 ${
                             isCompleted ? 'bg-success/20 text-success' : 
                             isCancelled ? 'bg-destructive/20 text-destructive' : 
                             isAwaitingConfirmation ? 'bg-amber-500/20 text-amber-600 dark:text-amber-500' :
+                            isRescheduleRequested ? 'bg-blue-500/20 text-blue-600 dark:text-blue-500' :
                             'bg-primary/10 text-primary'
                           }`}>
                             {isCompleted ? <CheckCircle2 className="size-5" /> : <Play className="size-5 ml-0.5" />}
                           </div>
 
-                          <div className="flex flex-col">
+                          <div className="flex flex-col flex-1">
                             <h4 className={`font-semibold text-base ${isCompleted ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                               Buổi {index + 1}{session.title ? `: ${session.title}` : ""}
                             </h4>
 
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm text-muted-foreground">
+                            <div className={`flex flex-wrap items-center gap-x-4 gap-y-2 mt-2 text-sm ${isRescheduleRequested ? 'text-muted-foreground line-through opacity-70' : 'text-muted-foreground'}`}>
                               <div className="flex items-center gap-1.5">
                                 <Calendar className="size-3.5" />
                                 <span>{format(startTime, "EEEE, dd/MM/yyyy", { locale: vi })}</span>
@@ -215,6 +230,29 @@ export default function CourseDetailPage() {
                                 <span>{format(startTime, "HH:mm")} - {format(endTime, "HH:mm")}</span>
                               </div>
                             </div>
+
+                            {isRescheduleRequested && session.proposedStartTime && session.proposedEndTime && (
+                              <div className="flex flex-col gap-1 mt-3 p-3 bg-blue-100/50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800">
+                                <p className="text-sm font-semibold text-blue-800 dark:text-blue-300">
+                                  Thời gian đề xuất dời lịch:
+                                </p>
+                                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-blue-700 dark:text-blue-400">
+                                  <div className="flex items-center gap-1.5">
+                                    <Calendar className="size-3.5" />
+                                    <span>{format(new Date(session.proposedStartTime), "EEEE, dd/MM/yyyy", { locale: vi })}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5">
+                                    <Clock className="size-3.5" />
+                                    <span>{format(new Date(session.proposedStartTime), "HH:mm")} - {format(new Date(session.proposedEndTime), "HH:mm")}</span>
+                                  </div>
+                                </div>
+                                {session.proposedReason && (
+                                  <p className="text-sm text-blue-700/80 dark:text-blue-400/80 mt-1 italic">
+                                    Lý do: {session.proposedReason}
+                                  </p>
+                                )}
+                              </div>
+                            )}
 
                             {session.notes && (
                               <p className="text-sm text-muted-foreground mt-2 italic border-l-2 border-border pl-3">
@@ -229,9 +267,10 @@ export default function CourseDetailPage() {
                             isCompleted ? "success" : 
                             isCancelled ? "destructive" : 
                             isAwaitingConfirmation ? "secondary" :
+                            isRescheduleRequested ? "outline" :
                             "default"
-                          } className={isAwaitingConfirmation ? "bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-300 w-fit" : "w-fit"}>
-                            {isCompleted ? "Đã học" : isCancelled ? "Đã hủy" : isAwaitingConfirmation ? "Chờ xác nhận" : "Sắp tới"}
+                          } className={isAwaitingConfirmation ? "bg-amber-100 text-amber-800 hover:bg-amber-100 dark:bg-amber-900/40 dark:text-amber-300 w-fit" : isRescheduleRequested ? "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300 w-fit" : "w-fit"}>
+                            {isCompleted ? "Đã học" : isCancelled ? "Đã hủy" : isAwaitingConfirmation ? "Chờ xác nhận" : isRescheduleRequested ? "Yêu cầu dời lịch" : "Sắp tới"}
                           </Badge>
 
                           {isAwaitingConfirmation && (
@@ -241,6 +280,34 @@ export default function CourseDetailPage() {
                               sessionTitle={session.title || undefined}
                               tutorName={booking.tutor.name}
                             />
+                          )}
+
+                          {!isCompleted && !isCancelled && !isAwaitingConfirmation && !isRescheduleRequested && (
+                            <RescheduleSessionModal
+                              sessionId={session.id}
+                              currentStartTime={session.startTime}
+                              currentEndTime={session.endTime}
+                              trigger={
+                                <Button variant="ghost" size="sm" className="w-full sm:w-auto text-muted-foreground hover:text-foreground">
+                                  Dời lịch
+                                </Button>
+                              }
+                            />
+                          )}
+
+                          {isRescheduleRequested && session.rescheduleRequestedBy !== null && (
+                            session.rescheduleRequestedBy !== booking.studentId ? (
+                              // Tutor sent the request → student can approve/reject
+                              <div className="flex items-center gap-2 mt-2">
+                                <RejectRescheduleButton sessionId={session.id} />
+                                <ApproveRescheduleButton sessionId={session.id} />
+                              </div>
+                            ) : (
+                              // Student sent the request → waiting for tutor response
+                              <span className="text-xs font-medium text-blue-600 dark:text-blue-400 mt-2">
+                                Chờ gia sư xác nhận
+                              </span>
+                            )
                           )}
 
                           {session.meetingUrl && !isCompleted && !isCancelled && !isAwaitingConfirmation && (

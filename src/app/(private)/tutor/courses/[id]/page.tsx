@@ -25,6 +25,11 @@ import {
   ChevronRight,
   BookOpen,
 } from "lucide-react";
+import { 
+  RescheduleSessionModal, 
+  ApproveRescheduleButton, 
+  RejectRescheduleButton 
+} from "@/src/features/booking/components";
 
 const DAY_MAP: Record<number, string> = {
   0: "Chủ nhật",
@@ -47,16 +52,23 @@ export default function TutorCourseOverviewPage() {
   const { data: sessionsResponse, isLoading: isSessionsLoading } =
     useGetMySessionsQuery({});
 
+  const bookingGroupId = booking?.groupId;
+
   const sessions = useMemo(() => {
     return (
       sessionsResponse?.data
-        ?.filter((s) => s.bookingId === bookingId)
+        ?.filter((s) => {
+          if (bookingGroupId && s.groupId) {
+            return s.groupId === bookingGroupId;
+          }
+          return s.bookingId === bookingId;
+        })
         .sort(
           (a, b) =>
             new Date(a.startTime).getTime() - new Date(b.startTime).getTime()
         ) || []
     );
-  }, [sessionsResponse?.data, bookingId]);
+  }, [sessionsResponse?.data, bookingId, bookingGroupId]);
 
   const isLoading = isBookingLoading || isSessionsLoading;
 
@@ -267,6 +279,7 @@ export default function TutorCourseOverviewPage() {
               {sessions.map((session, index) => {
                 const isCompleted = session.status === "COMPLETED";
                 const isCancelled = session.status === "CANCELLED";
+                const isRescheduleRequested = session.status === "RESCHEDULE_REQUESTED";
                 const start = new Date(session.startTime);
                 const end = new Date(session.endTime);
                 const isSessionToday = isToday(start);
@@ -274,22 +287,26 @@ export default function TutorCourseOverviewPage() {
                 return (
                   <div
                     key={session.id}
-                    className={`flex items-center justify-between gap-4 px-4 py-3.5 rounded-xl border transition-colors ${
-                      isSessionToday
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-4 py-3.5 rounded-xl border transition-colors ${
+                      isSessionToday && !isRescheduleRequested
                         ? "border-primary/30 bg-primary/5"
                         : isCompleted
                         ? "border-border/50 bg-muted/20"
+                        : isRescheduleRequested
+                        ? "border-blue-200 bg-blue-50/50 dark:border-blue-900/50 dark:bg-blue-900/10"
                         : "border-border bg-card"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start sm:items-center gap-3 flex-1">
                       {/* Icon */}
                       <div
-                        className={`size-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                        className={`size-8 rounded-full flex items-center justify-center flex-shrink-0 mt-1 sm:mt-0 ${
                           isCompleted
                             ? "bg-success/15 text-success"
                             : isCancelled
                             ? "bg-destructive/15 text-destructive"
+                            : isRescheduleRequested
+                            ? "bg-blue-500/20 text-blue-600 dark:text-blue-500"
                             : isSessionToday
                             ? "bg-primary/15 text-primary"
                             : "bg-muted text-muted-foreground"
@@ -305,7 +322,7 @@ export default function TutorCourseOverviewPage() {
                       </div>
 
                       {/* Info */}
-                      <div>
+                      <div className="flex-1 w-full">
                         <p
                           className={`text-sm font-semibold ${
                             isCompleted
@@ -315,13 +332,13 @@ export default function TutorCourseOverviewPage() {
                         >
                           Buổi {index + 1}
                           {session.title ? ` – ${session.title}` : ""}
-                          {isSessionToday && (
+                          {isSessionToday && !isRescheduleRequested && (
                             <span className="ml-2 text-[10px] font-bold uppercase tracking-wider bg-primary/10 text-primary px-1.5 py-0.5 rounded-md">
                               Hôm nay
                             </span>
                           )}
                         </p>
-                        <div className="flex items-center gap-3 mt-0.5 text-xs text-muted-foreground">
+                        <div className={`flex items-center gap-3 mt-0.5 text-xs ${isRescheduleRequested ? 'text-muted-foreground line-through opacity-70' : 'text-muted-foreground'}`}>
                           <span className="flex items-center gap-1">
                             <Calendar className="size-3" />
                             {format(start, "EEE dd/MM", { locale: vi })}
@@ -331,33 +348,88 @@ export default function TutorCourseOverviewPage() {
                             {format(start, "HH:mm")} – {format(end, "HH:mm")}
                           </span>
                         </div>
+
+                        {isRescheduleRequested && session.proposedStartTime && session.proposedEndTime && (
+                          <div className="flex flex-col gap-1 mt-2 p-2 bg-blue-100/50 dark:bg-blue-900/30 rounded border border-blue-200 dark:border-blue-800 w-full max-w-sm">
+                            <p className="text-[11px] font-semibold text-blue-800 dark:text-blue-300">
+                              Thời gian đề xuất dời lịch:
+                            </p>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-blue-700 dark:text-blue-400">
+                              <span className="flex items-center gap-1">
+                                <Calendar className="size-3" />
+                                {format(new Date(session.proposedStartTime), "EEE dd/MM", { locale: vi })}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <Clock className="size-3" />
+                                {format(new Date(session.proposedStartTime), "HH:mm")} – {format(new Date(session.proposedEndTime), "HH:mm")}
+                              </span>
+                            </div>
+                            {session.proposedReason && (
+                              <p className="text-[11px] text-blue-700/80 dark:text-blue-400/80 mt-0.5 italic">
+                                Lý do: {session.proposedReason}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     {/* Right action */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex flex-wrap items-center justify-end gap-2 sm:flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0 pl-11 sm:pl-0">
                       <Badge
                         variant={
                           isCompleted
                             ? "success"
                             : isCancelled
                             ? "destructive"
+                            : isRescheduleRequested
+                            ? "outline"
                             : isSessionToday
                             ? "default"
                             : "secondary"
                         }
-                        className="text-[10px] whitespace-nowrap"
+                        className={`text-[10px] whitespace-nowrap ${isRescheduleRequested ? "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/40 dark:border-blue-800 dark:text-blue-300" : ""}`}
                       >
                         {isCompleted
                           ? "Đã học"
                           : isCancelled
                           ? "Đã hủy"
+                          : isRescheduleRequested
+                          ? "Dời lịch"
                           : isSessionToday
                           ? "Hôm nay"
                           : "Sắp tới"}
                       </Badge>
 
-                      {session.meetingUrl && !isCompleted && !isCancelled && (
+                      {!isCompleted && !isCancelled && !isRescheduleRequested && (
+                        <RescheduleSessionModal
+                          sessionId={session.id}
+                          currentStartTime={session.startTime}
+                          currentEndTime={session.endTime}
+                          trigger={
+                            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground">
+                              Dời lịch
+                            </Button>
+                          }
+                        />
+                      )}
+
+                      {isRescheduleRequested && session.rescheduleRequestedBy !== null && (
+                        session.rescheduleRequestedBy !== booking.tutorId ? (
+                          // Student sent the request → tutor can approve/reject
+                          <div className="flex items-center gap-1.5 ml-1">
+                            <RejectRescheduleButton sessionId={session.id} />
+                            <ApproveRescheduleButton sessionId={session.id} />
+                          </div>
+                        ) : (
+                          // Tutor sent the request → waiting for student response
+                          <span className="text-[10px] font-medium text-blue-600 dark:text-blue-400 whitespace-nowrap">
+                            Chờ học sinh xác nhận
+                          </span>
+                        )
+                      )}
+
+                      {session.meetingUrl && !isCompleted && !isCancelled && !isRescheduleRequested && (
                         <Button
                           variant="ghost"
                           size="sm"
@@ -375,7 +447,9 @@ export default function TutorCourseOverviewPage() {
                         </Button>
                       )}
 
-                      <ChevronRight className="size-4 text-muted-foreground/40" />
+                      {!isRescheduleRequested && (
+                        <ChevronRight className="size-4 text-muted-foreground/40 hidden sm:block" />
+                      )}
                     </div>
                   </div>
                 );

@@ -53,10 +53,17 @@ export default function LoginForm() {
       } else {
         router.push("/student/home");
       }
-    } catch {
-      toast.error(
-        "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại.",
-      );
+    } catch (err) {
+      const error = err as { status?: number; data?: { message?: string } };
+      if (error?.status === 429) {
+        toast.error(
+          "Bạn thao tác quá nhiều lần. Vui lòng đợi một lát rồi thử lại."
+        );
+      } else {
+        toast.error(
+          error?.data?.message || "Đăng nhập thất bại. Vui lòng kiểm tra thông tin và thử lại."
+        );
+      }
     }
   };
 

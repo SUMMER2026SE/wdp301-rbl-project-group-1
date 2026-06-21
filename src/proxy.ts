@@ -35,13 +35,22 @@ export default function proxy(request: NextRequest) {
 
   // 1. If user has a refresh token and tries to access an auth page or the root ("/")
   if (refreshToken) {
+    const payload = decodeJwt(refreshToken);
+    const role = payload?.role;
+    const exp = payload?.exp;
+
+    // Check if token is expired (exp is in seconds)
+    if (exp && exp * 1000 < Date.now()) {
+      // Token expired, delete the cookie and let the request proceed normally
+      const response = NextResponse.next();
+      response.cookies.delete("refresh_token");
+      return response;
+    }
+
     const isAuthPage = AUTH_PAGES.some((page) => pathname.startsWith(page));
     const isRootPage = pathname === "/";
 
     if (isAuthPage || isRootPage) {
-      const payload = decodeJwt(refreshToken);
-      const role = payload?.role;
-
       if (role === "TUTOR") {
         return NextResponse.redirect(new URL("/tutor/home", request.url));
       } else if (role === "STUDENT") {

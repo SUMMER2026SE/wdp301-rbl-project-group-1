@@ -102,6 +102,7 @@ const injectedRtkApi = api.injectEndpoints({
           endDate: queryArg.endDate,
         },
       }),
+      providesTags: ["Session"],
     }),
     createBookingReview: build.mutation<
       CreateBookingReviewApiResponse,
@@ -122,6 +123,37 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.renewBookingDto,
       }),
+    }),
+    rescheduleSession: build.mutation<
+      RescheduleSessionApiResponse,
+      RescheduleSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/reschedule`,
+        method: "PATCH",
+        body: queryArg.rescheduleSessionDto,
+      }),
+      invalidatesTags: ["Session"],
+    }),
+    approveRescheduleSession: build.mutation<
+      ApproveRescheduleSessionApiResponse,
+      ApproveRescheduleSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/reschedule/approve`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Session"],
+    }),
+    rejectRescheduleSession: build.mutation<
+      RejectRescheduleSessionApiResponse,
+      RejectRescheduleSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/reschedule/reject`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Session"],
     }),
   }),
   overrideExisting: true,
@@ -266,6 +298,9 @@ export type BookingResponseDto = {
   price: number | null;
   message: string | null;
   createdAt: string;
+  groupId: string;
+  groupTotalSessions?: number;
+  groupStartDate?: string;
   student: {
     id: string;
     nickname: string | null;
@@ -339,6 +374,7 @@ export type GetMySessionsApiResponse = {
   data: {
     id: string;
     bookingId: string | null;
+    groupId?: string | null;
     tutorRequestId: string | null;
     title: string | null;
     startTime: string;
@@ -351,6 +387,11 @@ export type GetMySessionsApiResponse = {
     counterpartName: string;
     subjectName: string;
     subjectId: string;
+    proposedStartTime?: string | null;
+    proposedEndTime?: string | null;
+    proposedReason?: string | null;
+    rescheduleRequestedBy?: string | null;
+    isRescheduled: boolean;
     attendance?: {
       status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
       notes: string | null;
@@ -402,11 +443,15 @@ export const {
   useGetTutorPublicSessionsQuery,
   useCreateBookingReviewMutation,
   useRenewBookingMutation,
+  useRescheduleSessionMutation,
+  useApproveRescheduleSessionMutation,
+  useRejectRescheduleSessionMutation,
 } = injectedRtkApi;
 
 export type RenewBookingDto = {
   totalSessions: number;
   message?: string;
+  scheduleRules?: ScheduleRuleDto[];
 };
 
 export type RenewBookingResponseDto = {
@@ -426,4 +471,64 @@ export type RenewBookingApiResponse = {
 export type RenewBookingApiArg = {
   id: string;
   renewBookingDto: RenewBookingDto;
+};
+
+export type RescheduleSessionDto = {
+  proposedStartTime: string;
+  proposedEndTime: string;
+  proposedReason?: string;
+};
+
+export type RescheduleSessionResponseDto = {
+  sessionId: string;
+  status: "RESCHEDULE_REQUESTED";
+  proposedStartTime: string;
+  proposedEndTime: string;
+  proposedReason: string | null;
+};
+
+export type RescheduleSessionApiResponse = {
+  success: boolean;
+  message: string;
+  data: RescheduleSessionResponseDto;
+};
+
+export type RescheduleSessionApiArg = {
+  sessionId: string;
+  rescheduleSessionDto: RescheduleSessionDto;
+};
+
+export type ApproveRescheduleSessionResponseDto = {
+  sessionId: string;
+  status: "SCHEDULED";
+  startTime: string;
+  endTime: string;
+  proposedStartTime: string | null;
+  proposedEndTime: string | null;
+  proposedReason: string | null;
+};
+
+export type ApproveRescheduleSessionApiResponse = {
+  success: boolean;
+  message: string;
+  data: ApproveRescheduleSessionResponseDto;
+};
+
+export type ApproveRescheduleSessionApiArg = {
+  sessionId: string;
+};
+
+export type RejectRescheduleSessionResponseDto = {
+  sessionId: string;
+  status: "SCHEDULED";
+};
+
+export type RejectRescheduleSessionApiResponse = {
+  success: boolean;
+  message: string;
+  data: RejectRescheduleSessionResponseDto;
+};
+
+export type RejectRescheduleSessionApiArg = {
+  sessionId: string;
 };

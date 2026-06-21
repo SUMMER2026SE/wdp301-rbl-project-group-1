@@ -57,10 +57,11 @@ export function CourseCard({ booking }: CourseCardProps) {
             {/* Schedule */}
             <div className="flex items-start gap-3 text-slate-600 dark:text-slate-400 text-sm">
               <CalendarClock className="size-4 text-slate-400 shrink-0" />
-              <span>
+              <span className="truncate">
                 {booking.scheduleRules.length > 0
                   ? `${booking.scheduleRules.length} buổi / tuần`
                   : "Lịch tự do"}
+                {(booking.groupTotalSessions || 0) > 0 && ` • Tổng ${booking.groupTotalSessions} buổi`}
               </span>
             </div>
 

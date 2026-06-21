@@ -44,8 +44,14 @@ const handleAuthFailure = (api: { dispatch: (action: unknown) => unknown }) => {
   api.dispatch(baseApi.util.resetApiState());
 
   if (typeof window !== "undefined") {
-    if (window.location.pathname !== "/login") {
-      window.location.replace("/login");
+    const isProtectedRoute =
+      window.location.pathname.startsWith("/admin") ||
+      window.location.pathname.startsWith("/payment") ||
+      window.location.pathname.startsWith("/student") ||
+      window.location.pathname.startsWith("/tutor");
+
+    if (isProtectedRoute) {
+      window.location.replace(`/login?callbackUrl=${encodeURIComponent(window.location.pathname)}`);
     }
   }
 };

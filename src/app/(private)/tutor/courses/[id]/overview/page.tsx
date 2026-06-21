@@ -9,7 +9,7 @@ import {
   TopScoresSection,
 } from "@/src/features/tutor/courses-detail/components";
 import { Loader2 } from "lucide-react";
-import { useGetMySessionsQuery } from "@/src/features/booking/bookingApi";
+import { useGetMySessionsQuery, useGetBookingByIdQuery } from "@/src/features/booking/bookingApi";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
 import { isPast } from "date-fns";
@@ -64,12 +64,22 @@ export default function OverviewPage() {
   const params = useParams();
   const bookingId = params.id as string;
 
+  const { data: bookingResponse } = useGetBookingByIdQuery({ id: bookingId });
+  const booking = bookingResponse?.data;
+
   const { data: sessionsResponse, isLoading } = useGetMySessionsQuery({});
+
+  const bookingGroupId = booking?.groupId;
 
   const courseSessions = useMemo(() => {
     if (!sessionsResponse?.data) return [];
-    return sessionsResponse.data.filter((s) => s.bookingId === bookingId);
-  }, [sessionsResponse, bookingId]);
+    return sessionsResponse.data.filter((s) => {
+      if (bookingGroupId && s.groupId) {
+        return s.groupId === bookingGroupId;
+      }
+      return s.bookingId === bookingId;
+    });
+  }, [sessionsResponse, bookingId, bookingGroupId]);
 
   const { pendingSessions, stats } = useMemo(() => {
     const pending: typeof courseSessions = [];

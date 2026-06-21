@@ -10,8 +10,10 @@ import { RenewBookingForm } from "./renew-booking-form";
 interface RenewBookingModalProps {
   trigger: React.ReactNode;
   bookingId: string;
+  tutorId?: string;
   tutorName: string;
   pricePerHour: number;
+  tutorAvailableSlots?: Record<string, boolean>;
 }
 
 const CustomHeader = () => (
@@ -33,8 +35,10 @@ const CustomHeader = () => (
 export function RenewBookingModal({
   trigger,
   bookingId,
+  tutorId,
   tutorName,
   pricePerHour,
+  tutorAvailableSlots,
 }: RenewBookingModalProps) {
   return (
     <Modal
@@ -42,14 +46,16 @@ export function RenewBookingModal({
       title="Gia hạn khoá học"
       description=""
       formId="renew-booking-form"
-      contentClassName="max-w-xl sm:max-w-xl p-0 gap-0 overflow-hidden bg-background"
+      contentClassName="max-w-5xl sm:max-w-5xl p-0 gap-0 overflow-hidden bg-background"
       hideDefaultFooter={true}
       customHeader={<CustomHeader />}
     >
       <RenewBookingForm
         bookingId={bookingId}
+        tutorId={tutorId}
         tutorName={tutorName}
         pricePerHour={pricePerHour}
+        tutorAvailableSlots={tutorAvailableSlots}
       />
     </Modal>
   );
