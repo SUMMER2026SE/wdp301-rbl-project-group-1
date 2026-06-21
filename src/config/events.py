@@ -18,3 +18,4 @@ TUTOR_UPDATED  = "tutor_updated"   # profile/subjects/grades/schedule changed
 INTERACTION_LOGGED   = "interaction_logged"    # generic: VIEW_PROFILE, BID_ACCEPTED
 BOOKING_CREATED      = "booking_created"       # student confirmed a tutor booking
 BOOKING_COMPLETED    = "booking_completed"     # session(s) fully completed
+REVIEW_CREATED       = "review_created"        # student reviewed a completed booking

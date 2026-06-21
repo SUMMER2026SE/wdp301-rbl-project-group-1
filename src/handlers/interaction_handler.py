@@ -119,6 +119,43 @@ class BookingCompletedHandler(BaseEventHandler):
         await push_to_embedding_queue({"type": "USER", "id": payload.get("userId")})
 
 
+class ReviewCreatedHandler(BaseEventHandler):
+    """
+    Handles REVIEW_CREATED events.
+    Computes weight dynamically based on rating: (rating - 3) * 0.15.
+    Rating 5 -> 0.30, Rating 4 -> 0.15, Rating 3 -> 0.0, Rating 2 -> -0.15, Rating 1 -> -0.30.
+
+    Expected payload (NestJS REVIEW_CREATED event):
+        {
+          "reviewId":  "review_id",
+          "bookingId": "booking_id",
+          "tutorId":   "tutor_id",
+          "studentId": "student_id",
+          "rating":    5
+        }
+    """
+
+    async def handle(self, payload: dict[str, Any]) -> None:
+        rating = float(payload.get("rating", 3.0))
+        weight = (rating - 3.0) * 0.15
+
+        await _save_interaction_and_update_user(
+            user_id=payload.get("studentId"),
+            tutor_id=payload.get("tutorId"),
+            interaction_type="RATING",
+            weight=weight,
+            context={
+                "reviewId": payload.get("reviewId"),
+                "bookingId": payload.get("bookingId"),
+                "rating": rating,
+            },
+            update_tutor_vector=True,
+        )
+
+        # Refresh user embedding after explicit feedback
+        await push_to_embedding_queue({"type": "USER", "id": payload.get("studentId")})
+
+
 # ---------------------------------------------------------------------------
 # Shared helpers
 # ---------------------------------------------------------------------------
