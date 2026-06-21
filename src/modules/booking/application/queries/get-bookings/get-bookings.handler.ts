@@ -30,6 +30,9 @@ export class GetBookingsQueryHandler implements IQueryHandler<GetBookingsQuery> 
       price: item.price,
       message: item.message,
       createdAt: item.createdAt,
+      groupId: item.groupId,
+      groupTotalSessions: item.groupTotalSessions,
+      groupStartDate: item.groupStartDate,
       student: {
         id: item.student?.id || '',
         nickname: item.student?.nickname ?? null,

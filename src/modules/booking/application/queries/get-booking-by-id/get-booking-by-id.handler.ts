@@ -38,6 +38,9 @@ export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery>
       price: booking.price,
       message: booking.message,
       createdAt: booking.createdAt,
+      groupId: booking.groupId,
+      groupTotalSessions: booking.groupTotalSessions,
+      groupStartDate: booking.groupStartDate,
       student: {
         id: booking.student?.id || '',
         nickname: booking.student?.nickname ?? null,

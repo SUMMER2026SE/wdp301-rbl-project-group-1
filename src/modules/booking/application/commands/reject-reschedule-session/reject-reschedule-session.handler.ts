@@ -7,17 +7,16 @@ import { CommandHandler, ICommandHandler } from '@nestjs/cqrs';
 import { SessionStatus } from '../../../../../shared/domain/enums/enums';
 import { ICommand } from '../../../../../shared/application/interfaces/use-case.interface';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
-import { ApproveRescheduleSessionCommand } from './approve-reschedule-session.command';
-import { ApproveRescheduleSessionResult } from './approve-reschedule-session.result';
-
+import { RejectRescheduleSessionCommand } from './reject-reschedule-session.command';
+import { RejectRescheduleSessionResult } from './reject-reschedule-session.result';
 import { EventBus } from '@nestjs/cqrs';
-import { SessionRescheduleApprovedEvent } from '../../../domain/events/booking-events';
+import { SessionRescheduleRejectedEvent } from '../../../domain/events/booking-events';
 
-@CommandHandler(ApproveRescheduleSessionCommand)
-export class ApproveRescheduleSessionHandler
+@CommandHandler(RejectRescheduleSessionCommand)
+export class RejectRescheduleSessionHandler
   implements
-    ICommandHandler<ApproveRescheduleSessionCommand>,
-    ICommand<ApproveRescheduleSessionCommand, ApproveRescheduleSessionResult>
+    ICommandHandler<RejectRescheduleSessionCommand>,
+    ICommand<RejectRescheduleSessionCommand, RejectRescheduleSessionResult>
 {
   constructor(
     private readonly prisma: PrismaService,
@@ -25,8 +24,8 @@ export class ApproveRescheduleSessionHandler
   ) {}
 
   async execute(
-    command: ApproveRescheduleSessionCommand,
-  ): Promise<ApproveRescheduleSessionResult> {
+    command: RejectRescheduleSessionCommand,
+  ): Promise<RejectRescheduleSessionResult> {
     const session = await this.prisma.session.findUnique({
       where: { id: command.sessionId },
       include: { booking: true },
@@ -44,13 +43,13 @@ export class ApproveRescheduleSessionHandler
       );
     }
 
-    const canApproveReschedule =
+    const canRejectReschedule =
       session.booking.studentId === command.userId ||
       session.booking.tutorId === command.userId;
 
-    if (!canApproveReschedule) {
+    if (!canRejectReschedule) {
       throw new ForbiddenException(
-        'Only the assigned student or tutor can approve a reschedule for this session',
+        'Only the assigned student or tutor can reject a reschedule for this session',
       );
     }
 
@@ -62,35 +61,26 @@ export class ApproveRescheduleSessionHandler
       );
     }
 
-    if (!session.proposedStartTime || !session.proposedEndTime) {
-      throw new BadRequestException(
-        'Session does not have proposed start and end times',
-      );
-    }
-
     if (session.rescheduleRequestedBy === command.userId) {
-      throw new ForbiddenException(
-        'You cannot approve your own reschedule request',
-      );
+      // The person who requested it can also cancel it, but for the scope of "reject" let's allow it to be cancelled by the requester or rejected by the other party.
+      // Wait, if we want to allow the requester to cancel their own request, we shouldn't throw here.
+      // We will allow both parties to revert it.
     }
 
     const updatedSession = await this.prisma.session.update({
       where: { id: command.sessionId },
       data: {
-        startTime: session.proposedStartTime,
-        endTime: session.proposedEndTime,
         status: SessionStatus.SCHEDULED,
         proposedStartTime: null,
         proposedEndTime: null,
         proposedReason: null,
         rescheduleRequestedBy: null,
-        isRescheduled: true,
       },
     });
 
     if (session.booking) {
       this.eventBus.publish(
-        new SessionRescheduleApprovedEvent(
+        new SessionRescheduleRejectedEvent(
           updatedSession.id,
           session.booking.studentId,
           session.booking.tutorId,
@@ -99,14 +89,9 @@ export class ApproveRescheduleSessionHandler
       );
     }
 
-    return new ApproveRescheduleSessionResult(
+    return new RejectRescheduleSessionResult(
       updatedSession.id,
       updatedSession.status as SessionStatus,
-      updatedSession.startTime.toISOString(),
-      updatedSession.endTime.toISOString(),
-      updatedSession.proposedStartTime?.toISOString() ?? null,
-      updatedSession.proposedEndTime?.toISOString() ?? null,
-      updatedSession.proposedReason ?? null,
     );
   }
 }

@@ -2,11 +2,11 @@ import { createZodDto } from 'nestjs-zod';
 import { TutoringMode } from '../../../../shared/domain/enums/enums';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 
-const TimeSchema = z
+export const TimeSchema = z
   .string()
   .regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'Time must use HH:mm format');
 
-const ScheduleRuleSchema = z
+export const ScheduleRuleSchema = z
   .object({
     dayOfWeek: z
       .number()

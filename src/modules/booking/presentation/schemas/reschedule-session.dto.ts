@@ -2,6 +2,7 @@ import { createZodDto } from 'nestjs-zod';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 import { ApproveRescheduleSessionResult } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.result';
 import { RescheduleSessionResult } from '../../application/commands/reschedule-session/reschedule-session.result';
+import { SessionStatus } from '../../../../shared/domain/enums/enums';
 
 export const RescheduleSessionSchema = z
   .object({
@@ -13,7 +14,7 @@ export const RescheduleSessionSchema = z
       example: '2026-06-15T10:30:00.000Z',
       description: 'Requested new end time for the session',
     }),
-    reason: z.string().min(1).meta({
+    proposedReason: z.string().optional().meta({
       example: 'I have a university exam on the current date',
       description: 'Reason for requesting the schedule change',
     }),
@@ -128,6 +129,33 @@ export class ApproveRescheduleSessionResponseDto extends createZodDto(
     dto.proposedStartTime = result.proposedStartTime;
     dto.proposedEndTime = result.proposedEndTime;
     dto.proposedReason = result.proposedReason;
+    return dto;
+  }
+}
+
+export const RejectRescheduleSessionResponseSchema = z
+  .object({
+    sessionId: z.string().meta({
+      example: 'clxsession00000123456789',
+      description: 'Updated session ID',
+    }),
+    status: z.enum(['SCHEDULED']).meta({
+      example: 'SCHEDULED',
+      description: 'Session status after rejecting the reschedule request',
+    }),
+  })
+  .meta({ id: 'RejectRescheduleSessionResponseDto' });
+
+export class RejectRescheduleSessionResponseDto extends createZodDto(
+  RejectRescheduleSessionResponseSchema,
+) {
+  static fromResult(result: {
+    sessionId: string;
+    status: SessionStatus;
+  }): RejectRescheduleSessionResponseDto {
+    const dto = new RejectRescheduleSessionResponseDto();
+    dto.sessionId = result.sessionId;
+    dto.status = result.status as 'SCHEDULED';
     return dto;
   }
 }

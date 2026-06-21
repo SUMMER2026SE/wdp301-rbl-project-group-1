@@ -13,6 +13,8 @@ import { CreateReviewCommand } from './create-review.command';
 import { CreateReviewResult } from './create-review.result';
 import { EventBus } from '@nestjs/cqrs';
 import { ReviewCreatedEvent } from '../../../domain/events/review-events';
+import { IMessageBroker } from '../../../../../shared/application/interfaces/message-broker.interface';
+import { EVENTS } from '../../../../../shared/application/constants/events.constants';
 
 @CommandHandler(CreateReviewCommand)
 export class CreateReviewHandler
@@ -24,6 +26,7 @@ export class CreateReviewHandler
     @Inject(IReviewRepository)
     private readonly reviewRepository: IReviewRepository,
     private readonly eventBus: EventBus,
+    @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
   ) {}
 
   async execute(command: CreateReviewCommand): Promise<CreateReviewResult> {
@@ -93,6 +96,15 @@ export class CreateReviewHandler
         review.rating,
       ),
     );
+
+    // Sync review to AI model via RabbitMQ
+    await this.messageBroker.publishEvent(EVENTS.REVIEW_CREATED, {
+      reviewId: review.id,
+      bookingId: review.bookingId,
+      tutorId: review.tutorId,
+      studentId: review.studentId,
+      rating: review.rating,
+    });
 
     return result;
   }

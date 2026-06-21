@@ -1,8 +1,12 @@
-import { SessionStatus, AttendanceStatus } from '../../../../../shared/domain/enums/enums';
+import {
+  SessionStatus,
+  AttendanceStatus,
+} from '../../../../../shared/domain/enums/enums';
 
 export interface MySessionResultData {
   id: string;
   bookingId: string | null;
+  groupId?: string | null;
   tutorRequestId: string | null;
   title: string | null;
   startTime: Date;
@@ -22,4 +26,10 @@ export interface MySessionResultData {
     status: AttendanceStatus;
     notes: string | null;
   };
+
+  proposedStartTime?: Date | null;
+  proposedEndTime?: Date | null;
+  proposedReason?: string | null;
+  rescheduleRequestedBy?: string | null;
+  isRescheduled: boolean;
 }

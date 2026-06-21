@@ -68,6 +68,9 @@ import {
 import { ConfirmSessionAttendanceCommand } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.command';
 import { CancelSessionCommand } from '../../application/commands/cancel-session/cancel-session.command';
 import { CancelSessionResult } from '../../application/commands/cancel-session/cancel-session.result';
+import { RejectRescheduleSessionCommand } from '../../application/commands/reject-reschedule-session/reject-reschedule-session.command';
+import { RejectRescheduleSessionResult } from '../../application/commands/reject-reschedule-session/reject-reschedule-session.result';
+import { RejectRescheduleSessionResponseDto } from '../schemas/reschedule-session.dto';
 import {
   CancelSessionDto,
   CancelSessionResponseDto,
@@ -286,7 +289,7 @@ export class BookingController {
     return BaseResponse.ok(BookingStatusUpdateResponseDto.fromResult(result));
   }
 
-  @Post('sessions/:sessionId/reschedule')
+  @Patch('sessions/:sessionId/reschedule')
   @Roles(UserRole.STUDENT, UserRole.TUTOR)
   @ApiBearerAuth()
   @ApiOperation({
@@ -312,7 +315,7 @@ export class BookingController {
         user.userId,
         dto.proposedStartTime,
         dto.proposedEndTime,
-        dto.reason,
+        dto.proposedReason,
       ),
     );
 
@@ -409,10 +412,63 @@ export class BookingController {
         user.userId,
         dto.totalSessions,
         dto.message ?? null,
+        dto.scheduleRules,
       ),
     );
 
     return BaseResponse.created(RenewBookingResponseDto.fromResult(result));
+  }
+
+  @Patch('sessions/:sessionId/reschedule/approve')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'approveSessionReschedule',
+    summary: 'Approve a session reschedule request',
+    description:
+      'Accepts the proposed schedule, updates startTime and endTime, and moves the session back to SCHEDULED.',
+  })
+  @ApiOkResponseWrapped(ApproveRescheduleSessionResponseDto, {
+    description: 'Session reschedule request approved successfully.',
+  })
+  async approveSessionReschedule(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+  ): Promise<BaseResponse<ApproveRescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      ApproveRescheduleSessionCommand,
+      ApproveRescheduleSessionResult
+    >(new ApproveRescheduleSessionCommand(sessionId, user.userId));
+
+    return BaseResponse.ok(
+      ApproveRescheduleSessionResponseDto.fromResult(result),
+    );
+  }
+
+  @Patch('sessions/:sessionId/reschedule/reject')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'rejectSessionReschedule',
+    summary: 'Reject a session reschedule request',
+    description:
+      'Rejects the proposed schedule, reverting the session status back to SCHEDULED and clearing proposed fields.',
+  })
+  @ApiOkResponseWrapped(RejectRescheduleSessionResponseDto, {
+    description: 'Session reschedule request rejected successfully.',
+  })
+  async rejectSessionReschedule(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+  ): Promise<BaseResponse<RejectRescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      RejectRescheduleSessionCommand,
+      RejectRescheduleSessionResult
+    >(new RejectRescheduleSessionCommand(sessionId, user.userId));
+
+    return BaseResponse.ok(
+      RejectRescheduleSessionResponseDto.fromResult(result),
+    );
   }
 }
 
@@ -445,30 +501,5 @@ export class BookingSessionController {
 
     return BaseResponse.ok(CancelSessionResponseDto.fromResult(result));
   }
-
-  @Patch(':sessionId/reschedule/approve')
-  @Roles(UserRole.STUDENT, UserRole.TUTOR)
-  @ApiBearerAuth()
-  @ApiOperation({
-    operationId: 'approveSessionReschedule',
-    summary: 'Approve a session reschedule request',
-    description:
-      'Accepts the proposed schedule, updates startTime and endTime, and moves the session back to SCHEDULED.',
-  })
-  @ApiOkResponseWrapped(ApproveRescheduleSessionResponseDto, {
-    description: 'Session reschedule request approved successfully.',
-  })
-  async approveSessionReschedule(
-    @CurrentUser() user: { userId: string },
-    @Param('sessionId') sessionId: string,
-  ): Promise<BaseResponse<ApproveRescheduleSessionResponseDto>> {
-    const result = await this.commandBus.execute<
-      ApproveRescheduleSessionCommand,
-      ApproveRescheduleSessionResult
-    >(new ApproveRescheduleSessionCommand(sessionId, user.userId));
-
-    return BaseResponse.ok(
-      ApproveRescheduleSessionResponseDto.fromResult(result),
-    );
-  }
 }
+

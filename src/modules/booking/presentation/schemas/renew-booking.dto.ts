@@ -1,6 +1,7 @@
 import { createZodDto } from 'nestjs-zod';
 import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
 import { RenewBookingResult } from '../../application/commands/renew-booking/renew-booking.result';
+import { ScheduleRuleSchema } from './create-direct-booking.dto';
 
 export const RenewBookingSchema = z
   .object({
@@ -11,6 +12,9 @@ export const RenewBookingSchema = z
     message: z.string().nullable().optional().meta({
       example: 'Muốn tiếp tục học Toán với thầy',
       description: 'Optional message to the tutor',
+    }),
+    scheduleRules: z.array(ScheduleRuleSchema).min(1).optional().meta({
+      description: 'Optional new schedule rules for the renewed booking',
     }),
   })
   .meta({ id: 'RenewBookingDto' });

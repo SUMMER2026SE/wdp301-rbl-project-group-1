@@ -6,13 +6,19 @@ import { PrismaService } from '../../../../../shared/infrastructure/database/pri
 import { RescheduleSessionCommand } from './reschedule-session.command';
 import { RescheduleSessionResult } from './reschedule-session.result';
 
+import { EventBus } from '@nestjs/cqrs';
+import { SessionRescheduleRequestedEvent } from '../../../domain/events/booking-events';
+
 @CommandHandler(RescheduleSessionCommand)
 export class RescheduleSessionHandler
   implements
     ICommandHandler<RescheduleSessionCommand>,
     ICommand<RescheduleSessionCommand, RescheduleSessionResult>
 {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventBus: EventBus,
+  ) {}
 
   async execute(
     command: RescheduleSessionCommand,
@@ -50,24 +56,37 @@ export class RescheduleSessionHandler
         status: SessionStatus.RESCHEDULE_REQUESTED,
         proposedStartTime: new Date(command.proposedStartTime),
         proposedEndTime: new Date(command.proposedEndTime),
-        proposedReason: command.reason,
+        proposedReason: command.proposedReason,
+        rescheduleRequestedBy: command.userId,
       },
     });
 
-    const proposedStartTime =
+    const proposedStartTimeStr =
       updatedSession.proposedStartTime instanceof Date
         ? updatedSession.proposedStartTime.toISOString()
         : null;
-    const proposedEndTime =
+    const proposedEndTimeStr =
       updatedSession.proposedEndTime instanceof Date
         ? updatedSession.proposedEndTime.toISOString()
         : null;
 
+    if (proposedStartTimeStr && session.booking) {
+      this.eventBus.publish(
+        new SessionRescheduleRequestedEvent(
+          updatedSession.id,
+          session.booking.studentId,
+          session.booking.tutorId,
+          command.userId,
+          proposedStartTimeStr,
+        ),
+      );
+    }
+
     return new RescheduleSessionResult(
       updatedSession.id,
       updatedSession.status as SessionStatus,
-      proposedStartTime,
-      proposedEndTime,
+      proposedStartTimeStr,
+      proposedEndTimeStr,
       updatedSession.proposedReason ?? null,
     );
   }

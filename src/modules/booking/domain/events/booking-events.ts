@@ -22,3 +22,31 @@ export class BookingRejectedEvent {
     public readonly tutorId: string,
   ) {}
 }
+
+export class SessionRescheduleRequestedEvent {
+  constructor(
+    public readonly sessionId: string,
+    public readonly studentId: string,
+    public readonly tutorId: string,
+    public readonly requestedBy: string,
+    public readonly newStartTime: string,
+  ) {}
+}
+
+export class SessionRescheduleApprovedEvent {
+  constructor(
+    public readonly sessionId: string,
+    public readonly studentId: string,
+    public readonly tutorId: string,
+    public readonly approvedBy: string,
+  ) {}
+}
+
+export class SessionRescheduleRejectedEvent {
+  constructor(
+    public readonly sessionId: string,
+    public readonly studentId: string,
+    public readonly tutorId: string,
+    public readonly rejectedBy: string,
+  ) {}
+}

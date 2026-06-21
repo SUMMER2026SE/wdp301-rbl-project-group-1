@@ -4,6 +4,6 @@ export class RescheduleSessionCommand {
     public readonly userId: string,
     public readonly proposedStartTime: string,
     public readonly proposedEndTime: string,
-    public readonly reason: string,
+    public readonly proposedReason?: string,
   ) {}
 }

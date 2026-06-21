@@ -6,6 +6,7 @@ import { RejectBookingHandler } from './application/commands/reject-booking/reje
 import { TakeAttendanceHandler } from './application/commands/take-attendance/take-attendance.handler';
 import { ApproveRescheduleSessionHandler } from './application/commands/approve-reschedule-session/approve-reschedule-session.handler';
 import { RescheduleSessionHandler } from './application/commands/reschedule-session/reschedule-session.handler';
+import { RejectRescheduleSessionHandler } from './application/commands/reject-reschedule-session/reject-reschedule-session.handler';
 import { CancelSessionHandler } from './application/commands/cancel-session/cancel-session.handler';
 import { IBookingRepository } from './domain/repositories/booking.repository.interface';
 import { PrismaBookingRepository } from './infrastructure/repositories/booking.repository.impl';
@@ -32,6 +33,7 @@ const CommandHandlers = [
   ConfirmSessionAttendanceHandler,
   RescheduleSessionHandler,
   ApproveRescheduleSessionHandler,
+  RejectRescheduleSessionHandler,
   CancelSessionHandler,
   RenewBookingHandler,
 ];

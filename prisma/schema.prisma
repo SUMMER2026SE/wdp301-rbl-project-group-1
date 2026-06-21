@@ -798,6 +798,8 @@ model Session {
   proposedStartTime DateTime?     @map("proposed_start_time")
   proposedEndTime   DateTime?     @map("proposed_end_time")
   proposedReason    String?       @map("proposed_reason")
+  rescheduleRequestedBy String?   @map("reschedule_requested_by")
+  isRescheduled         Boolean   @default(false) @map("is_rescheduled")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -858,6 +860,8 @@ model Booking {
   previousBookingId String?   @map("previous_booking_id")
   previousBooking   Booking?  @relation("BookingExtension", fields: [previousBookingId], references: [id])
   nextBookings      Booking[] @relation("BookingExtension")
+
+  groupId       String @default(dbgenerated("gen_random_uuid()::text")) @map("group_id")
 
   promotionId String?    @map("promotion_id")
   promotion   Promotion? @relation(fields: [promotionId], references: [id])

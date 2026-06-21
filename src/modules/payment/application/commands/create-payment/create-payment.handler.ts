@@ -4,7 +4,11 @@ import { CreatePaymentCommand } from './create-payment.command';
 import { IPaymentRepository } from '../../../domain/repositories/payment.repository.interface';
 import { IPaymentGateway } from '../../../domain/gateways/payment.gateway.interface';
 import { PaymentEntity } from '../../../domain/entities/payment.entity';
-import { PaymentReferenceType, PaymentStatus } from 'src/shared/domain/enums/enums';
+import {
+  PaymentReferenceType,
+  PaymentStatus,
+  BookingStatus,
+} from 'src/shared/domain/enums/enums';
 import { CreatePaymentResult } from './create-payment.result';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
@@ -47,7 +51,18 @@ export class CreatePaymentHandler implements ICommandHandler<CreatePaymentComman
       });
 
       if (!booking) {
-        throw new NotFoundException(`Booking with id ${command.referenceId} not found`);
+        throw new NotFoundException(
+          `Booking with id ${command.referenceId} not found`,
+        );
+      }
+
+      if (
+        (booking.status as string) !==
+        (BookingStatus.AWAITING_PAYMENT as string)
+      ) {
+        throw new BadRequestException(
+          `Booking ${command.referenceId} is not awaiting payment. Current status: ${booking.status}`,
+        );
       }
 
       finalAmount = booking.price ?? 0;

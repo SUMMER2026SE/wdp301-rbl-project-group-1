@@ -76,6 +76,7 @@ export class GetTutorSessionsHandler implements IQueryHandler<GetTutorSessionsQu
         counterpartName: 'Học viên ẩn danh', // Redacted for public view
         subjectName,
         subjectId,
+        isRescheduled: session.isRescheduled,
       };
     });
 

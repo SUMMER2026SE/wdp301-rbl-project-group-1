@@ -9,6 +9,7 @@ export const EVENTS = {
   BOOKING_CREATED: 'booking_created',
   BOOKING_COMPLETED: 'booking_completed',
   INTERACTION_LOGGED: 'interaction_logged',
+  REVIEW_CREATED: 'review_created',
 } as const;
 
 export type EventPattern = (typeof EVENTS)[keyof typeof EVENTS];

@@ -127,7 +127,7 @@ export class AuthController {
 
   @Public()
   @Post('login')
-  @RateLimit(5, 60)
+  // @RateLimit(10, 30)
   @ApiOperation({
     operationId: 'login',
     summary: 'Login and receive access token + refresh token cookie',
@@ -158,7 +158,7 @@ export class AuthController {
 
   @Public()
   @Post('login-google')
-  @RateLimit(5, 60)
+  @RateLimit(10, 30)
   @ApiOperation({
     operationId: 'loginGoogle',
     summary:
@@ -214,17 +214,24 @@ export class AuthController {
       throw new UnauthorizedException('Refresh token not found');
     }
 
-    const result = await this.commandBus.execute<
-      RefreshTokenCommand,
-      RefreshTokenResult
-    >(new RefreshTokenCommand(refreshToken));
+    try {
+      const result = await this.commandBus.execute<
+        RefreshTokenCommand,
+        RefreshTokenResult
+      >(new RefreshTokenCommand(refreshToken));
 
-    this.setRefreshTokenCookie(res, result.refreshToken);
+      this.setRefreshTokenCookie(res, result.refreshToken);
 
-    return BaseResponse.ok({
-      accessToken: result.accessToken,
-      refreshToken: result.refreshToken,
-    });
+      return BaseResponse.ok({
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
+    } catch (error) {
+      void res.clearCookie('refresh_token', {
+        path: '/',
+      });
+      throw error;
+    }
   }
 
   @Post('logout')

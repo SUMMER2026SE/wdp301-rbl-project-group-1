@@ -57,28 +57,30 @@ $ npm run test:e2e
 $ npm run test:cov
 
 ```
+```
 edura-api
-├─ .agents
-│  └─ backend.md
 ├─ .claude
-│  ├─ settings.json
 │  └─ skills
 │     ├─ debug-issue.md
 │     ├─ explore-codebase.md
 │     ├─ refactor-safely.md
 │     └─ review-changes.md
-├─ .cursor
-│  └─ mcp.json
-├─ .cursorrules
+├─ .dockerignore
 ├─ .kiro
 │  └─ steering
 │     └─ code-review-graph.md
-├─ .mcp.json
 ├─ .opencode.json
 ├─ .prettierrc
 ├─ .windsurfrules
-├─ AGENTS.md
-├─ CLAUDE.md
+├─ Dockerfile
+├─ docs
+│  ├─ architecture.md
+│  ├─ features-list.md
+│  ├─ future-management-api-tasks.md
+│  ├─ future-management-expansion.md
+│  ├─ roadmap.md
+│  ├─ tech-stack.md
+│  └─ vision.md
 ├─ eslint.config.mjs
 ├─ GEMINI.md
 ├─ generated
@@ -87,7 +89,6 @@ edura-api
 ├─ package-lock.json
 ├─ package.json
 ├─ prisma
-│  ├─ migrations
 │  └─ schema.prisma
 ├─ prisma.config.ts
 ├─ README.md
@@ -171,6 +172,14 @@ edura-api
 │  │  │  │  │  │  ├─ reset-password.command.ts
 │  │  │  │  │  │  ├─ reset-password.handler.ts
 │  │  │  │  │  │  └─ reset-password.result.ts
+│  │  │  │  │  ├─ send-verify-email-otp
+│  │  │  │  │  │  ├─ send-verify-email-otp.command.ts
+│  │  │  │  │  │  ├─ send-verify-email-otp.handler.ts
+│  │  │  │  │  │  └─ send-verify-email-otp.result.ts
+│  │  │  │  │  ├─ verify-email
+│  │  │  │  │  │  ├─ verify-email.command.ts
+│  │  │  │  │  │  ├─ verify-email.handler.ts
+│  │  │  │  │  │  └─ verify-email.result.ts
 │  │  │  │  │  └─ verify-otp
 │  │  │  │  │     ├─ verify-otp.command.ts
 │  │  │  │  │     ├─ verify-otp.handler.ts
@@ -190,22 +199,17 @@ edura-api
 │  │  │  ├─ auth.module.ts
 │  │  │  ├─ domain
 │  │  │  │  ├─ entities
-│  │  │  │  │  ├─ otp.entity.ts
 │  │  │  │  │  └─ refresh-token.entity.ts
 │  │  │  │  ├─ repositories
-│  │  │  │  │  ├─ auth.repository.interface.ts
-│  │  │  │  │  └─ otp.repository.ts
+│  │  │  │  │  └─ auth.repository.interface.ts
 │  │  │  │  └─ value-objects
 │  │  │  │     └─ auth-token-payload.ts
 │  │  │  ├─ infrastructure
 │  │  │  │  ├─ mapper
-│  │  │  │  │  ├─ otp.mapper.ts
 │  │  │  │  │  └─ refresh-token.mapper.ts
 │  │  │  │  ├─ repositories
 │  │  │  │  │  ├─ auth.repository.impl.ts
-│  │  │  │  │  ├─ auth.repository.types.ts
-│  │  │  │  │  ├─ otp.repository.impl.ts
-│  │  │  │  │  └─ otp.repository.types.ts
+│  │  │  │  │  └─ auth.repository.types.ts
 │  │  │  │  └─ services
 │  │  │  │     ├─ google-auth.service.ts
 │  │  │  │     ├─ hash.service.ts
@@ -230,155 +234,175 @@ edura-api
 │  │  │     │  ├─ login.dto.ts
 │  │  │     │  ├─ register.dto.ts
 │  │  │     │  ├─ reset-password.dto.ts
+│  │  │     │  ├─ send-verify-email-otp.dto.ts
+│  │  │     │  ├─ verify-email.dto.ts
 │  │  │     │  └─ verify-otp.dto.ts
 │  │  │     └─ strategies
 │  │  │        ├─ jwt.strategy.ts
 │  │  │        └─ reset-token.strategy.ts
-│  │  ├─ course
+│  │  ├─ booking
 │  │  │  ├─ application
 │  │  │  │  ├─ commands
-│  │  │  │  │  ├─ change-course-status
-│  │  │  │  │  │  ├─ change-course-status.command.ts
-│  │  │  │  │  │  ├─ change-course-status.handler.ts
-│  │  │  │  │  │  └─ change-course-status.result.ts
-│  │  │  │  │  ├─ create-course
-│  │  │  │  │  │  ├─ create-course.command.ts
-│  │  │  │  │  │  ├─ create-course.handler.ts
-│  │  │  │  │  │  └─ create-course.result.ts
-│  │  │  │  │  └─ update-course
-│  │  │  │  │     ├─ update-course.command.ts
-│  │  │  │  │     ├─ update-course.handler.ts
-│  │  │  │  │     └─ update-course.result.ts
-│  │  │  │  ├─ events
-│  │  │  │  │  ├─ sync-course-to-rabbitmq.handler.ts
-│  │  │  │  │  └─ sync-course-update-to-rabbitmq.handler.ts
+│  │  │  │  │  ├─ accept-booking
+│  │  │  │  │  │  ├─ accept-booking.command.ts
+│  │  │  │  │  │  ├─ accept-booking.handler.ts
+│  │  │  │  │  │  └─ accept-booking.result.ts
+│  │  │  │  │  ├─ approve-reschedule-session
+│  │  │  │  │  │  ├─ approve-reschedule-session.command.ts
+│  │  │  │  │  │  ├─ approve-reschedule-session.handler.ts
+│  │  │  │  │  │  └─ approve-reschedule-session.result.ts
+│  │  │  │  │  ├─ cancel-session
+│  │  │  │  │  │  ├─ cancel-session.command.ts
+│  │  │  │  │  │  ├─ cancel-session.handler.ts
+│  │  │  │  │  │  └─ cancel-session.result.ts
+│  │  │  │  │  ├─ confirm-session-attendance
+│  │  │  │  │  │  ├─ confirm-session-attendance.command.ts
+│  │  │  │  │  │  ├─ confirm-session-attendance.handler.ts
+│  │  │  │  │  │  └─ confirm-session-attendance.result.ts
+│  │  │  │  │  ├─ create-direct-booking
+│  │  │  │  │  │  ├─ create-direct-booking.command.ts
+│  │  │  │  │  │  ├─ create-direct-booking.handler.ts
+│  │  │  │  │  │  └─ create-direct-booking.result.ts
+│  │  │  │  │  ├─ reject-booking
+│  │  │  │  │  │  ├─ reject-booking.command.ts
+│  │  │  │  │  │  ├─ reject-booking.handler.ts
+│  │  │  │  │  │  └─ reject-booking.result.ts
+│  │  │  │  │  ├─ reject-reschedule-session
+│  │  │  │  │  │  ├─ reject-reschedule-session.command.ts
+│  │  │  │  │  │  ├─ reject-reschedule-session.handler.ts
+│  │  │  │  │  │  └─ reject-reschedule-session.result.ts
+│  │  │  │  │  ├─ renew-booking
+│  │  │  │  │  │  ├─ renew-booking.command.ts
+│  │  │  │  │  │  ├─ renew-booking.handler.ts
+│  │  │  │  │  │  └─ renew-booking.result.ts
+│  │  │  │  │  ├─ reschedule-session
+│  │  │  │  │  │  ├─ reschedule-session.command.ts
+│  │  │  │  │  │  ├─ reschedule-session.handler.ts
+│  │  │  │  │  │  └─ reschedule-session.result.ts
+│  │  │  │  │  └─ take-attendance
+│  │  │  │  │     ├─ take-attendance.command.ts
+│  │  │  │  │     ├─ take-attendance.handler.ts
+│  │  │  │  │     └─ take-attendance.result.ts
+│  │  │  │  ├─ event-handlers
+│  │  │  │  │  └─ payment-confirmed.handler.ts
 │  │  │  │  └─ queries
-│  │  │  │     ├─ get-course-by-id
-│  │  │  │     │  ├─ get-course-by-id.handler.ts
-│  │  │  │     │  ├─ get-course-by-id.query.ts
-│  │  │  │     │  └─ get-course-by-id.result.ts
-│  │  │  │     ├─ get-courses
-│  │  │  │     │  ├─ get-courses.handler.ts
-│  │  │  │     │  ├─ get-courses.query.ts
-│  │  │  │     │  └─ get-courses.result.ts
-│  │  │  │     ├─ get-joined-students
-│  │  │  │     │  ├─ get-joined-students.handler.ts
-│  │  │  │     │  ├─ get-joined-students.query.ts
-│  │  │  │     │  └─ get-joined-students.result.ts
-│  │  │  │     └─ get-tutor-courses
-│  │  │  │        ├─ get-tutor-courses.handler.ts
-│  │  │  │        ├─ get-tutor-courses.query.ts
-│  │  │  │        └─ get-tutor-courses.result.ts
-│  │  │  ├─ course.module.ts
+│  │  │  │     ├─ get-booking-by-id
+│  │  │  │     │  ├─ get-booking-by-id.handler.ts
+│  │  │  │     │  └─ get-booking-by-id.query.ts
+│  │  │  │     ├─ get-bookings
+│  │  │  │     │  ├─ get-bookings.handler.ts
+│  │  │  │     │  ├─ get-bookings.query.ts
+│  │  │  │     │  └─ get-bookings.result.ts
+│  │  │  │     ├─ get-my-sessions
+│  │  │  │     │  ├─ get-my-sessions.handler.ts
+│  │  │  │     │  ├─ get-my-sessions.query.ts
+│  │  │  │     │  └─ get-my-sessions.result.ts
+│  │  │  │     └─ get-tutor-sessions
+│  │  │  │        ├─ get-tutor-sessions.handler.ts
+│  │  │  │        └─ get-tutor-sessions.query.ts
+│  │  │  ├─ booking.module.ts
 │  │  │  ├─ domain
 │  │  │  │  ├─ entities
-│  │  │  │  │  └─ course.entity.ts
+│  │  │  │  │  └─ booking.entity.ts
 │  │  │  │  ├─ events
-│  │  │  │  │  ├─ course-created.domain-event.ts
-│  │  │  │  │  └─ course-updated.domain-event.ts
+│  │  │  │  │  └─ booking-events.ts
 │  │  │  │  ├─ repositories
-│  │  │  │  │  └─ course.repository.interface.ts
-│  │  │  │  └─ value-objects
-│  │  │  │     └─ course-level.ts
+│  │  │  │  │  └─ booking.repository.interface.ts
+│  │  │  │  └─ services
+│  │  │  │     └─ session-generator.service.ts
 │  │  │  ├─ infrastructure
-│  │  │  │  ├─ mapper
-│  │  │  │  │  └─ course.mapper.ts
 │  │  │  │  └─ repositories
-│  │  │  │     ├─ course.repository.impl.ts
-│  │  │  │     ├─ course.repository.type.ts
-│  │  │  │     └─ grade.repository.type.ts
+│  │  │  │     └─ booking.repository.impl.ts
 │  │  │  └─ presentation
 │  │  │     ├─ controllers
-│  │  │     │  └─ course.controller.ts
+│  │  │     │  └─ booking.controller.ts
 │  │  │     └─ schemas
-│  │  │        ├─ change-course-status.dto.ts
-│  │  │        ├─ course-response.dto.ts
-│  │  │        ├─ create-course.dto.ts
-│  │  │        ├─ get-courses-query.dto.ts
-│  │  │        └─ update-course.dto.ts
-│  │  ├─ enrollment
+│  │  │        ├─ booking-response.dto.ts
+│  │  │        ├─ cancel-session.dto.ts
+│  │  │        ├─ create-direct-booking.dto.ts
+│  │  │        ├─ get-bookings-query.dto.ts
+│  │  │        ├─ get-my-sessions-query.dto.ts
+│  │  │        ├─ mark-session-attendance.dto.ts
+│  │  │        ├─ renew-booking.dto.ts
+│  │  │        ├─ reschedule-session.dto.ts
+│  │  │        ├─ session-response.dto.ts
+│  │  │        └─ take-attendance.dto.ts
+│  │  ├─ chat
 │  │  │  ├─ application
 │  │  │  │  ├─ commands
-│  │  │  │  │  └─ enroll-course
-│  │  │  │  │     ├─ enroll-course.command.ts
-│  │  │  │  │     ├─ enroll-course.handler.ts
-│  │  │  │  │     └─ enroll-course.result.ts
-│  │  │  │  └─ events
-│  │  │  │     └─ sync-enrollment-to-rabbitmq.handler.ts
-│  │  │  ├─ domain
-│  │  │  │  ├─ entities
-│  │  │  │  │  └─ enrollment.entity.ts
-│  │  │  │  ├─ events
-│  │  │  │  │  └─ enrollment-created.domain-event.ts
-│  │  │  │  └─ repositories
-│  │  │  │     └─ enrollment.repository.interface.ts
-│  │  │  ├─ enrollment.module.ts
-│  │  │  ├─ infrastructure
-│  │  │  │  ├─ mapper
-│  │  │  │  │  └─ enrollment.mapper.ts
-│  │  │  │  └─ repositories
-│  │  │  │     ├─ enrollment.repository.impl.ts
-│  │  │  │     └─ enrollment.repository.type.ts
+│  │  │  │  │  ├─ create-conversation
+│  │  │  │  │  │  ├─ create-conversation.command.ts
+│  │  │  │  │  │  ├─ create-conversation.handler.ts
+│  │  │  │  │  │  └─ create-conversation.result.ts
+│  │  │  │  │  ├─ delete-message
+│  │  │  │  │  │  ├─ delete-message.command.ts
+│  │  │  │  │  │  └─ delete-message.handler.ts
+│  │  │  │  │  ├─ mark-read
+│  │  │  │  │  │  ├─ mark-read.command.ts
+│  │  │  │  │  │  └─ mark-read.handler.ts
+│  │  │  │  │  └─ send-message
+│  │  │  │  │     ├─ send-message.command.ts
+│  │  │  │  │     └─ send-message.handler.ts
+│  │  │  │  ├─ queries
+│  │  │  │  │  ├─ get-conversations
+│  │  │  │  │  │  ├─ get-conversations.handler.ts
+│  │  │  │  │  │  ├─ get-conversations.query.ts
+│  │  │  │  │  │  └─ get-conversations.result.ts
+│  │  │  │  │  └─ get-messages
+│  │  │  │  │     ├─ get-messages.handler.ts
+│  │  │  │  │     ├─ get-messages.query.ts
+│  │  │  │  │     └─ get-messages.result.ts
+│  │  │  │  └─ services
+│  │  │  │     └─ chat.service.ts
+│  │  │  ├─ chat.module.ts
 │  │  │  └─ presentation
 │  │  │     ├─ controllers
-│  │  │     │  └─ enrollment.controller.ts
+│  │  │     │  └─ conversation.controller.ts
+│  │  │     ├─ dtos
+│  │  │     ├─ gateways
+│  │  │     │  └─ chat.gateway.ts
 │  │  │     └─ schemas
-│  │  │        ├─ enroll-course.dto.ts
-│  │  │        └─ enrollment-response.dto.ts
+│  │  │        ├─ conversation-response.dto.ts
+│  │  │        ├─ create-conversation.dto.ts
+│  │  │        ├─ message-response.dto.ts
+│  │  │        └─ send-message.dto.ts
+│  │  ├─ dispute
+│  │  │  ├─ application
+│  │  │  │  └─ commands
+│  │  │  │     ├─ create-dispute
+│  │  │  │     │  ├─ create-dispute.command.ts
+│  │  │  │     │  ├─ create-dispute.handler.ts
+│  │  │  │     │  └─ create-dispute.result.ts
+│  │  │  │     ├─ dispute-session
+│  │  │  │     │  ├─ dispute-session.command.ts
+│  │  │  │     │  ├─ dispute-session.handler.ts
+│  │  │  │     │  └─ dispute-session.result.ts
+│  │  │  │     ├─ resolve-dispute
+│  │  │  │     │  ├─ resolve-dispute.command.ts
+│  │  │  │     │  ├─ resolve-dispute.handler.ts
+│  │  │  │     │  └─ resolve-dispute.result.ts
+│  │  │  │     └─ send-dispute-message
+│  │  │  │        ├─ send-dispute-message.command.ts
+│  │  │  │        ├─ send-dispute-message.handler.ts
+│  │  │  │        └─ send-dispute-message.result.ts
+│  │  │  ├─ dispute.module.ts
+│  │  │  ├─ domain
+│  │  │  │  └─ events
+│  │  │  │     └─ dispute-events.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  ├─ admin-dispute.controller.ts
+│  │  │     │  ├─ dispute-session.controller.ts
+│  │  │     │  └─ dispute.controller.ts
+│  │  │     └─ schemas
+│  │  │        ├─ dispute-session.dto.ts
+│  │  │        └─ dispute.dto.ts
 │  │  ├─ health
 │  │  │  ├─ health.controller.spec.ts
 │  │  │  ├─ health.controller.ts
 │  │  │  ├─ health.module.ts
 │  │  │  ├─ prisma.health.ts
 │  │  │  └─ redis.health.ts
-│  │  ├─ lesson
-│  │  │  ├─ application
-│  │  │  │  ├─ commands
-│  │  │  │  │  ├─ create-lesson
-│  │  │  │  │  │  ├─ create-lesson.command.ts
-│  │  │  │  │  │  ├─ create-lesson.handler.ts
-│  │  │  │  │  │  └─ create-lesson.result.ts
-│  │  │  │  │  └─ update-lesson
-│  │  │  │  │     ├─ update-lesson.command.ts
-│  │  │  │  │     ├─ update-lesson.handler.ts
-│  │  │  │  │     └─ update-lesson.result.ts
-│  │  │  │  └─ queries
-│  │  │  │     ├─ get-lesson-by-id
-│  │  │  │     │  ├─ get-lesson-by-id.handler.ts
-│  │  │  │     │  ├─ get-lesson-by-id.query.ts
-│  │  │  │     │  └─ get-lesson-by-id.result.ts
-│  │  │  │     ├─ get-lesson-details
-│  │  │  │     │  ├─ get-lesson-details.handler.ts
-│  │  │  │     │  ├─ get-lesson-details.query.ts
-│  │  │  │     │  └─ get-lesson-details.result.ts
-│  │  │  │     └─ get-lessons-by-course
-│  │  │  │        ├─ get-lessons-by-course.handler.ts
-│  │  │  │        ├─ get-lessons-by-course.query.ts
-│  │  │  │        └─ get-lessons-by-course.result.ts
-│  │  │  ├─ domain
-│  │  │  │  ├─ entities
-│  │  │  │  │  └─ lesson.entity.ts
-│  │  │  │  ├─ interfaces
-│  │  │  │  │  └─ meeting-service.interface.ts
-│  │  │  │  └─ repositories
-│  │  │  │     └─ lesson.repository.interface.ts
-│  │  │  ├─ infrastructure
-│  │  │  │  ├─ adapters
-│  │  │  │  │  └─ meeting-service.adapter.ts
-│  │  │  │  ├─ mapper
-│  │  │  │  │  └─ lesson.mapper.ts
-│  │  │  │  └─ repositories
-│  │  │  │     ├─ lesson.repository.impl.ts
-│  │  │  │     └─ lesson.repository.type.ts
-│  │  │  ├─ lesson.module.ts
-│  │  │  └─ presentation
-│  │  │     ├─ controllers
-│  │  │     │  └─ lesson.controller.ts
-│  │  │     └─ schemas
-│  │  │        ├─ create-lesson.dto.ts
-│  │  │        ├─ get-lessons-by-course-query.dto.ts
-│  │  │        ├─ lesson-response.dto.ts
-│  │  │        └─ update-lesson.dto.ts
 │  │  ├─ meeting
 │  │  │  ├─ application
 │  │  │  │  └─ services
@@ -397,7 +421,13 @@ edura-api
 │  │  │  │  │  └─ send-email
 │  │  │  │  │     ├─ send-email.command.ts
 │  │  │  │  │     └─ send-email.handler.ts
+│  │  │  │  ├─ event-handlers
+│  │  │  │  │  ├─ booking-events.handler.ts
+│  │  │  │  │  ├─ dispute-events.handler.ts
+│  │  │  │  │  ├─ review-events.handler.ts
+│  │  │  │  │  └─ tutor-request-events.handler.ts
 │  │  │  │  ├─ services
+│  │  │  │  │  ├─ notification.service.ts
 │  │  │  │  │  └─ smtp-email.interface.ts
 │  │  │  │  └─ templates
 │  │  │  │     └─ views
@@ -406,13 +436,21 @@ edura-api
 │  │  │  │        ├─ tutor-application-approved.hbs
 │  │  │  │        └─ tutor-application-rejected.hbs
 │  │  │  ├─ domain
+│  │  │  │  └─ notification.interfaces.ts
 │  │  │  ├─ infrastructure
 │  │  │  │  ├─ providers
 │  │  │  │  │  └─ mail
 │  │  │  │  │     └─ mailer.provider.ts
 │  │  │  │  └─ services
 │  │  │  │     └─ smtp-email.service.ts
-│  │  │  └─ notification.module.ts
+│  │  │  ├─ notification.module.ts
+│  │  │  └─ presentation
+│  │  │     ├─ controllers
+│  │  │     │  └─ notification.controller.ts
+│  │  │     ├─ gateways
+│  │  │     │  └─ notification.gateway.ts
+│  │  │     └─ schemas
+│  │  │        └─ notification-response.dto.ts
 │  │  ├─ payment
 │  │  │  ├─ application
 │  │  │  │  ├─ commands
@@ -437,6 +475,8 @@ edura-api
 │  │  │  │     └─ payment.repository.interface.ts
 │  │  │  ├─ infrastructure
 │  │  │  │  ├─ gateways
+│  │  │  │  │  ├─ mock
+│  │  │  │  │  │  └─ mock.gateway.ts
 │  │  │  │  │  └─ payos
 │  │  │  │  │     └─ payos.gateway.ts
 │  │  │  │  └─ repositories
@@ -445,6 +485,7 @@ edura-api
 │  │  │  ├─ payment.module.ts
 │  │  │  └─ presentation
 │  │  │     ├─ controllers
+│  │  │     │  ├─ mock-payment.controller.ts
 │  │  │     │  ├─ payment.controller.ts
 │  │  │     │  └─ webhook.controller.ts
 │  │  │     └─ schemas
@@ -452,10 +493,6 @@ edura-api
 │  │  ├─ recommendation
 │  │  │  ├─ application
 │  │  │  │  └─ queries
-│  │  │  │     ├─ get-recommended-courses
-│  │  │  │     │  ├─ get-recommended-courses.handler.ts
-│  │  │  │     │  ├─ get-recommended-courses.query.ts
-│  │  │  │     │  └─ get-recommended-courses.result.ts
 │  │  │  │     └─ get-recommended-tutors
 │  │  │  │        ├─ get-recommended-tutors.handler.ts
 │  │  │  │        ├─ get-recommended-tutors.query.ts
@@ -527,6 +564,66 @@ edura-api
 │  │  │  │     ├─ resource-response.dto.ts
 │  │  │  │     └─ update-resource.dto.ts
 │  │  │  └─ resource.module.ts
+│  │  ├─ review
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ create-review
+│  │  │  │  │  │  ├─ create-review.command.ts
+│  │  │  │  │  │  ├─ create-review.handler.ts
+│  │  │  │  │  │  └─ create-review.result.ts
+│  │  │  │  │  └─ delete-review
+│  │  │  │  │     ├─ delete-review.command.ts
+│  │  │  │  │     ├─ delete-review.handler.ts
+│  │  │  │  │     └─ delete-review.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     └─ get-tutor-reviews
+│  │  │  │        ├─ get-tutor-reviews.handler.ts
+│  │  │  │        ├─ get-tutor-reviews.query.ts
+│  │  │  │        └─ get-tutor-reviews.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ review.entity.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ review-events.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ review.repository.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  └─ repositories
+│  │  │  │     └─ review.repository.impl.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ review.controller.ts
+│  │  │  │  └─ schemas
+│  │  │  │     ├─ create-review.dto.ts
+│  │  │  │     ├─ get-tutor-reviews-query.dto.ts
+│  │  │  │     └─ review-response.dto.ts
+│  │  │  └─ review.module.ts
+│  │  ├─ schedule-availability
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  └─ update-schedule-availability
+│  │  │  │  │     ├─ update-schedule-availability.command.ts
+│  │  │  │  │     ├─ update-schedule-availability.handler.ts
+│  │  │  │  │     └─ update-schedule-availability.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     └─ get-schedule-availability
+│  │  │  │        ├─ get-schedule-availability.handler.ts
+│  │  │  │        ├─ get-schedule-availability.query.ts
+│  │  │  │        └─ get-schedule-availability.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  └─ user-availability.entity.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ schedule-availability.repository.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  └─ repositories
+│  │  │  │     └─ schedule-availability.repository.impl.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ schedule-availability.controller.ts
+│  │  │  │  └─ schemas
+│  │  │  │     └─ schedule-availability.dto.ts
+│  │  │  └─ schedule-availability.module.ts
 │  │  ├─ storage
 │  │  │  ├─ application
 │  │  │  │  └─ storage.service.ts
@@ -595,6 +692,51 @@ edura-api
 │  │  │  │     ├─ get-tutor-applications.dto.ts
 │  │  │  │     └─ tutor-application-response.dto.ts
 │  │  │  └─ tutor-application.module.ts
+│  │  ├─ tutor-request
+│  │  │  ├─ application
+│  │  │  │  ├─ commands
+│  │  │  │  │  ├─ accept-tutor-bid
+│  │  │  │  │  │  ├─ accept-tutor-bid.command.ts
+│  │  │  │  │  │  ├─ accept-tutor-bid.handler.ts
+│  │  │  │  │  │  └─ accept-tutor-bid.result.ts
+│  │  │  │  │  ├─ create-tutor-request
+│  │  │  │  │  │  ├─ create-tutor-request.command.ts
+│  │  │  │  │  │  ├─ create-tutor-request.handler.ts
+│  │  │  │  │  │  └─ create-tutor-request.result.ts
+│  │  │  │  │  └─ set-tutor-bid
+│  │  │  │  │     ├─ set-tutor-bid.command.ts
+│  │  │  │  │     ├─ set-tutor-bid.handler.ts
+│  │  │  │  │     └─ set-tutor-bid.result.ts
+│  │  │  │  └─ queries
+│  │  │  │     ├─ get-tutor-request
+│  │  │  │     │  ├─ get-tutor-request.handler.ts
+│  │  │  │     │  ├─ get-tutor-request.query.ts
+│  │  │  │     │  └─ get-tutor-request.result.ts
+│  │  │  │     ├─ get-tutor-request-by-id
+│  │  │  │     │  └─ get-tutor-request-by-id.query.ts
+│  │  │  │     └─ get-tutor-requests
+│  │  │  │        ├─ get-tutor-requests.handler.ts
+│  │  │  │        ├─ get-tutor-requests.query.ts
+│  │  │  │        └─ get-tutor-requests.result.ts
+│  │  │  ├─ domain
+│  │  │  │  ├─ entities
+│  │  │  │  │  ├─ tutor-bid.entity.ts
+│  │  │  │  │  └─ tutor-request.entity.ts
+│  │  │  │  ├─ events
+│  │  │  │  │  └─ tutor-request-events.ts
+│  │  │  │  └─ repositories
+│  │  │  │     └─ tutor-request.repository.interface.ts
+│  │  │  ├─ infrastructure
+│  │  │  │  └─ repositories
+│  │  │  │     └─ tutor-request.repository.impl.ts
+│  │  │  ├─ presentation
+│  │  │  │  ├─ controllers
+│  │  │  │  │  └─ tutor-request.controller.ts
+│  │  │  │  └─ schemas
+│  │  │  │     ├─ get-tutor-requests-query.dto.ts
+│  │  │  │     ├─ tutor-request-response.dto.ts
+│  │  │  │     └─ tutor-request.dto.ts
+│  │  │  └─ tutor-request.module.ts
 │  │  └─ user
 │  │     ├─ application
 │  │     │  ├─ commands
@@ -602,19 +744,42 @@ edura-api
 │  │     │  │  │  ├─ change-avatar.command.ts
 │  │     │  │  │  ├─ change-avatar.handler.ts
 │  │     │  │  │  └─ change-avatar.result.ts
+│  │     │  │  ├─ submit-tutor-application
 │  │     │  │  ├─ update-profile
 │  │     │  │  │  ├─ update-profile.command.ts
 │  │     │  │  │  ├─ update-profile.handler.ts
 │  │     │  │  │  └─ update-profile.result.ts
+│  │     │  │  ├─ update-student-profile
+│  │     │  │  │  ├─ update-student-profile.command.ts
+│  │     │  │  │  ├─ update-student-profile.handler.ts
+│  │     │  │  │  └─ update-student-profile.result.ts
+│  │     │  │  ├─ update-tutor-profile
+│  │     │  │  │  ├─ update-tutor-profile.command.ts
+│  │     │  │  │  ├─ update-tutor-profile.handler.ts
+│  │     │  │  │  └─ update-tutor-profile.result.ts
 │  │     │  │  └─ upgrade-tutor
 │  │     │  │     ├─ upgrade-tutor.command.ts
 │  │     │  │     ├─ upgrade-tutor.handler.ts
 │  │     │  │     └─ upgrade-tutor.result.ts
+│  │     │  ├─ events
+│  │     │  │  └─ sync-tutor-view-to-rabbitmq.handler.ts
 │  │     │  └─ queries
 │  │     │     ├─ get-profile
 │  │     │     │  ├─ get-profile.handler.ts
 │  │     │     │  ├─ get-profile.query.ts
 │  │     │     │  └─ get-profile.result.ts
+│  │     │     ├─ get-tutor-by-id
+│  │     │     │  ├─ get-tutor-by-id.handler.ts
+│  │     │     │  ├─ get-tutor-by-id.query.ts
+│  │     │     │  └─ get-tutor-by-id.result.ts
+│  │     │     ├─ get-tutors
+│  │     │     │  ├─ get-tutors.handler.ts
+│  │     │     │  ├─ get-tutors.query.ts
+│  │     │     │  └─ get-tutors.result.ts
+│  │     │     ├─ get-user-profile-by-id
+│  │     │     │  ├─ get-user-profile-by-id.handler.ts
+│  │     │     │  ├─ get-user-profile-by-id.query.ts
+│  │     │     │  └─ get-user-profile-by-id.result.ts
 │  │     │     └─ get-users
 │  │     │        ├─ get-users.handler.ts
 │  │     │        ├─ get-users.query.ts
@@ -622,38 +787,42 @@ edura-api
 │  │     ├─ domain
 │  │     │  ├─ entities
 │  │     │  │  ├─ parent.entity.ts
-│  │     │  │  ├─ profile.entity.ts
-│  │     │  │  ├─ student.entity.ts
 │  │     │  │  ├─ tutor.entity.ts
 │  │     │  │  ├─ user-identity.entity.ts
 │  │     │  │  └─ user.entity.ts
 │  │     │  ├─ events
+│  │     │  │  ├─ tutor-viewed.domain-event.ts
 │  │     │  │  └─ user-created.domain-event.ts
 │  │     │  ├─ repositories
-│  │     │  │  ├─ profile.repository.interface.ts
+│  │     │  │  ├─ tutor.repository.interface.ts
 │  │     │  │  ├─ user-identity.repository.interface.ts
 │  │     │  │  └─ user.repository.interface.ts
 │  │     │  ├─ services
 │  │     │  └─ value-objects
 │  │     ├─ infrastructure
 │  │     │  ├─ mappers
-│  │     │  │  ├─ profile.mapper.ts
 │  │     │  │  ├─ user-identity.mapper.ts
 │  │     │  │  └─ user.mapper.ts
 │  │     │  ├─ repositories
-│  │     │  │  ├─ profile.repository.impl.ts
+│  │     │  │  ├─ tutor.repository.impl.ts
 │  │     │  │  ├─ user-identity.repository.impl.ts
 │  │     │  │  └─ user.repository.impl.ts
 │  │     │  └─ user.infrastructure.module.ts
 │  │     ├─ presentation
 │  │     │  ├─ controllers
+│  │     │  │  ├─ tutor.controller.ts
 │  │     │  │  └─ user.controller.ts
 │  │     │  └─ schemas
 │  │     │     ├─ change-avatar-response.dto.ts
 │  │     │     ├─ change-avatar.dto.ts
 │  │     │     ├─ get-profile-response.dto.ts
+│  │     │     ├─ get-tutors-query.dto.ts
+│  │     │     ├─ get-user-profile-by-id-response.dto.ts
 │  │     │     ├─ profile-response.dto.ts
+│  │     │     ├─ tutor-response.dto.ts
 │  │     │     ├─ update-profile.dto.ts
+│  │     │     ├─ update-student-profile.dto.ts
+│  │     │     ├─ update-tutor-profile.dto.ts
 │  │     │     ├─ upgrade-tutor-response.dto.ts
 │  │     │     └─ user-response.dto.ts
 │  │     └─ user.module.ts
@@ -731,7 +900,8 @@ edura-api
 │  │     ├─ filters
 │  │     ├─ guards
 │  │     │  ├─ rate-limit.guard.spec.ts
-│  │     │  └─ rate-limit.guard.ts
+│  │     │  ├─ rate-limit.guard.ts
+│  │     │  └─ ws-jwt.guard.ts
 │  │     ├─ interceptors
 │  │     │  ├─ logging.interceptor.ts
 │  │     │  └─ response-transform.interceptor.ts
@@ -747,6 +917,9 @@ edura-api
 │  ├─ app.e2e-spec.ts
 │  └─ jest-e2e.json
 ├─ tsconfig.build.json
-└─ tsconfig.json
+├─ tsconfig.json
+└─ ~
+   └─ .agentmemory
+      └─ local.db
 
 ```

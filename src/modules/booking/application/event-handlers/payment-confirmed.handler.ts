@@ -55,10 +55,14 @@ export class BookingPaymentConfirmedHandler implements IEventHandler<PaymentConf
           booking.tutorId,
           title,
           booking.startDate || new Date(),
-          new Date((booking.startDate || new Date()).getTime() + 60 * 60 * 1000), // 1 hour duration
+          new Date(
+            (booking.startDate || new Date()).getTime() + 60 * 60 * 1000,
+          ), // 1 hour duration
         );
         meetingUrl = meetingResult.meetingUrl;
-        this.logger.log(`Generated meeting URL for booking ${booking.id}: ${meetingUrl}`);
+        this.logger.log(
+          `Generated meeting URL for booking ${booking.id}: ${meetingUrl}`,
+        );
       } catch (e) {
         this.logger.error(
           `Failed to generate meeting URL for booking ${booking.id}: ${e instanceof Error ? e.message : String(e)}`,

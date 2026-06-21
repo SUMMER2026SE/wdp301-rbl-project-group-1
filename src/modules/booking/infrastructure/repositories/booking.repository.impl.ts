@@ -63,24 +63,18 @@ export class PrismaBookingRepository implements IBookingRepository {
       where.mode = params.mode;
     }
 
-    const orderBy: Prisma.BookingOrderByWithRelationInput = {};
-    const sortBy = params.sortBy || 'createdAt';
-    const sortOrder = params.sortOrder || 'desc';
-
-    if (sortBy === 'createdAt') {
-      orderBy.createdAt = sortOrder;
-    } else if (sortBy === 'price') {
-      orderBy.price = sortOrder;
-    } else {
-      orderBy[sortBy] = sortOrder;
-    }
+    // Always sort by createdAt desc to ensure we get the latest booking in the distinct group
+    const orderBy: Prisma.BookingOrderByWithRelationInput = { createdAt: 'desc' };
 
     const skip = (params.page - 1) * params.limit;
 
-    const [items, total] = await Promise.all([
+    // Use distinct to get the latest booking for each group
+    // For counting, we must group by groupId
+    const [items, groupCounts] = await Promise.all([
       this.prisma.booking.findMany({
         where,
         orderBy,
+        distinct: ['groupId'],
         skip,
         take: params.limit,
         include: {
@@ -90,10 +84,35 @@ export class PrismaBookingRepository implements IBookingRepository {
           scheduleRules: true,
         },
       }),
-      this.prisma.booking.count({ where }),
+      this.prisma.booking.groupBy({
+        by: ['groupId'],
+        where,
+      }),
     ]);
 
-    const bookings = items.map((item) => this.toDomain(item as BookingRecord));
+    const total = groupCounts.length;
+
+    // Fetch aggregations for the fetched items
+    const groupIds = items.map((item) => item.groupId);
+    const aggregations = await this.prisma.booking.groupBy({
+      by: ['groupId'],
+      where: { groupId: { in: groupIds } },
+      _sum: { totalSessions: true },
+      _min: { startDate: true },
+    });
+
+    const aggregationMap = new Map<string, { totalSessions: number; startDate: Date | null }>();
+    aggregations.forEach((agg) => {
+      aggregationMap.set(agg.groupId, {
+        totalSessions: agg._sum.totalSessions || 0,
+        startDate: agg._min.startDate || null,
+      });
+    });
+
+    const bookings = items.map((item) => {
+      const agg = aggregationMap.get(item.groupId);
+      return this.toDomain(item as BookingRecord, agg?.totalSessions, agg?.startDate);
+    });
 
     return createQueryResult(bookings, total, { ...params, skip });
   }
@@ -116,7 +135,7 @@ export class PrismaBookingRepository implements IBookingRepository {
     return this.findById(id);
   }
 
-  private toDomain(record: BookingRecord): Booking {
+  private toDomain(record: BookingRecord, groupTotalSessions?: number, groupStartDate?: Date | null): Booking {
     return new Booking({
       id: record.id,
       requestId: record.requestId,
@@ -132,6 +151,9 @@ export class PrismaBookingRepository implements IBookingRepository {
       message: record.message,
       price: record.price,
       paymentStatus: record.paymentStatus as PaymentStatus,
+      groupId: record.groupId,
+      groupTotalSessions,
+      groupStartDate: groupStartDate || undefined,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       student: record.student

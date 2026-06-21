@@ -102,9 +102,9 @@ export class SessionGeneratorService {
         totalDurationMs +=
           session.endTime.getTime() - session.startTime.getTime();
       }
-      
+
       const totalDurationHours = totalDurationMs / (1000 * 60 * 60);
-      
+
       if (totalDurationHours > 0) {
         return hourlyRate * totalDurationHours;
       }

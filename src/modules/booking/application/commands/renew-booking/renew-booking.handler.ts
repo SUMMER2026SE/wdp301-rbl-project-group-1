@@ -11,6 +11,8 @@ import { IBookingRepository } from '../../../domain/repositories/booking.reposit
 import { RenewBookingCommand } from './renew-booking.command';
 import { RenewBookingResult } from './renew-booking.result';
 import { SessionGeneratorService } from '../../../domain/services/session-generator.service';
+import { EventBus } from '@nestjs/cqrs';
+import { BookingCreatedEvent } from '../../../domain/events/booking-events';
 
 @CommandHandler(RenewBookingCommand)
 export class RenewBookingHandler
@@ -22,10 +24,11 @@ export class RenewBookingHandler
     @Inject(IBookingRepository)
     private readonly bookingRepository: IBookingRepository,
     private readonly prisma: PrismaService,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: RenewBookingCommand): Promise<RenewBookingResult> {
-    const { bookingId, studentId, totalSessions, message } = command;
+    const { bookingId, studentId, totalSessions, message, scheduleRules } = command;
 
     // 1. Fetch the original booking
     const original = await this.bookingRepository.findById(bookingId);
@@ -44,11 +47,29 @@ export class RenewBookingHandler
       throw new ForbiddenException('You are not allowed to renew this booking');
     }
 
-    // 3. Generate sessions based on original schedule rules
+    // Determine the start date for the new sessions.
+    // Start from the latest endTime of the original booking's sessions, or now if none exist.
+    let startDate = new Date();
+    const latestSession = await this.prisma.session.findFirst({
+      where: { bookingId: original.id },
+      orderBy: { endTime: 'desc' },
+      select: { endTime: true },
+    });
+
+    if (
+      latestSession &&
+      latestSession.endTime &&
+      latestSession.endTime > startDate
+    ) {
+      startDate = latestSession.endTime;
+    }
+
+    // 3. Generate sessions based on provided schedule rules or original schedule rules
+    const rulesToUse = scheduleRules && scheduleRules.length > 0 ? scheduleRules : (original.scheduleRules || []);
     const generatedSessions = SessionGeneratorService.generateSessions(
       totalSessions,
-      original.scheduleRules || [],
-      new Date(),
+      rulesToUse,
+      startDate,
     );
 
     const totalPrice = SessionGeneratorService.calculateBookingPrice(
@@ -69,11 +90,15 @@ export class RenewBookingHandler
         message: message ?? null,
         status: BookingStatus.PENDING,
         paymentStatus: PaymentStatus.PENDING,
-        // Preserve schedule rules from original booking
-        ...(original.scheduleRules && original.scheduleRules.length > 0
+        previousBookingId: original.id,
+        groupId: original.groupId,
+        startDate:
+          generatedSessions.length > 0 ? generatedSessions[0].startTime : null,
+        // Preserve schedule rules from original booking if no new rules are provided
+        ...(rulesToUse && rulesToUse.length > 0
           ? {
               scheduleRules: {
-                create: original.scheduleRules.map((rule) => ({
+                create: rulesToUse.map((rule) => ({
                   dayOfWeek: rule.dayOfWeek,
                   startTime: rule.startTime,
                   endTime: rule.endTime,
@@ -93,6 +118,15 @@ export class RenewBookingHandler
           : undefined,
       },
     });
+
+    this.eventBus.publish(
+      new BookingCreatedEvent(
+        renewed.id,
+        renewed.studentId,
+        renewed.tutorId,
+        renewed.message ?? '',
+      ),
+    );
 
     return new RenewBookingResult(
       renewed.id,
