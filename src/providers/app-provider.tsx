@@ -1,4 +1,4 @@
-
+import { ThemeProvider } from "./theme-provider";
 
 import { Toaster } from "@/src/shared/components/ui/sonner";
 import AuthProvider from "./auth-provider";
@@ -10,13 +10,20 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <ReduxProvider>
-        <AuthProvider>
-          <SocketProvider>{children}</SocketProvider>
-        </AuthProvider>
-        <Toaster />
-      </ReduxProvider>
-    </GoogleOAuthProvider>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="light"
+      enableSystem
+      disableTransitionOnChange
+    >
+      <GoogleOAuthProvider clientId={clientId}>
+        <ReduxProvider>
+          <AuthProvider>
+            <SocketProvider>{children}</SocketProvider>
+          </AuthProvider>
+          <Toaster />
+        </ReduxProvider>
+      </GoogleOAuthProvider>
+    </ThemeProvider>
   );
 }

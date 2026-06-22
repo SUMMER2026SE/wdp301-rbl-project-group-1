@@ -56,7 +56,7 @@ export default function proxy(request: NextRequest) {
       } else if (role === "STUDENT") {
         return NextResponse.redirect(new URL("/student/home", request.url));
       } else if (role === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin/home", request.url));
+        return NextResponse.redirect(new URL("/admin", request.url));
       }
       
       // Default fallback if role is unrecognized but token exists

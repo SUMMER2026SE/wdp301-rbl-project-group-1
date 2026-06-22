@@ -1,8 +1,20 @@
 import { baseApi as api } from "../../shared/store/baseApi";
 const injectedRtkApi = api.injectEndpoints({
   endpoints: (build) => ({
-    getUsers: build.query<GetUsersApiResponse, GetUsersApiArg>({
-      query: () => ({ url: `/api/users` }),
+    getUsers: build.query<GetUsersApiResponse, GetUsersApiArg | void>({
+      query: (queryArg) => {
+        const params: Record<string, string | number | boolean> = {};
+        if (queryArg) {
+          if (queryArg.page) params.page = queryArg.page;
+          if (queryArg.limit) params.limit = queryArg.limit;
+          if (queryArg.search) params.search = queryArg.search;
+          if (queryArg.sortBy) params.sortBy = queryArg.sortBy;
+          if (queryArg.sortOrder) params.sortOrder = queryArg.sortOrder;
+          if (queryArg.isActive !== undefined) params.isActive = queryArg.isActive;
+        }
+        return { url: `/api/users`, params };
+      },
+      providesTags: ["User"],
     }),
     getProfile: build.query<GetProfileApiResponse, GetProfileApiArg>({
       query: () => ({ url: `/api/users/profile` }),
@@ -53,6 +65,20 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.updateStudentProfileDto,
       }),
     }),
+    banUser: build.mutation<BanUserApiResponse, BanUserApiArg>({
+      query: (queryArg) => ({
+        url: `/api/users/${queryArg.id}/ban`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["User"],
+    }),
+    unbanUser: build.mutation<UnbanUserApiResponse, UnbanUserApiArg>({
+      query: (queryArg) => ({
+        url: `/api/users/${queryArg.id}/unban`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["User"],
+    }),
   }),
   overrideExisting: false,
 });
@@ -69,7 +95,14 @@ export type GetUsersApiResponse =
       totalPages: number;
     };
   };
-export type GetUsersApiArg = void;
+export type GetUsersApiArg = {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  isActive?: boolean;
+};
 export type GetProfileApiResponse =
   /** status 200 Current user information returned successfully. */ {
     success: boolean;
@@ -130,6 +163,24 @@ export type UpdateStudentProfileApiResponse =
   };
 export type UpdateStudentProfileApiArg = {
   updateStudentProfileDto: UpdateStudentProfileDto;
+};
+export type BanUserApiResponse =
+  /** status 200 User banned successfully. */ {
+    success: boolean;
+    message: string;
+    data: BanUserResultDto;
+  };
+export type BanUserApiArg = {
+  id: string;
+};
+export type UnbanUserApiResponse =
+  /** status 200 User unbanned successfully. */ {
+    success: boolean;
+    message: string;
+    data: UnbanUserResultDto;
+  };
+export type UnbanUserApiArg = {
+  id: string;
 };
 export type UserResponseDto = {
   id: string;
@@ -294,6 +345,14 @@ export type UpdateStudentProfileDto = {
   /** List of subject IDs the student is interested in */
   subjectIds?: string[];
 };
+export type BanUserResultDto = {
+  userId: string;
+  message: string;
+};
+export type UnbanUserResultDto = {
+  userId: string;
+  message: string;
+};
 export const {
   useGetUsersQuery,
   useGetProfileQuery,
@@ -303,4 +362,6 @@ export const {
   useUpgradeTutorMutation,
   useUpdateTutorProfileMutation,
   useUpdateStudentProfileMutation,
+  useBanUserMutation,
+  useUnbanUserMutation,
 } = injectedRtkApi;

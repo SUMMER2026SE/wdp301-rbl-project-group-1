@@ -4,6 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { clearAuth } from "@/src/features/auth/authSlice";
+import { useTheme } from "next-themes";
+import { Moon, Sun } from "lucide-react";
+import { Switch } from "@/src/shared/components/ui/switch";
 import { useLogoutMutation } from "@/src/features/auth/authApi";
 import { useGetProfileQuery } from "@/src/features/user/userApi";
 import { useAppDispatch, useAppSelector } from "@/src/shared/store/hooks";
@@ -91,6 +94,7 @@ export function UserProfilePopover({
 }: UserProfilePopoverProps) {
   const dispatch = useAppDispatch();
   const router = useRouter();
+  const { theme, setTheme } = useTheme();
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
   const { data: profileResponse } = useGetProfileQuery(undefined, {
     skip: !isAuthenticated,
@@ -169,6 +173,19 @@ export function UserProfilePopover({
               {item.label}
             </Link>
           ))}
+        </div>
+
+        <Separator />
+
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-3 text-sm text-foreground">
+            {theme === "dark" ? <Moon className="size-5 text-muted-foreground" /> : <Sun className="size-5 text-muted-foreground" />}
+            <span>Giao diện tối</span>
+          </div>
+          <Switch 
+            checked={theme === "dark"} 
+            onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+          />
         </div>
 
         <Separator />
