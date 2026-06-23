@@ -13,7 +13,7 @@ import { CreatePaymentResult } from './create-payment.result';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
 
-const ALLOWED_DOMAINS = ['localhost:3000', 'app.edura.com'];
+const ALLOWED_DOMAINS = ['localhost:3000', 'app.edura.com', 'edura-web-sigma.vercel.app'];
 
 @CommandHandler(CreatePaymentCommand)
 export class CreatePaymentHandler implements ICommandHandler<CreatePaymentCommand> {
