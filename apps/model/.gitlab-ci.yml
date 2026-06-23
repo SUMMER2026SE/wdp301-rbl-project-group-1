@@ -81,7 +81,7 @@ deploy_to_cloud_run:
     - echo "Deploy lên Cloud Run..."
     - >
       gcloud run deploy edura-model 
-      --image $DOCKER_IMAGE_NAME 
+      --image $DOCKER_IMAGE_LATEST 
       --region asia-southeast1 
       --platform managed 
       --allow-unauthenticated 

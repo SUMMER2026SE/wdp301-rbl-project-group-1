@@ -13,6 +13,7 @@ from src.handlers.interaction_handler import (
     InteractionLoggedHandler,
     BookingCreatedHandler,
     BookingCompletedHandler,
+    ReviewCreatedHandler,
 )
 
 HANDLER_REGISTRY: dict = {
@@ -25,4 +26,5 @@ HANDLER_REGISTRY: dict = {
     Events.INTERACTION_LOGGED:  InteractionLoggedHandler(),
     Events.BOOKING_CREATED:     BookingCreatedHandler(),
     Events.BOOKING_COMPLETED:   BookingCompletedHandler(),
+    Events.REVIEW_CREATED:      ReviewCreatedHandler(),
 }
