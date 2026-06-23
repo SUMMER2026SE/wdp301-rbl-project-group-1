@@ -29,6 +29,10 @@ import { AcceptBookingCommand } from '../../application/commands/accept-booking/
 import { AcceptBookingResult } from '../../application/commands/accept-booking/accept-booking.result';
 import { RejectBookingCommand } from '../../application/commands/reject-booking/reject-booking.command';
 import { RejectBookingResult } from '../../application/commands/reject-booking/reject-booking.result';
+import { ApproveRescheduleSessionCommand } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.command';
+import { ApproveRescheduleSessionResult } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.result';
+import { RescheduleSessionCommand } from '../../application/commands/reschedule-session/reschedule-session.command';
+import { RescheduleSessionResult } from '../../application/commands/reschedule-session/reschedule-session.result';
 import {
   BookingStatusUpdateResponseDto,
   CreateDirectBookingResponseDto,
@@ -37,11 +41,16 @@ import {
 import { CreateDirectBookingDto } from '../schemas/create-direct-booking.dto';
 import { GetBookingsQueryDto } from '../schemas/get-bookings-query.dto';
 import {
-  MarkSessionAttendanceDto,
-  MarkSessionAttendanceResponseDto,
+  ConfirmSessionAttendanceDto,
+  ConfirmSessionAttendanceResponseDto,
 } from '../schemas/mark-session-attendance.dto';
-import { MarkSessionAttendanceCommand } from '../../application/commands/mark-session-attendance/mark-session-attendance.command';
-import { MarkSessionAttendanceResult } from '../../application/commands/mark-session-attendance/mark-session-attendance.result';
+import { ConfirmSessionAttendanceResult } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.result';
+import {
+  TakeAttendanceDto,
+  TakeAttendanceResponseDto,
+} from '../schemas/take-attendance.dto';
+import { TakeAttendanceCommand } from '../../application/commands/take-attendance/take-attendance.command';
+import { TakeAttendanceResult } from '../../application/commands/take-attendance/take-attendance.result';
 import { GetBookingsQuery } from '../../application/queries/get-bookings/get-bookings.query';
 import { GetBookingByIdQuery } from '../../application/queries/get-booking-by-id/get-booking-by-id.query';
 import { GetMySessionsQuery } from '../../application/queries/get-my-sessions/get-my-sessions.query';
@@ -51,7 +60,27 @@ import { MySessionResultData } from '../../application/queries/get-my-sessions/g
 import { QueryResult } from '../../../../shared/domain/common/query';
 import { SessionResponseDto } from '../schemas/session-response.dto';
 import { GetMySessionsQueryDto } from '../schemas/get-my-sessions-query.dto';
-import { BookingStatus } from '../../../../shared/domain/enums/enums';
+import {
+  ApproveRescheduleSessionResponseDto,
+  RescheduleSessionDto,
+  RescheduleSessionResponseDto,
+} from '../schemas/reschedule-session.dto';
+import { ConfirmSessionAttendanceCommand } from '../../application/commands/confirm-session-attendance/confirm-session-attendance.command';
+import { CancelSessionCommand } from '../../application/commands/cancel-session/cancel-session.command';
+import { CancelSessionResult } from '../../application/commands/cancel-session/cancel-session.result';
+import { RejectRescheduleSessionCommand } from '../../application/commands/reject-reschedule-session/reject-reschedule-session.command';
+import { RejectRescheduleSessionResult } from '../../application/commands/reject-reschedule-session/reject-reschedule-session.result';
+import { RejectRescheduleSessionResponseDto } from '../schemas/reschedule-session.dto';
+import {
+  CancelSessionDto,
+  CancelSessionResponseDto,
+} from '../schemas/cancel-session.dto';
+import { RenewBookingCommand } from '../../application/commands/renew-booking/renew-booking.command';
+import { RenewBookingResult } from '../../application/commands/renew-booking/renew-booking.result';
+import {
+  RenewBookingDto,
+  RenewBookingResponseDto,
+} from '../schemas/renew-booking.dto';
 
 @ApiTags('Booking')
 @Controller('bookings')
@@ -94,7 +123,7 @@ export class BookingController {
         search: query.search,
         sortBy: query.sortBy,
         sortOrder: query.sortOrder,
-        status: query.status ?? BookingStatus.CONFIRMED,
+        status: query.status,
         mode: query.mode,
       }),
     );
@@ -260,34 +289,217 @@ export class BookingController {
     return BaseResponse.ok(BookingStatusUpdateResponseDto.fromResult(result));
   }
 
-  @Patch('sessions/:sessionId/attendance')
-  @Roles(UserRole.TUTOR)
+  @Patch('sessions/:sessionId/reschedule')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'rescheduleSession',
+    summary: 'Student or tutor requests a session reschedule',
+    description:
+      'Creates a reschedule request for the session and moves it to RESCHEDULE_REQUESTED.',
+  })
+  @ApiOkResponseWrapped(RescheduleSessionResponseDto, {
+    description: 'Session reschedule request recorded successfully.',
+  })
+  async rescheduleSession(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: RescheduleSessionDto,
+  ): Promise<BaseResponse<RescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      RescheduleSessionCommand,
+      RescheduleSessionResult
+    >(
+      new RescheduleSessionCommand(
+        sessionId,
+        user.userId,
+        dto.proposedStartTime,
+        dto.proposedEndTime,
+        dto.proposedReason,
+      ),
+    );
+
+    return BaseResponse.ok(RescheduleSessionResponseDto.fromResult(result));
+  }
+
+  @Patch('sessions/:sessionId/confirm')
+  @Roles(UserRole.STUDENT)
   @ApiBearerAuth()
   @ApiOperation({
     operationId: 'markSessionAttendance',
     summary: 'Tutor marks a session as complete with attendance status',
   })
-  @ApiOkResponseWrapped(MarkSessionAttendanceResponseDto, {
+  @ApiOkResponseWrapped(ConfirmSessionAttendanceResponseDto, {
     description: 'Session attendance marked successfully.',
   })
   async markSessionAttendance(
     @CurrentUser() user: { userId: string },
     @Param('sessionId') sessionId: string,
-    @Body() dto: MarkSessionAttendanceDto,
-  ): Promise<BaseResponse<MarkSessionAttendanceResponseDto>> {
+    @Body() dto: ConfirmSessionAttendanceDto,
+  ): Promise<BaseResponse<ConfirmSessionAttendanceResponseDto>> {
     const result = await this.commandBus.execute<
-      MarkSessionAttendanceCommand,
-      MarkSessionAttendanceResult
+      ConfirmSessionAttendanceCommand,
+      ConfirmSessionAttendanceResult
     >(
-      new MarkSessionAttendanceCommand(
+      new ConfirmSessionAttendanceCommand(
         sessionId,
         user.userId,
-        dto.studentId,
+        dto.notes ?? null,
+      ),
+    );
+
+    return BaseResponse.ok(
+      ConfirmSessionAttendanceResponseDto.fromResult(result),
+    );
+  }
+
+  @Post('sessions/:sessionId/attendance')
+  @Roles(UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'takeAttendance',
+    summary: 'Tutor takes attendance for a session',
+    description:
+      'Tutor takes attendance for the lesson. Create/update the SessionAttendance record and change the Session status to AWAITING_CONFIRMATION.',
+  })
+  @ApiCreatedResponseWrapped(TakeAttendanceResponseDto, {
+    description:
+      'Attendance recorded successfully. Session status set to AWAITING_CONFIRMATION.',
+  })
+  async takeAttendance(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: TakeAttendanceDto,
+  ): Promise<BaseResponse<TakeAttendanceResponseDto>> {
+    const result = await this.commandBus.execute<
+      TakeAttendanceCommand,
+      TakeAttendanceResult
+    >(
+      new TakeAttendanceCommand(
+        sessionId,
+        user.userId,
         dto.status,
         dto.notes ?? null,
       ),
     );
 
-    return BaseResponse.ok(MarkSessionAttendanceResponseDto.fromResult(result));
+    return BaseResponse.created(TakeAttendanceResponseDto.fromResult(result));
+  }
+
+  @Post(':id/renew')
+  @Roles(UserRole.STUDENT)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'renewBooking',
+    summary: 'Student renews an existing booking',
+    description:
+      'Creates a new Booking cloned from the original (same tutor, subject, mode, schedule) with status PENDING.',
+  })
+  @ApiCreatedResponseWrapped(RenewBookingResponseDto, {
+    description: 'Renewed booking created successfully with status PENDING.',
+  })
+  async renewBooking(
+    @CurrentUser() user: { userId: string },
+    @Param('id') id: string,
+    @Body() dto: RenewBookingDto,
+  ): Promise<BaseResponse<RenewBookingResponseDto>> {
+    const result = await this.commandBus.execute<
+      RenewBookingCommand,
+      RenewBookingResult
+    >(
+      new RenewBookingCommand(
+        id,
+        user.userId,
+        dto.totalSessions,
+        dto.message ?? null,
+        dto.scheduleRules,
+      ),
+    );
+
+    return BaseResponse.created(RenewBookingResponseDto.fromResult(result));
+  }
+
+  @Patch('sessions/:sessionId/reschedule/approve')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'approveSessionReschedule',
+    summary: 'Approve a session reschedule request',
+    description:
+      'Accepts the proposed schedule, updates startTime and endTime, and moves the session back to SCHEDULED.',
+  })
+  @ApiOkResponseWrapped(ApproveRescheduleSessionResponseDto, {
+    description: 'Session reschedule request approved successfully.',
+  })
+  async approveSessionReschedule(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+  ): Promise<BaseResponse<ApproveRescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      ApproveRescheduleSessionCommand,
+      ApproveRescheduleSessionResult
+    >(new ApproveRescheduleSessionCommand(sessionId, user.userId));
+
+    return BaseResponse.ok(
+      ApproveRescheduleSessionResponseDto.fromResult(result),
+    );
+  }
+
+  @Patch('sessions/:sessionId/reschedule/reject')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'rejectSessionReschedule',
+    summary: 'Reject a session reschedule request',
+    description:
+      'Rejects the proposed schedule, reverting the session status back to SCHEDULED and clearing proposed fields.',
+  })
+  @ApiOkResponseWrapped(RejectRescheduleSessionResponseDto, {
+    description: 'Session reschedule request rejected successfully.',
+  })
+  async rejectSessionReschedule(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+  ): Promise<BaseResponse<RejectRescheduleSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      RejectRescheduleSessionCommand,
+      RejectRescheduleSessionResult
+    >(new RejectRescheduleSessionCommand(sessionId, user.userId));
+
+    return BaseResponse.ok(
+      RejectRescheduleSessionResponseDto.fromResult(result),
+    );
   }
 }
+
+@ApiTags('Sessions')
+@Controller('sessions')
+export class BookingSessionController {
+  constructor(private readonly commandBus: CommandBus) {}
+
+  @Patch(':sessionId/cancel')
+  @Roles(UserRole.STUDENT, UserRole.TUTOR)
+  @ApiBearerAuth()
+  @ApiOperation({
+    operationId: 'cancelSession',
+    summary: 'Cancel a session',
+    description:
+      'Student or tutor cancels a session. The system calculates whether the cancellation is before or after the 24-hour penalty threshold.',
+  })
+  @ApiOkResponseWrapped(CancelSessionResponseDto, {
+    description: 'Session cancelled successfully.',
+  })
+  async cancelSession(
+    @CurrentUser() user: { userId: string },
+    @Param('sessionId') sessionId: string,
+    @Body() dto: CancelSessionDto,
+  ): Promise<BaseResponse<CancelSessionResponseDto>> {
+    const result = await this.commandBus.execute<
+      CancelSessionCommand,
+      CancelSessionResult
+    >(new CancelSessionCommand(sessionId, user.userId, dto.reason));
+
+    return BaseResponse.ok(CancelSessionResponseDto.fromResult(result));
+  }
+}
+

@@ -13,6 +13,9 @@ export interface BookingResultData {
   price: number | null;
   message: string | null;
   createdAt: Date;
+  groupId: string;
+  groupTotalSessions?: number;
+  groupStartDate?: Date;
   student: {
     id: string;
     nickname: string | null;

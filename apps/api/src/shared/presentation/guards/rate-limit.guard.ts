@@ -20,7 +20,7 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     @Inject(CACHE_SERVICE) private readonly cacheService: ICache,
     private readonly reflector: Reflector,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest<{
@@ -46,14 +46,25 @@ export class RateLimitGuard implements CanActivate {
     const key = `rate:${request.method ?? 'UNKNOWN'}:${routePath}:${clientIp}`;
 
     try {
-      const current = await (this.cacheService as RedisService)
-        .getClient()
-        .incr(key);
+      const client = (this.cacheService as RedisService).getClient();
 
-      if (current === 1) {
-        await (this.cacheService as RedisService)
-          .getClient()
-          .expire(key, ttlSeconds);
+      // Use pipeline to ensure atomicity (if possible) or at least execute both
+      const multi = client.multi();
+      multi.incr(key);
+      multi.ttl(key);
+
+      const results = await multi.exec();
+      if (!results) {
+        throw new Error('Redis multi exec failed');
+      }
+
+      // results is an array of [error, result] for ioredis
+      const current = results[0][1] as number;
+      const ttl = results[1][1] as number;
+
+      // If ttl is -1 (no expiration), we MUST set it to avoid infinite accumulation
+      if (current === 1 || ttl === -1) {
+        await client.expire(key, ttlSeconds);
       }
 
       if (current > limit) {
@@ -66,7 +77,7 @@ export class RateLimitGuard implements CanActivate {
       if (error instanceof HttpException) {
         throw error;
       }
-      // Fail-open: if Redis is unreachable or times out, we allow the request 
+      // Fail-open: if Redis is unreachable or times out, we allow the request
       // rather than crashing the entire API.
       const message = error instanceof Error ? error.message : String(error);
       console.warn(`[RateLimitGuard] Redis error: ${message}`);

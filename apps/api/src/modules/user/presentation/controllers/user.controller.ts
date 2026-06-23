@@ -3,6 +3,8 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Patch,
   Param,
   Req,
@@ -55,6 +57,11 @@ import { UpdateStudentProfileDto } from '../schemas/update-student-profile.dto';
 import { UpdateTutorProfileDto } from '../schemas/update-tutor-profile.dto';
 import { UpgradeTutorResultDto } from '../schemas/upgrade-tutor-response.dto';
 import { UserResponseDto } from '../schemas/user-response.dto';
+import { BanUserResultDto, UnbanUserResultDto } from '../schemas/ban-user-response.dto';
+import { BanUserCommand } from '../../application/commands/ban-user/ban-user.command';
+import { BanUserResult } from '../../application/commands/ban-user/ban-user.result';
+import { UnbanUserCommand } from '../../application/commands/unban-user/unban-user.command';
+import { UnbanUserResult } from '../../application/commands/unban-user/unban-user.result';
 
 const ALLOWED_AVATAR_MIME_TYPES = new Set([
   'image/png',
@@ -269,6 +276,53 @@ export class UserController {
       UpdateStudentProfileCommand,
       UpdateStudentProfileResult
     >(new UpdateStudentProfileCommand(user.userId, dto));
+
+    return BaseResponse.ok(result);
+  }
+
+  // ─── Admin: Ban / Unban ────────────────────────────────────────────────────
+
+  @Patch(':id/ban')
+  @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    operationId: 'banUser',
+    summary: '[Admin] Ban a user — sets isActive to false',
+  })
+  @ApiOkResponseWrapped(BanUserResultDto, {
+    description: 'User banned successfully.',
+  })
+  async banUser(
+    @CurrentUser() admin: { userId: string },
+    @Param('id') targetUserId: string,
+  ): Promise<BaseResponse<BanUserResult>> {
+    const result = await this.commandBus.execute<BanUserCommand, BanUserResult>(
+      new BanUserCommand(admin.userId, targetUserId),
+    );
+
+    return BaseResponse.ok(result);
+  }
+
+  @Patch(':id/unban')
+  @ApiBearerAuth()
+  @Roles(UserRole.ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    operationId: 'unbanUser',
+    summary: '[Admin] Unban a user — sets isActive back to true',
+  })
+  @ApiOkResponseWrapped(UnbanUserResultDto, {
+    description: 'User unbanned successfully.',
+  })
+  async unbanUser(
+    @CurrentUser() admin: { userId: string },
+    @Param('id') targetUserId: string,
+  ): Promise<BaseResponse<UnbanUserResult>> {
+    const result = await this.commandBus.execute<
+      UnbanUserCommand,
+      UnbanUserResult
+    >(new UnbanUserCommand(admin.userId, targetUserId));
 
     return BaseResponse.ok(result);
   }

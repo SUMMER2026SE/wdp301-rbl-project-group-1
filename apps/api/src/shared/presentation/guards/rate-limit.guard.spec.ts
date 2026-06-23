@@ -8,8 +8,13 @@ import { RateLimitGuard } from './rate-limit.guard';
 describe('RateLimitGuard', () => {
   let guard: RateLimitGuard;
   let redisClient: {
-    incr: jest.Mock<any, any>;
     expire: jest.Mock<any, any>;
+    multi: jest.Mock<any, any>;
+  };
+  let multiMock: {
+    incr: jest.Mock<any, any>;
+    ttl: jest.Mock<any, any>;
+    exec: jest.Mock<any, any>;
   };
   let cacheService: {
     getClient: jest.Mock<any, any>;
@@ -33,9 +38,18 @@ describe('RateLimitGuard', () => {
     }) as never;
 
   beforeEach(async () => {
+    multiMock = {
+      incr: jest.fn().mockReturnThis(),
+      ttl: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue([
+        [null, 1],
+        [null, -1],
+      ]),
+    };
+
     redisClient = {
-      incr: jest.fn(),
       expire: jest.fn(),
+      multi: jest.fn().mockReturnValue(multiMock),
     };
 
     cacheService = {
@@ -69,7 +83,10 @@ describe('RateLimitGuard', () => {
 
   it('uses default limit and ttl when route has no metadata', async () => {
     reflector.getAllAndOverride.mockReturnValue(undefined);
-    redisClient.incr.mockResolvedValue(1);
+    multiMock.exec.mockResolvedValue([
+      [null, 1],
+      [null, -1],
+    ]);
 
     await expect(guard.canActivate(createContext())).resolves.toBe(true);
 
@@ -77,7 +94,9 @@ describe('RateLimitGuard', () => {
       expect.any(Function),
       expect.any(Function),
     ]);
-    expect(redisClient.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
+    expect(redisClient.multi).toHaveBeenCalled();
+    expect(multiMock.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
+    expect(multiMock.ttl).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
     expect(redisClient.expire).toHaveBeenCalledWith(
       'rate:GET:/health:127.0.0.1',
       60,
@@ -86,7 +105,10 @@ describe('RateLimitGuard', () => {
 
   it('uses route metadata limit and ttl when decorator is present', async () => {
     reflector.getAllAndOverride.mockReturnValue({ limit: 2, ttl: 15 });
-    redisClient.incr.mockResolvedValue(3);
+    multiMock.exec.mockResolvedValue([
+      [null, 3],
+      [null, 10],
+    ]);
 
     await expect(guard.canActivate(createContext())).rejects.toEqual(
       expect.objectContaining({
@@ -94,7 +116,8 @@ describe('RateLimitGuard', () => {
       }),
     );
 
-    expect(redisClient.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
+    expect(redisClient.multi).toHaveBeenCalled();
+    expect(multiMock.incr).toHaveBeenCalledWith('rate:GET:/health:127.0.0.1');
     expect(redisClient.expire).not.toHaveBeenCalled();
   });
 });

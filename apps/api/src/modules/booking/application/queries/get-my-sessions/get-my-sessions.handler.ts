@@ -2,7 +2,10 @@ import { IQueryHandler, QueryHandler } from '@nestjs/cqrs';
 import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
 import { GetMySessionsQuery } from './get-my-sessions.query';
 import { MySessionResultData } from './get-my-sessions.result';
-import { SessionStatus } from '../../../../../shared/domain/enums/enums';
+import {
+  SessionStatus,
+  AttendanceStatus,
+} from '../../../../../shared/domain/enums/enums';
 import {
   createQueryResult,
   QueryResult,
@@ -45,6 +48,10 @@ export class GetMySessionsHandler implements IQueryHandler<GetMySessionsQuery> {
             subject: true,
           },
         },
+        attendances: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+        },
       },
       orderBy: {
         startTime: 'asc',
@@ -71,6 +78,7 @@ export class GetMySessionsHandler implements IQueryHandler<GetMySessionsQuery> {
       return {
         id: session.id,
         bookingId: session.bookingId,
+        groupId: session.booking?.groupId ?? null,
         tutorRequestId: session.tutorRequestId,
         title: session.title ?? subjectName,
         startTime: session.startTime,
@@ -83,6 +91,17 @@ export class GetMySessionsHandler implements IQueryHandler<GetMySessionsQuery> {
         counterpartName,
         subjectName,
         subjectId,
+        attendance: session.attendances?.[0]
+          ? {
+              status: session.attendances[0].status as AttendanceStatus,
+              notes: session.attendances[0].notes,
+            }
+          : undefined,
+        proposedStartTime: session.proposedStartTime,
+        proposedEndTime: session.proposedEndTime,
+        proposedReason: session.proposedReason,
+        rescheduleRequestedBy: session.rescheduleRequestedBy,
+        isRescheduled: session.isRescheduled,
       };
     });
 

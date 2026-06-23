@@ -104,6 +104,9 @@ export const BookingResponseSchema = z
     price: z.number().nullable(),
     message: z.string().nullable(),
     createdAt: z.string().datetime(),
+    groupId: z.string(),
+    groupTotalSessions: z.number().optional(),
+    groupStartDate: z.string().datetime().optional(),
     student: z.object({
       id: z.string(),
       nickname: z.string().nullable(),
@@ -143,6 +146,9 @@ export class BookingResponseDto extends createZodDto(BookingResponseSchema) {
     dto.price = result.price;
     dto.message = result.message;
     dto.createdAt = result.createdAt.toISOString();
+    dto.groupId = result.groupId;
+    dto.groupTotalSessions = result.groupTotalSessions;
+    dto.groupStartDate = result.groupStartDate?.toISOString();
 
     dto.student = result.student;
     dto.tutor = result.tutor;

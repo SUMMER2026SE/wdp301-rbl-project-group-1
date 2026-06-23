@@ -1,0 +1,161 @@
+import { createZodDto } from 'nestjs-zod';
+import { z } from '../../../../shared/infrastructure/documentation/zod/zod';
+import { ApproveRescheduleSessionResult } from '../../application/commands/approve-reschedule-session/approve-reschedule-session.result';
+import { RescheduleSessionResult } from '../../application/commands/reschedule-session/reschedule-session.result';
+import { SessionStatus } from '../../../../shared/domain/enums/enums';
+
+export const RescheduleSessionSchema = z
+  .object({
+    proposedStartTime: z.string().datetime().meta({
+      example: '2026-06-15T09:00:00.000Z',
+      description: 'Requested new start time for the session',
+    }),
+    proposedEndTime: z.string().datetime().meta({
+      example: '2026-06-15T10:30:00.000Z',
+      description: 'Requested new end time for the session',
+    }),
+    proposedReason: z.string().optional().meta({
+      example: 'I have a university exam on the current date',
+      description: 'Reason for requesting the schedule change',
+    }),
+  })
+  .refine(
+    (value) =>
+      new Date(value.proposedStartTime) < new Date(value.proposedEndTime),
+    {
+      message: 'proposedEndTime must be after proposedStartTime',
+      path: ['proposedEndTime'],
+    },
+  )
+  .meta({ id: 'RescheduleSessionDto' });
+
+export class RescheduleSessionDto extends createZodDto(
+  RescheduleSessionSchema,
+) {}
+
+export const RescheduleSessionResponseSchema = z
+  .object({
+    sessionId: z.string().meta({
+      example: 'clxsession00000123456789',
+      description: 'Updated session ID',
+    }),
+    status: z
+      .enum([
+        'SCHEDULED',
+        'COMPLETED',
+        'CANCELLED',
+        'AWAITING_CONFIRMATION',
+        'RESCHEDULE_REQUESTED',
+      ])
+      .meta({
+        example: 'RESCHEDULE_REQUESTED',
+        description: 'Updated session status',
+      }),
+    proposedStartTime: z.string().datetime().nullable().meta({
+      example: '2026-06-15T09:00:00.000Z',
+      description: 'Persisted requested start time',
+    }),
+    proposedEndTime: z.string().datetime().nullable().meta({
+      example: '2026-06-15T10:30:00.000Z',
+      description: 'Persisted requested end time',
+    }),
+    proposedReason: z.string().nullable().meta({
+      example: 'I have a university exam on the current date',
+      description: 'Persisted reason for the schedule change request',
+    }),
+  })
+  .meta({ id: 'RescheduleSessionResponseDto' });
+
+export class RescheduleSessionResponseDto extends createZodDto(
+  RescheduleSessionResponseSchema,
+) {
+  static fromResult(
+    result: RescheduleSessionResult,
+  ): RescheduleSessionResponseDto {
+    const dto = new RescheduleSessionResponseDto();
+    dto.sessionId = result.sessionId;
+    dto.status = result.status;
+    dto.proposedStartTime = result.proposedStartTime;
+    dto.proposedEndTime = result.proposedEndTime;
+    dto.proposedReason = result.proposedReason;
+    return dto;
+  }
+}
+
+export const ApproveRescheduleSessionResponseSchema = z
+  .object({
+    sessionId: z.string().meta({
+      example: 'clxsession00000123456789',
+      description: 'Updated session ID',
+    }),
+    status: z.enum(['SCHEDULED']).meta({
+      example: 'SCHEDULED',
+      description: 'Session status after approving the reschedule request',
+    }),
+    startTime: z.string().datetime().meta({
+      example: '2026-06-15T09:00:00.000Z',
+      description: 'Approved session start time',
+    }),
+    endTime: z.string().datetime().meta({
+      example: '2026-06-15T10:30:00.000Z',
+      description: 'Approved session end time',
+    }),
+    proposedStartTime: z.string().datetime().nullable().meta({
+      example: null,
+      description: 'Cleared proposed start time after approval',
+    }),
+    proposedEndTime: z.string().datetime().nullable().meta({
+      example: null,
+      description: 'Cleared proposed end time after approval',
+    }),
+    proposedReason: z.string().nullable().meta({
+      example: null,
+      description: 'Cleared proposed reason after approval',
+    }),
+  })
+  .meta({ id: 'ApproveRescheduleSessionResponseDto' });
+
+export class ApproveRescheduleSessionResponseDto extends createZodDto(
+  ApproveRescheduleSessionResponseSchema,
+) {
+  static fromResult(
+    result: ApproveRescheduleSessionResult,
+  ): ApproveRescheduleSessionResponseDto {
+    const dto = new ApproveRescheduleSessionResponseDto();
+    dto.sessionId = result.sessionId;
+    dto.status = result.status as 'SCHEDULED';
+    dto.startTime = result.startTime;
+    dto.endTime = result.endTime;
+    dto.proposedStartTime = result.proposedStartTime;
+    dto.proposedEndTime = result.proposedEndTime;
+    dto.proposedReason = result.proposedReason;
+    return dto;
+  }
+}
+
+export const RejectRescheduleSessionResponseSchema = z
+  .object({
+    sessionId: z.string().meta({
+      example: 'clxsession00000123456789',
+      description: 'Updated session ID',
+    }),
+    status: z.enum(['SCHEDULED']).meta({
+      example: 'SCHEDULED',
+      description: 'Session status after rejecting the reschedule request',
+    }),
+  })
+  .meta({ id: 'RejectRescheduleSessionResponseDto' });
+
+export class RejectRescheduleSessionResponseDto extends createZodDto(
+  RejectRescheduleSessionResponseSchema,
+) {
+  static fromResult(result: {
+    sessionId: string;
+    status: SessionStatus;
+  }): RejectRescheduleSessionResponseDto {
+    const dto = new RejectRescheduleSessionResponseDto();
+    dto.sessionId = result.sessionId;
+    dto.status = result.status as 'SCHEDULED';
+    return dto;
+  }
+}

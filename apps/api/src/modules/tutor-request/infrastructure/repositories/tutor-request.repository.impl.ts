@@ -146,6 +146,12 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
         new Date(),
       );
 
+      const totalPrice = SessionGeneratorService.calculateBookingPrice(
+        acceptedBid.proposedPrice || request.budget || 0,
+        generatedSessions,
+        request.totalSessions || 1,
+      );
+
       // Create Booking
       const booking = await tx.booking.create({
         data: {
@@ -154,7 +160,7 @@ export class PrismaTutorRequestRepository implements ITutorRequestRepository {
           subjectId: request.subjectId,
           mode: request.mode,
           status: BookingStatus.AWAITING_PAYMENT,
-          price: acceptedBid.proposedPrice || request.budget || 0,
+          price: totalPrice,
           message: acceptedBid.message,
           totalSessions: request.totalSessions || 1,
           startDate:

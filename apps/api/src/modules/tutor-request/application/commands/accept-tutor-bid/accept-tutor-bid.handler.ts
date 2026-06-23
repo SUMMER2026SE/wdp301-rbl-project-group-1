@@ -6,6 +6,8 @@ import { EVENTS } from '../../../../../shared/application/constants/events.const
 import { ITutorRequestRepository } from '../../../domain/repositories/tutor-request.repository.interface';
 import { AcceptTutorBidCommand } from './accept-tutor-bid.command';
 import { AcceptTutorBidResult } from './accept-tutor-bid.result';
+import { EventBus } from '@nestjs/cqrs';
+import { BidAcceptedEvent } from '../../../domain/events/tutor-request-events';
 
 @CommandHandler(AcceptTutorBidCommand)
 export class AcceptTutorBidHandler
@@ -17,6 +19,7 @@ export class AcceptTutorBidHandler
     @Inject(ITutorRequestRepository)
     private readonly tutorRequestRepository: ITutorRequestRepository,
     @Inject(IMessageBroker) private readonly messageBroker: IMessageBroker,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: AcceptTutorBidCommand): Promise<AcceptTutorBidResult> {
@@ -39,7 +42,7 @@ export class AcceptTutorBidHandler
       context: { bidId: accepted.bid.id, requestId: accepted.bid.requestId },
     });
 
-    return new AcceptTutorBidResult(
+    const result = new AcceptTutorBidResult(
       accepted.bid.id,
       accepted.bid.requestId,
       accepted.bid.tutorId,
@@ -51,5 +54,16 @@ export class AcceptTutorBidHandler
       accepted.bid.updatedAt,
       accepted.bookingId,
     );
+
+    this.eventBus.publish(
+      new BidAcceptedEvent(
+        accepted.bid.id,
+        accepted.bid.requestId,
+        accepted.bid.tutorId,
+        command.studentId,
+      ),
+    );
+
+    return result;
   }
 }

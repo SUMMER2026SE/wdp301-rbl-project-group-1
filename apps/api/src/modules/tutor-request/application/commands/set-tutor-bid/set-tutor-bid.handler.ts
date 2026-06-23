@@ -4,6 +4,8 @@ import { ICommand } from '../../../../../shared/application/interfaces/use-case.
 import { ITutorRequestRepository } from '../../../domain/repositories/tutor-request.repository.interface';
 import { SetTutorBidCommand } from './set-tutor-bid.command';
 import { SetTutorBidResult } from './set-tutor-bid.result';
+import { EventBus } from '@nestjs/cqrs';
+import { BidPlacedEvent } from '../../../domain/events/tutor-request-events';
 
 @CommandHandler(SetTutorBidCommand)
 export class SetTutorBidHandler
@@ -14,6 +16,7 @@ export class SetTutorBidHandler
   constructor(
     @Inject(ITutorRequestRepository)
     private readonly tutorRequestRepository: ITutorRequestRepository,
+    private readonly eventBus: EventBus,
   ) {}
 
   async execute(command: SetTutorBidCommand): Promise<SetTutorBidResult> {
@@ -34,7 +37,7 @@ export class SetTutorBidHandler
       message: command.message,
     });
 
-    return new SetTutorBidResult(
+    const result = new SetTutorBidResult(
       bid.id,
       bid.requestId,
       bid.tutorId,
@@ -44,5 +47,17 @@ export class SetTutorBidHandler
       bid.createdAt,
       bid.updatedAt,
     );
+
+    this.eventBus.publish(
+      new BidPlacedEvent(
+        bid.id,
+        bid.requestId,
+        bid.tutorId,
+        request.studentId,
+        bid.message ?? '',
+      ),
+    );
+
+    return result;
   }
 }

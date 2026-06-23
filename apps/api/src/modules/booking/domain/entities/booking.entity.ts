@@ -43,6 +43,9 @@ export type BookingProps = {
   message: string | null;
   price: number | null;
   paymentStatus: PaymentStatus;
+  groupId: string;
+  groupTotalSessions?: number;
+  groupStartDate?: Date;
   createdAt: Date;
   updatedAt: Date;
   student?: BookingStudentInfo;
@@ -66,6 +69,9 @@ export class Booking {
   readonly message: string | null;
   readonly price: number | null;
   readonly paymentStatus: PaymentStatus;
+  readonly groupId: string;
+  readonly groupTotalSessions?: number;
+  readonly groupStartDate?: Date;
   readonly createdAt: Date;
   updatedAt: Date;
   readonly student?: BookingStudentInfo;
@@ -88,6 +94,9 @@ export class Booking {
     this.message = props.message;
     this.price = props.price;
     this.paymentStatus = props.paymentStatus;
+    this.groupId = props.groupId;
+    this.groupTotalSessions = props.groupTotalSessions;
+    this.groupStartDate = props.groupStartDate;
     this.createdAt = props.createdAt;
     this.updatedAt = props.updatedAt;
     this.student = props.student;

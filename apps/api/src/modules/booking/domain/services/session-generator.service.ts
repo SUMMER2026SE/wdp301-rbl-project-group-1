@@ -85,4 +85,32 @@ export class SessionGeneratorService {
 
     return sessions;
   }
+
+  /**
+   * Calculate total booking price based on generated sessions.
+   * Total Price = Hourly Rate * Total Duration (in hours)
+   * Falls back to assuming 1 hour per session if no sessions are generated.
+   */
+  static calculateBookingPrice(
+    hourlyRate: number,
+    generatedSessions: GeneratedSession[],
+    totalSessions: number,
+  ): number {
+    if (generatedSessions.length > 0) {
+      let totalDurationMs = 0;
+      for (const session of generatedSessions) {
+        totalDurationMs +=
+          session.endTime.getTime() - session.startTime.getTime();
+      }
+
+      const totalDurationHours = totalDurationMs / (1000 * 60 * 60);
+
+      if (totalDurationHours > 0) {
+        return hourlyRate * totalDurationHours;
+      }
+    }
+
+    // Fallback: assume 1 hour per session
+    return hourlyRate * Math.max(1, totalSessions);
+  }
 }

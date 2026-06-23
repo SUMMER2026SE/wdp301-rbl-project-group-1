@@ -16,7 +16,11 @@ export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery>
     const booking = await this.bookingRepository.findById(query.id);
 
     // Make sure booking belongs to user
-    if (booking && booking.studentId !== query.userId && booking.tutorId !== query.userId) {
+    if (
+      booking &&
+      booking.studentId !== query.userId &&
+      booking.tutorId !== query.userId
+    ) {
       throw new NotFoundException(`Booking with id ${query.id} not found`);
     }
 
@@ -34,6 +38,9 @@ export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery>
       price: booking.price,
       message: booking.message,
       createdAt: booking.createdAt,
+      groupId: booking.groupId,
+      groupTotalSessions: booking.groupTotalSessions,
+      groupStartDate: booking.groupStartDate,
       student: {
         id: booking.student?.id || '',
         nickname: booking.student?.nickname ?? null,
@@ -51,11 +58,12 @@ export class GetBookingByIdHandler implements IQueryHandler<GetBookingByIdQuery>
             slug: booking.subject.slug,
           }
         : null,
-      scheduleRules: booking.scheduleRules?.map((rule) => ({
-        dayOfWeek: rule.dayOfWeek,
-        startTime: rule.startTime,
-        endTime: rule.endTime,
-      })) || [],
+      scheduleRules:
+        booking.scheduleRules?.map((rule) => ({
+          dayOfWeek: rule.dayOfWeek,
+          startTime: rule.startTime,
+          endTime: rule.endTime,
+        })) || [],
     };
   }
 }

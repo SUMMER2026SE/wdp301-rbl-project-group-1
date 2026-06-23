@@ -51,6 +51,10 @@ export enum BidStatus {
 export enum NotificationType {
   SYSTEM = 'SYSTEM',
   FORUM = 'FORUM',
+  BOOKING = 'BOOKING',
+  CHAT = 'CHAT',
+  PAYMENT = 'PAYMENT',
+  REVIEW = 'REVIEW',
 }
 
 export enum ReportStatus {
@@ -79,6 +83,15 @@ export enum SessionStatus {
   SCHEDULED = 'SCHEDULED',
   COMPLETED = 'COMPLETED',
   CANCELLED = 'CANCELLED',
+  AWAITING_CONFIRMATION = 'AWAITING_CONFIRMATION',
+  RESCHEDULE_REQUESTED = 'RESCHEDULE_REQUESTED',
+}
+
+export enum DisputeStatus {
+  OPEN = 'OPEN',
+  IN_REVIEW = 'IN_REVIEW',
+  RESOLVED_REFUNDED = 'RESOLVED_REFUNDED',
+  RESOLVED_REJECTED = 'RESOLVED_REJECTED',
 }
 
 export enum AttendanceStatus {
@@ -86,4 +99,21 @@ export enum AttendanceStatus {
   ABSENT = 'ABSENT',
   LATE = 'LATE',
   EXCUSED = 'EXCUSED',
+}
+
+export enum MessageType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+  FILE = 'FILE',
+  SYSTEM = 'SYSTEM',
+}
+
+export enum ConversationType {
+  DIRECT = 'DIRECT',
+  GROUP = 'GROUP',
+}
+
+export enum ParticipantRole {
+  MEMBER = 'MEMBER',
+  ADMIN = 'ADMIN',
 }

@@ -6,9 +6,7 @@ import { IAiRecommendationService } from './domain/services/ai-recommendation.se
 import { HttpAiRecommendationService } from './infrastructure/services/http-ai-recommendation.service';
 import { RecommendationController } from './presentation/controllers/recommendation.controller';
 
-const QueryHandlers = [
-  GetRecommendedTutorsHandler,
-];
+const QueryHandlers = [GetRecommendedTutorsHandler];
 
 @Module({
   imports: [

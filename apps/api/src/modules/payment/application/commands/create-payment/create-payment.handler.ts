@@ -4,11 +4,16 @@ import { CreatePaymentCommand } from './create-payment.command';
 import { IPaymentRepository } from '../../../domain/repositories/payment.repository.interface';
 import { IPaymentGateway } from '../../../domain/gateways/payment.gateway.interface';
 import { PaymentEntity } from '../../../domain/entities/payment.entity';
-import { PaymentStatus } from 'src/shared/domain/enums/enums';
+import {
+  PaymentReferenceType,
+  PaymentStatus,
+  BookingStatus,
+} from 'src/shared/domain/enums/enums';
 import { CreatePaymentResult } from './create-payment.result';
-import { BadRequestException } from '@nestjs/common';
+import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { PrismaService } from '../../../../../shared/infrastructure/database/prisma/prisma.service';
 
-const ALLOWED_DOMAINS = ['localhost:3000', 'app.edura.com'];
+const ALLOWED_DOMAINS = ['localhost:3000', 'app.edura.com', 'edura-web-sigma.vercel.app'];
 
 @CommandHandler(CreatePaymentCommand)
 export class CreatePaymentHandler implements ICommandHandler<CreatePaymentCommand> {
@@ -17,6 +22,7 @@ export class CreatePaymentHandler implements ICommandHandler<CreatePaymentComman
     private readonly paymentRepository: IPaymentRepository,
     @Inject(IPaymentGateway)
     private readonly paymentGateway: IPaymentGateway,
+    private readonly prisma: PrismaService,
   ) {}
 
   private validateUrl(url: string): void {
@@ -36,13 +42,38 @@ export class CreatePaymentHandler implements ICommandHandler<CreatePaymentComman
   async execute(command: CreatePaymentCommand): Promise<CreatePaymentResult> {
     this.validateUrl(command.returnUrl);
     this.validateUrl(command.cancelUrl);
+    let finalAmount = command.amount;
+
+    if (command.referenceType === PaymentReferenceType.TUTOR_BOOKING) {
+      const booking = await this.prisma.booking.findUnique({
+        where: { id: command.referenceId },
+        select: { price: true, status: true },
+      });
+
+      if (!booking) {
+        throw new NotFoundException(
+          `Booking with id ${command.referenceId} not found`,
+        );
+      }
+
+      if (
+        (booking.status as string) !==
+        (BookingStatus.AWAITING_PAYMENT as string)
+      ) {
+        throw new BadRequestException(
+          `Booking ${command.referenceId} is not awaiting payment. Current status: ${booking.status}`,
+        );
+      }
+
+      finalAmount = booking.price ?? 0;
+    }
 
     const payment = new PaymentEntity(
       '',
       command.payerUserId,
       command.referenceType,
       command.referenceId,
-      command.amount,
+      finalAmount,
       PaymentStatus.PENDING,
       0,
       null,

@@ -11,7 +11,7 @@ export class PrismaService
 {
   constructor(private configService: ConfigService) {
     const connectionString = configService.get<string>('prisma.url');
-    const pool = new Pool({ 
+    const pool = new Pool({
       connectionString,
       max: 20,
     });
@@ -19,12 +19,12 @@ export class PrismaService
       pool as unknown as ConstructorParameters<typeof PrismaPg>[0],
     );
 
-    super({ 
+    super({
       adapter,
       transactionOptions: {
         maxWait: 15000,
         timeout: 30000,
-      }
+      },
     });
   }
 

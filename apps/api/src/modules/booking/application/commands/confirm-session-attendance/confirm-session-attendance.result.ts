@@ -1,4 +1,4 @@
-export class MarkSessionAttendanceResult {
+export class ConfirmSessionAttendanceResult {
   constructor(
     public readonly id: string,
     public readonly sessionId: string,
