@@ -85,6 +85,7 @@ export default function CourseGrid({ filter }: CourseGridProps) {
                   {booking.scheduleRules.length > 0
                     ? `${booking.scheduleRules.length} buổi / tuần`
                     : "Lịch tự do"}
+                  {(booking.groupTotalSessions || 0) > 0 && ` • Tổng ${booking.groupTotalSessions} buổi`}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-slate-600 dark:text-slate-400 text-sm">

@@ -10,6 +10,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.createTutorRequestDto,
       }),
+      invalidatesTags: [{ type: "TutorRequest", id: "LIST" }],
     }),
     getTutorRequests: build.query<
       GetTutorRequestsApiResponse,
@@ -30,12 +31,14 @@ const injectedRtkApi = api.injectEndpoints({
           status: queryArg.status,
         },
       }),
+      providesTags: [{ type: "TutorRequest", id: "LIST" }],
     }),
     getTutorRequest: build.query<
       GetTutorRequestApiResponse,
       GetTutorRequestApiArg
     >({
       query: (queryArg) => ({ url: `/api/tutor-requests/${queryArg.id}` }),
+      providesTags: (_result, _error, arg) => [{ type: "TutorRequest", id: arg.id }],
     }),
     setTutorBid: build.mutation<SetTutorBidApiResponse, SetTutorBidApiArg>({
       query: (queryArg) => ({
@@ -52,6 +55,11 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/tutor-requests/${queryArg.requestId}/bids/${queryArg.bidId}/accept`,
         method: "PATCH",
       }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "TutorRequest", id: "LIST" },
+        { type: "TutorRequest", id: arg.requestId },
+        { type: "Booking", id: "LIST" },
+      ],
     }),
   }),
   overrideExisting: false,

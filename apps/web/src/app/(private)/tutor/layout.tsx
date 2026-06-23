@@ -27,6 +27,7 @@ export default function TutorLayout({
       href: "/tutor/requests",
     },
     { key: "earnings", trigger: "Thu nhập", href: "/tutor/earnings" },
+    { key: "chat", trigger: "Trò chuyện", href: "/tutor/chat" },
   ];
 
   return (

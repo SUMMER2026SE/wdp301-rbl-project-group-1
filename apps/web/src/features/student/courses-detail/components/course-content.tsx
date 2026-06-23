@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -6,11 +7,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/src/shared/components/ui/accordion";
-import { Course } from "../../types";
 import { LessonItem } from "./lesson-item";
 
 interface CourseContentProps {
-  course: Course;
+  course: any;
 }
 
 export function CourseContent({ course }: CourseContentProps) {
@@ -18,7 +18,7 @@ export function CourseContent({ course }: CourseContentProps) {
     <div className="flex flex-col gap-6">
       <h2 className="text-2xl font-bold text-foreground">Nội dung khóa học</h2>
       <Accordion type="multiple" className="w-full space-y-4">
-        {course.chapters.map((chapter) => (
+        {course?.chapters?.map((chapter: any) => (
           <AccordionItem
             key={chapter.id}
             value={chapter.id}
@@ -37,12 +37,12 @@ export function CourseContent({ course }: CourseContentProps) {
 
               {/* RIGHT → đẩy sát chevron */}
               <span className="ml-auto text-sm text-muted-foreground">
-                {chapter.lessons.length} Bài học
+                {chapter.lessons?.length || 0} Bài học
               </span>
             </AccordionTrigger>
             <AccordionContent className="p-0 border-t border-border bg-card">
-              {chapter.lessons.length > 0 ? (
-                chapter.lessons.map((lesson, idx) => (
+              {chapter.lessons && chapter.lessons.length > 0 ? (
+                chapter.lessons.map((lesson: any, idx: number) => (
                   <LessonItem key={lesson.id} lesson={lesson} index={idx} />
                 ))
               ) : (

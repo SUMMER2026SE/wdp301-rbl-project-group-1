@@ -10,5 +10,5 @@ export const STUDENT_NAV_LINKS = [
   { key: "tutors", trigger: "Tìm gia sư", href: "/student/tutors" },
   { key: "resources", trigger: "Tài liệu", href: "/student/resources" },
   { key: "requests", trigger: "Yêu cầu của tôi", href: "/student/requests" },
-  { key: "messages", trigger: "Tin nhắn", href: "/student/messages" },
+  { key: "chat", trigger: "Tin nhắn", href: "/student/chat" },
 ];

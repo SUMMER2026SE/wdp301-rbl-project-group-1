@@ -11,11 +11,16 @@ const injectedRtkApi = api.injectEndpoints({
           mode: queryArg.mode,
         },
       }),
+      providesTags: [{ type: "Booking", id: "LIST" }],
     }),
-    getBookingById: build.query<GetBookingByIdApiResponse, GetBookingByIdApiArg>({
+    getBookingById: build.query<
+      GetBookingByIdApiResponse,
+      GetBookingByIdApiArg
+    >({
       query: (queryArg) => ({
         url: `/api/bookings/${queryArg.id}`,
       }),
+      providesTags: (_result, _error, arg) => [{ type: "Booking", id: arg.id }],
     }),
     createDirectBooking: build.mutation<
       CreateDirectBookingApiResponse,
@@ -26,6 +31,7 @@ const injectedRtkApi = api.injectEndpoints({
         method: "POST",
         body: queryArg.createDirectBookingDto,
       }),
+      invalidatesTags: [{ type: "Booking", id: "LIST" }],
     }),
     acceptBooking: build.mutation<
       AcceptBookingApiResponse,
@@ -35,6 +41,10 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/bookings/${queryArg.id}/accept`,
         method: "PATCH",
       }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Booking", id: "LIST" },
+        { type: "Booking", id: arg.id },
+      ],
     }),
     rejectBooking: build.mutation<
       RejectBookingApiResponse,
@@ -44,16 +54,32 @@ const injectedRtkApi = api.injectEndpoints({
         url: `/api/bookings/${queryArg.id}/reject`,
         method: "PATCH",
       }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Booking", id: "LIST" },
+        { type: "Booking", id: arg.id },
+      ],
     }),
     markSessionAttendance: build.mutation<
       MarkSessionAttendanceApiResponse,
       MarkSessionAttendanceApiArg
     >({
       query: (queryArg) => ({
-        url: `/api/bookings/sessions/${queryArg.sessionId}/attendance`,
+        url: `/api/bookings/sessions/${queryArg.sessionId}/confirm`,
         method: "PATCH",
         body: queryArg.markSessionAttendanceDto,
       }),
+      invalidatesTags: ["Session"],
+    }),
+    takeAttendance: build.mutation<TakeAttendanceApiResponse, TakeAttendanceApiArg>({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/attendance`,
+        method: "POST",
+        body: queryArg.takeAttendanceDto,
+      }),
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Booking", id: arg.bookingId },
+        "Session"
+      ],
     }),
     getMySessions: build.query<GetMySessionsApiResponse, GetMySessionsApiArg>({
       query: (queryArg) => ({
@@ -63,8 +89,12 @@ const injectedRtkApi = api.injectEndpoints({
           endDate: queryArg.endDate,
         },
       }),
+      providesTags: ["Session"],
     }),
-    getTutorPublicSessions: build.query<GetMySessionsApiResponse, GetTutorPublicSessionsApiArg>({
+    getTutorPublicSessions: build.query<
+      GetMySessionsApiResponse,
+      GetTutorPublicSessionsApiArg
+    >({
       query: (queryArg) => ({
         url: `/api/bookings/sessions/tutor/${queryArg.tutorId}`,
         params: {
@@ -72,9 +102,61 @@ const injectedRtkApi = api.injectEndpoints({
           endDate: queryArg.endDate,
         },
       }),
+      providesTags: ["Session"],
+    }),
+    createBookingReview: build.mutation<
+      CreateBookingReviewApiResponse,
+      CreateBookingReviewApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/${queryArg.bookingId}/reviews`,
+        method: "POST",
+        body: queryArg.createReviewDto,
+      }),
+    }),
+    renewBooking: build.mutation<
+      RenewBookingApiResponse,
+      RenewBookingApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/${queryArg.id}/renew`,
+        method: "POST",
+        body: queryArg.renewBookingDto,
+      }),
+    }),
+    rescheduleSession: build.mutation<
+      RescheduleSessionApiResponse,
+      RescheduleSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/reschedule`,
+        method: "PATCH",
+        body: queryArg.rescheduleSessionDto,
+      }),
+      invalidatesTags: ["Session"],
+    }),
+    approveRescheduleSession: build.mutation<
+      ApproveRescheduleSessionApiResponse,
+      ApproveRescheduleSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/reschedule/approve`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Session"],
+    }),
+    rejectRescheduleSession: build.mutation<
+      RejectRescheduleSessionApiResponse,
+      RejectRescheduleSessionApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/api/bookings/sessions/${queryArg.sessionId}/reschedule/reject`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Session"],
     }),
   }),
-  overrideExisting: false,
+  overrideExisting: true,
 });
 export { injectedRtkApi as bookingApi };
 
@@ -104,6 +186,15 @@ export type RejectBookingApiResponse =
   };
 export type RejectBookingApiArg = {
   id: string;
+};
+export type CreateBookingReviewApiResponse = {
+  success: boolean;
+  message: string;
+  data: CreateReviewResponseDto;
+};
+export type CreateBookingReviewApiArg = {
+  bookingId: string;
+  createReviewDto: CreateReviewDto;
 };
 
 export type ScheduleRuleDto = {
@@ -137,7 +228,12 @@ export type CreateDirectBookingResponseDto = {
   tutorId: string;
   subjectId: string | null;
   mode: "ONLINE" | "AT_HOME";
-  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
   message: string | null;
   createdAt: string;
 };
@@ -146,7 +242,12 @@ export type BookingStatusUpdateResponseDto = {
   /** Booking ID */
   bookingId: string;
   /** Updated booking status */
-  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
 };
 export type GetBookingsApiResponse = {
   success: boolean;
@@ -163,7 +264,12 @@ export type GetBookingsApiResponse = {
 export type GetBookingsApiArg = {
   page?: number;
   limit?: number;
-  status?: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status?:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
   mode?: "ONLINE" | "AT_HOME";
 };
 
@@ -183,10 +289,18 @@ export type BookingResponseDto = {
   tutorId: string;
   subjectId: string | null;
   mode: "ONLINE" | "AT_HOME";
-  status: "PENDING" | "AWAITING_PAYMENT" | "CONFIRMED" | "COMPLETED" | "CANCELLED";
+  status:
+    | "PENDING"
+    | "AWAITING_PAYMENT"
+    | "CONFIRMED"
+    | "COMPLETED"
+    | "CANCELLED";
   price: number | null;
   message: string | null;
   createdAt: string;
+  groupId: string;
+  groupTotalSessions?: number;
+  groupStartDate?: string;
   student: {
     id: string;
     nickname: string | null;
@@ -206,8 +320,6 @@ export type BookingResponseDto = {
 };
 
 export type MarkSessionAttendanceDto = {
-  studentId: string;
-  status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
   notes?: string;
 };
 
@@ -231,15 +343,43 @@ export type MarkSessionAttendanceApiArg = {
   markSessionAttendanceDto: MarkSessionAttendanceDto;
 };
 
+export type TakeAttendanceDto = {
+  status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
+  notes?: string;
+};
+
+export type TakeAttendanceResponseDto = {
+  id: string;
+  sessionId: string;
+  studentId: string;
+  status: string;
+  notes: string | null;
+  sessionStatus: string;
+  createdAt: string;
+};
+
+export type TakeAttendanceApiResponse = {
+  success: boolean;
+  message: string;
+  data: TakeAttendanceResponseDto;
+};
+
+export type TakeAttendanceApiArg = {
+  sessionId: string;
+  bookingId: string;
+  takeAttendanceDto: TakeAttendanceDto;
+};
+
 export type GetMySessionsApiResponse = {
   data: {
     id: string;
     bookingId: string | null;
+    groupId?: string | null;
     tutorRequestId: string | null;
     title: string | null;
     startTime: string;
     endTime: string;
-    status: "SCHEDULED" | "COMPLETED" | "CANCELLED";
+    status: "SCHEDULED" | "COMPLETED" | "CANCELLED" | "AWAITING_CONFIRMATION" | "RESCHEDULE_REQUESTED";
     meetingUrl: string | null;
     notes: string | null;
     order: number | null;
@@ -247,6 +387,15 @@ export type GetMySessionsApiResponse = {
     counterpartName: string;
     subjectName: string;
     subjectId: string;
+    proposedStartTime?: string | null;
+    proposedEndTime?: string | null;
+    proposedReason?: string | null;
+    rescheduleRequestedBy?: string | null;
+    isRescheduled: boolean;
+    attendance?: {
+      status: "PRESENT" | "ABSENT" | "LATE" | "EXCUSED";
+      notes: string | null;
+    };
   }[];
   meta: {
     total: number;
@@ -267,6 +416,21 @@ export type GetTutorPublicSessionsApiArg = {
   endDate?: string;
 };
 
+export type CreateReviewResponseDto = {
+  id: string;
+  bookingId: string;
+  tutorId: string;
+  studentId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+};
+
+export type CreateReviewDto = {
+  rating: number;
+  comment?: string | null;
+};
+
 export const {
   useGetBookingsQuery,
   useGetBookingByIdQuery,
@@ -274,6 +438,97 @@ export const {
   useAcceptBookingMutation,
   useRejectBookingMutation,
   useMarkSessionAttendanceMutation,
+  useTakeAttendanceMutation,
   useGetMySessionsQuery,
   useGetTutorPublicSessionsQuery,
+  useCreateBookingReviewMutation,
+  useRenewBookingMutation,
+  useRescheduleSessionMutation,
+  useApproveRescheduleSessionMutation,
+  useRejectRescheduleSessionMutation,
 } = injectedRtkApi;
+
+export type RenewBookingDto = {
+  totalSessions: number;
+  message?: string;
+  scheduleRules?: ScheduleRuleDto[];
+};
+
+export type RenewBookingResponseDto = {
+  id: string;
+  studentId: string;
+  tutorId: string;
+  message: string;
+  totalSessions: number;
+};
+
+export type RenewBookingApiResponse = {
+  success: boolean;
+  message: string;
+  data: RenewBookingResponseDto;
+};
+
+export type RenewBookingApiArg = {
+  id: string;
+  renewBookingDto: RenewBookingDto;
+};
+
+export type RescheduleSessionDto = {
+  proposedStartTime: string;
+  proposedEndTime: string;
+  proposedReason?: string;
+};
+
+export type RescheduleSessionResponseDto = {
+  sessionId: string;
+  status: "RESCHEDULE_REQUESTED";
+  proposedStartTime: string;
+  proposedEndTime: string;
+  proposedReason: string | null;
+};
+
+export type RescheduleSessionApiResponse = {
+  success: boolean;
+  message: string;
+  data: RescheduleSessionResponseDto;
+};
+
+export type RescheduleSessionApiArg = {
+  sessionId: string;
+  rescheduleSessionDto: RescheduleSessionDto;
+};
+
+export type ApproveRescheduleSessionResponseDto = {
+  sessionId: string;
+  status: "SCHEDULED";
+  startTime: string;
+  endTime: string;
+  proposedStartTime: string | null;
+  proposedEndTime: string | null;
+  proposedReason: string | null;
+};
+
+export type ApproveRescheduleSessionApiResponse = {
+  success: boolean;
+  message: string;
+  data: ApproveRescheduleSessionResponseDto;
+};
+
+export type ApproveRescheduleSessionApiArg = {
+  sessionId: string;
+};
+
+export type RejectRescheduleSessionResponseDto = {
+  sessionId: string;
+  status: "SCHEDULED";
+};
+
+export type RejectRescheduleSessionApiResponse = {
+  success: boolean;
+  message: string;
+  data: RejectRescheduleSessionResponseDto;
+};
+
+export type RejectRescheduleSessionApiArg = {
+  sessionId: string;
+};

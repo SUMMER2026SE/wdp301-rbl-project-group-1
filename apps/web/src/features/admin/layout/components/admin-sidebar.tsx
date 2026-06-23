@@ -19,21 +19,56 @@ import {
   ScrollText,
   ShieldCheck,
   UserCheck,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useLogoutMutation } from "@/src/features/auth/authApi";
+import { clearAuth } from "@/src/features/auth/authSlice";
+import { useDispatch } from "react-redux";
+import { toast } from "sonner";
+import { baseApi } from "@/src/shared/store/baseApi";
 
 export const ADMIN_NAV_LINKS = [
   { label: "Tổng quan", href: "/admin", icon: Home },
-  { label: "Phê duyệt Gia sư", href: "/admin/tutor-approvals", icon: UserCheck },
+  { label: "Quản lý Người dùng", href: "/admin/users", icon: Users },
+  {
+    label: "Phê duyệt Gia sư",
+    href: "/admin/tutor-approvals",
+    icon: UserCheck,
+  },
   { label: "Quản lý Khóa học", href: "/admin/courses", icon: BookOpen },
-  { label: "Kiểm duyệt Nội dung", href: "/admin/moderation", icon: ShieldCheck },
-  { label: "Giao dịch & Rút tiền", href: "/admin/transactions", icon: CircleDollarSign },
+  {
+    label: "Kiểm duyệt Nội dung",
+    href: "/admin/moderation",
+    icon: ShieldCheck,
+  },
+  {
+    label: "Giao dịch & Rút tiền",
+    href: "/admin/transactions",
+    icon: CircleDollarSign,
+  },
+  { label: "Quản lý Đánh giá", href: "/admin/reviews", icon: ShieldCheck },
   { label: "Báo cáo & Khiếu nại", href: "/admin/reports", icon: FileWarning },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const dispatch = useDispatch();
+  const [logout] = useLogoutMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      dispatch(clearAuth());
+      dispatch(baseApi.util.resetApiState());
+      toast.success("Đăng xuất thành công");
+      router.push("/login");
+    } catch {
+      toast.error("Đăng xuất thất bại. Vui lòng thử lại.");
+    }
+  };
 
   return (
     <Sidebar collapsible="offcanvas">
@@ -82,11 +117,12 @@ export function AdminSidebar() {
       <SidebarFooter className="p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="h-10 gap-3 rounded-lg px-3">
-              <Link href="/login">
-                <LogOut className="size-5" />
-                <span>Đăng xuất</span>
-              </Link>
+            <SidebarMenuButton
+              className="h-10 gap-3 rounded-lg px-3 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <LogOut className="size-5" />
+              <span>Đăng xuất</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

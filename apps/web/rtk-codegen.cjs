@@ -44,9 +44,13 @@ const config = {
     //   filterEndpoints: (_, { path }) => path.startsWith("/api/schedule-availability"),
     //   exportName: "scheduleAvailabilityApi",
     // }
-    "./src/features/tutor-request/tutorRequestApi.ts": {
-      filterEndpoints: (_, { path }) => path.startsWith("/api/tutor-requests"),
-      exportName: "tutorRequestApi",
+    // "./src/features/tutor-request/tutorRequestApi.ts": {
+    //   filterEndpoints: (_, { path }) => path.startsWith("/api/tutor-requests"),
+    //   exportName: "tutorRequestApi",
+    // },
+    "./src/features/recommendation/recommendationApi.ts": {
+      filterEndpoints: (_, { path }) => path.startsWith("/api/recommendations"),
+      exportName: "recommendationApi",
     },
   },
 

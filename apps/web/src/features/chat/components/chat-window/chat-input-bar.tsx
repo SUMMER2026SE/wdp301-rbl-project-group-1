@@ -5,12 +5,16 @@ import { Textarea } from "@/src/shared/components/ui/textarea";
 import { Plus, Send, Smile } from "lucide-react";
 import { useState } from "react";
 
-export function ChatInputBar() {
+interface ChatInputBarProps {
+  onSendMessage: (content: string) => void;
+}
+
+export function ChatInputBar({ onSendMessage }: ChatInputBarProps) {
   const [value, setValue] = useState("");
 
   const handleSend = () => {
     if (!value.trim()) return;
-    // TODO: integrate with chat API after backend is ready
+    onSendMessage(value.trim());
     setValue("");
   };
 

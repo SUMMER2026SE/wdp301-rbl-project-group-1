@@ -1,10 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { FileText, Download } from "lucide-react"
 import { Card, CardContent } from "@/src/shared/components/ui/card"
 
-import { Document } from "../../tutoring-types"
-
 interface RelatedDocumentsProps {
-    documents: Document[]
+    documents: any[]
 }
 
 export function RelatedDocuments({ documents }: RelatedDocumentsProps) {

@@ -10,6 +10,7 @@ import { useGetAllSubjectsQuery, useGetAllGradesQuery } from "@/src/features/aca
 import { filterSchema, type FilterFormData } from "../schemas/filter.schema";
 import { useGetTutorsQuery } from "../tutorEnhance";
 import { mapTutorResponseToTutor } from "../utils/map-tutor";
+import { RecommendedTutors } from "./recommended-tutors";
 import { SearchBar } from "./search-bar";
 import { TutorGrid } from "./tutor-grid";
 
@@ -96,6 +97,8 @@ export function TutorListContainer() {
       />
 
       <main className="w-full max-w-[1440px] mx-auto px-4 md:px-10 py-8">
+        <RecommendedTutors />
+        
         <div className="flex flex-col lg:flex-row gap-8">
           <FilterSidebar
             subjects={{

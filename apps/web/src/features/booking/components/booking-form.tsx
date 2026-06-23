@@ -16,8 +16,13 @@ import { Textarea } from "@/src/shared/components/ui/textarea";
 import { Button } from "@/src/shared/components/ui/button";
 import { DialogClose } from "@/src/shared/components/ui/dialog";
 import { toast } from "sonner";
-import { useCreateDirectBookingMutation } from "../bookingApi";
+import {
+  useCreateDirectBookingMutation,
+  useGetMySessionsQuery,
+  useGetTutorPublicSessionsQuery,
+} from "../bookingApi";
 import { useGetAllSubjectsQuery, useGetAllGradesQuery } from "@/src/features/academic-catalog/academicCatalogApi";
+import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
 import { useGetScheduleAvailabilityQuery } from "@/src/features/schedule/scheduleAvailabilityApi";
 import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
 
@@ -180,6 +185,44 @@ export function BookingForm({
   const studentSlots = useMemo(() => {
     return mapApiToSlots(scheduleResponse?.data?.availability || []);
   }, [scheduleResponse]);
+
+  // Fetch sessions for displaying on the calendar
+  const { data: mySessions } = useGetMySessionsQuery({});
+  const { data: tutorSessions } = useGetTutorPublicSessionsQuery({ tutorId }, { skip: !tutorId });
+
+  const mergedClasses = useMemo(() => {
+    const studentClasses = mySessions?.data
+      ? mapSessionsToScheduleClasses(
+          mySessions.data.filter((s) => !s.isRescheduled)
+        ).map((c) => ({
+          ...c,
+          name: `[Bạn] ${c.name}`,
+        }))
+      : [];
+
+    const studentClassIds = new Set(studentClasses.map((c) => c.id));
+
+    const tutorClassesList = tutorSessions?.data
+      ? mapSessionsToScheduleClasses(
+          tutorSessions.data.filter((s) => !s.isRescheduled)
+        )
+          .filter((c) => !studentClassIds.has(c.id))
+          .map((c) => ({
+            ...c,
+            name: `[Gia sư] ${c.name}`,
+          }))
+      : [];
+
+    const finalStudentClasses = studentClasses.map((c) => {
+      const isShared = tutorSessions?.data?.some((ts) => ts.id === c.id);
+      if (isShared) {
+        return { ...c, name: c.name.replace("[Bạn]", "[Chung]") };
+      }
+      return c;
+    });
+
+    return [...finalStudentClasses, ...tutorClassesList];
+  }, [mySessions, tutorSessions]);
 
   // Compute intersected slots between tutor and student
   const intersectedSlots = useMemo(() => {
@@ -358,7 +401,7 @@ export function BookingForm({
                           setSelectedSlots(slots);
                           field.onChange(slots);
                         }}
-                        classes={[]}
+                        classes={mergedClasses}
                         selectedFilter="all"
                       />
                     </FormFieldWrapper>

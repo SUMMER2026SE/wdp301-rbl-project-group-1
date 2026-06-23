@@ -65,8 +65,8 @@ export function OnlineClassInfo({
 
           {isOnline && (
             <Button
-              variant="secondary"
-              className="w-full gap-2 font-bold h-11 rounded-lg bg-secondary text-secondary-foreground border-border border text-sm transition-all active:scale-[0.96]"
+              variant={meetLink ? "default" : "secondary"}
+              className={`w-full gap-2 font-bold h-11 rounded-lg border text-sm transition-all active:scale-[0.96] ${meetLink ? 'bg-primary text-primary-foreground hover:bg-primary/90 border-transparent shadow-sm' : 'bg-secondary text-secondary-foreground border-border'}`}
               asChild
               disabled={!meetLink}
             >
@@ -77,7 +77,7 @@ export function OnlineClassInfo({
                 onClick={(e) => !meetLink && e.preventDefault()}
               >
                 <ExternalLink className="size-4" strokeWidth={2.5} />
-                {meetLink ? "Vào lớp Meet" : "Liên kết Meet sẽ hiển thị khi đến giờ"}
+                {meetLink ? "Vào phòng học trực tuyến (Meet)" : "Phòng học đang được khởi tạo..."}
               </a>
             </Button>
           )}

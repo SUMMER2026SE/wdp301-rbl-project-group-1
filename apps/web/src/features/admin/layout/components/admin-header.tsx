@@ -6,7 +6,10 @@ import { SidebarTrigger } from "@/src/shared/components/ui/sidebar";
 import { Bell, ShieldCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-const ADMIN_PAGE_TITLES: Record<string, { title: string; description: string }> = {
+const ADMIN_PAGE_TITLES: Record<
+  string,
+  { title: string; description: string }
+> = {
   "/admin": {
     title: "Bảng điều khiển Admin Tổng lực",
     description: "Theo dõi phê duyệt, giao dịch và vận hành trung tâm",
@@ -18,6 +21,10 @@ const ADMIN_PAGE_TITLES: Record<string, { title: string; description: string }> 
   "/admin/reports": {
     title: "Quản lý Báo cáo & Khiếu nại",
     description: "Theo dõi, phân loại và xử lý các khiếu nại trong hệ thống",
+  },
+  "/admin/reviews": {
+    title: "Quản lý Đánh giá",
+    description: "Theo dõi và xóa đánh giá không phù hợp",
   },
 };
 
@@ -40,7 +47,11 @@ export function AdminHeader() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" className="relative text-muted-foreground">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative text-muted-foreground"
+        >
           <Bell className="size-5" />
           <span className="absolute right-2 top-2 size-2 rounded-full bg-destructive" />
         </Button>

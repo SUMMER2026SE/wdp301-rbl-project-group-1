@@ -41,7 +41,7 @@ export function RequestsContainer({ role }: RequestsContainerProps) {
   const { data: profileData } = useGetProfileQuery();
   const user = profileData?.data;
 
-  const [activeTab, setActiveTab] = useState<"sent" | "received">("sent");
+  const [activeTab, setActiveTab] = useState<"sent" | "received" | "awaiting_payment" | "completed">("sent");
   const [statusFilter, setStatusFilter] = useState<RequestStatus | "all">(
     "all",
   );
@@ -123,17 +123,25 @@ export function RequestsContainer({ role }: RequestsContainerProps) {
     );
   }, [bookingsData, requestsData, role]);
 
-  const sentRequests = mappedData.filter((req) => req.type === "sent");
-  const receivedRequests = mappedData.filter((req) => req.type === "received");
+  const filteredRequests = useMemo(() => {
+    let result = mappedData;
 
-  const filteredSentRequests =
-    statusFilter === "all"
-      ? sentRequests
-      : sentRequests.filter((req) => req.status === statusFilter);
-  const filteredReceivedRequests =
-    statusFilter === "all"
-      ? receivedRequests
-      : receivedRequests.filter((req) => req.status === statusFilter);
+    if (activeTab === "sent") {
+      result = result.filter(req => req.type === "sent" && req.status !== "awaiting_payment" && req.status !== "completed");
+    } else if (activeTab === "received") {
+      result = result.filter(req => req.type === "received" && req.status !== "awaiting_payment" && req.status !== "completed");
+    } else if (activeTab === "awaiting_payment") {
+      result = result.filter(req => req.status === "awaiting_payment");
+    } else if (activeTab === "completed") {
+      result = result.filter(req => req.status === "completed");
+    }
+
+    if (statusFilter !== "all") {
+      result = result.filter(req => req.status === statusFilter);
+    }
+
+    return result;
+  }, [mappedData, activeTab, statusFilter]);
 
   return (
     <div className="min-h-screen bg-muted/20 pt-8 pb-20">
@@ -170,32 +178,54 @@ export function RequestsContainer({ role }: RequestsContainerProps) {
         ) : (
           <Tabs
             value={activeTab}
-            onValueChange={(v) => setActiveTab(v as "sent" | "received")}
+            onValueChange={(v) => setActiveTab(v as "sent" | "received" | "awaiting_payment" | "completed")}
             className="w-full space-y-8"
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/50 pb-px">
-              <TabsList className="bg-transparent h-12 p-0 space-x-6">
+              <TabsList className="bg-transparent h-12 p-0 space-x-6 overflow-x-auto w-full sm:w-auto justify-start hide-scrollbar">
                 <TabsTrigger
                   value="sent"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none h-12 px-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none h-12 px-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   <div className="flex items-center gap-2">
                     <ArrowUpRight className="size-4" />
-                    Yêu cầu Đã gửi
+                    Đã gửi
                     <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                      {filteredSentRequests.length}
+                      {mappedData.filter(req => req.type === "sent" && req.status !== "awaiting_payment" && req.status !== "completed").length}
                     </span>
                   </div>
                 </TabsTrigger>
                 <TabsTrigger
                   value="received"
-                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none h-12 px-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none h-12 px-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
                 >
                   <div className="flex items-center gap-2">
                     <ArrowDownLeft className="size-4" />
-                    Yêu cầu Nhận được
+                    Nhận được
                     <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted text-xs font-semibold">
-                      {filteredReceivedRequests.length}
+                      {mappedData.filter(req => req.type === "received" && req.status !== "awaiting_payment" && req.status !== "completed").length}
+                    </span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="awaiting_payment"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none h-12 px-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-2">
+                    Chờ thanh toán
+                    <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-warning/20 text-warning text-xs font-semibold">
+                      {mappedData.filter(req => req.status === "awaiting_payment").length}
+                    </span>
+                  </div>
+                </TabsTrigger>
+                <TabsTrigger
+                  value="completed"
+                  className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none h-12 px-2 text-base font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap"
+                >
+                  <div className="flex items-center gap-2">
+                    Hoàn thành
+                    <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                      {mappedData.filter(req => req.status === "completed").length}
                     </span>
                   </div>
                 </TabsTrigger>
@@ -210,11 +240,11 @@ export function RequestsContainer({ role }: RequestsContainerProps) {
                   }
                 >
                   <SelectTrigger className="w-[180px] h-9 border-border/50 bg-transparent rounded-xl shadow-none">
-                    <SelectValue placeholder="Trạng thái" />
+                    <SelectValue placeholder="Lọc thêm" />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-border/50 shadow-md">
                     <SelectItem value="all" className="rounded-lg">
-                      Tất cả trạng thái
+                      Tất cả
                     </SelectItem>
                     <SelectItem value="pending" className="rounded-lg">
                       Đang chờ
@@ -225,26 +255,16 @@ export function RequestsContainer({ role }: RequestsContainerProps) {
                     <SelectItem value="rejected" className="rounded-lg">
                       Đã từ chối
                     </SelectItem>
-                    <SelectItem value="completed" className="rounded-lg">
-                      Hoàn thành
-                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <TabsContent
-              value="sent"
+              value={activeTab}
               className="m-0 focus-visible:outline-none focus-visible:ring-0"
             >
-              <RequestsTable requests={filteredSentRequests} role={role} />
-            </TabsContent>
-
-            <TabsContent
-              value="received"
-              className="m-0 focus-visible:outline-none focus-visible:ring-0"
-            >
-              <RequestsTable requests={filteredReceivedRequests} role={role} />
+              <RequestsTable requests={filteredRequests} role={role} />
             </TabsContent>
           </Tabs>
         )}

@@ -1,6 +1,10 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useGetTutorPublicSessionsQuery } from "@/src/features/booking/bookingApi";
+import { useCreateConversationMutation } from "@/src/features/chat/chatApi";
+import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
+import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
+import { ScheduleCalendar } from "@/src/features/student/schedule/components";
 import {
   TutorBio,
   TutorCertifications,
@@ -9,29 +13,54 @@ import {
   TutorInfoHeader,
   TutorReviews,
 } from "@/src/features/student/tutor-detail/components";
+import { useGetTutorReviewsQuery } from "@/src/features/student/tutors/tutorApi";
+import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorEnhance";
+import { Tutor } from "@/src/features/student/tutors/types";
 import { BreadcrumbNav } from "@/src/shared/components/molecules/breadcrumb-nav/breadcrumb-nav";
 import { Button } from "@/src/shared/components/ui/button";
-import { ScheduleCalendar } from "@/src/features/student/schedule/components";
 import Link from "next/link";
-import { useGetTutorByIdQuery } from "@/src/features/student/tutors/tutorEnhance";
-import { useGetTutorPublicSessionsQuery } from "@/src/features/booking/bookingApi";
-import { mapApiToSlots } from "@/src/features/schedule/utils/schedule-mapper";
-import { mapSessionsToScheduleClasses } from "@/src/features/schedule/utils/session-mapper";
-import { Tutor } from "@/src/features/student/tutors/types";
+import { useParams, useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function TutorDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const tutorId = params?.id as string;
 
   const { data, isLoading, error } = useGetTutorByIdQuery(
     { id: tutorId },
-    { skip: !tutorId }
+    { skip: !tutorId },
   );
 
-  const { data: sessionsData, isLoading: isFetchingSessions } = useGetTutorPublicSessionsQuery(
-    { tutorId },
-    { skip: !tutorId }
+  const { data: sessionsData, isLoading: isFetchingSessions } =
+    useGetTutorPublicSessionsQuery({ tutorId }, { skip: !tutorId });
+  const {
+    data: reviewsData,
+    isLoading: isFetchingReviews,
+    isError: isReviewsError,
+  } = useGetTutorReviewsQuery(
+    { tutorId, limit: "10", page: "1" },
+    { skip: !tutorId },
   );
+
+  const [createConversation, { isLoading: isContacting }] =
+    useCreateConversationMutation();
+
+  const handleContactChat = async () => {
+    if (!tutorId) return;
+
+    try {
+      await createConversation({ targetUserId: tutorId }).unwrap();
+      // On success, navigate to chat page
+      router.push("/student/chat");
+    } catch (err: unknown) {
+      const error = err as { data?: { message?: string } };
+      toast.error(
+        error?.data?.message ||
+          "Không thể tạo cuộc trò chuyện lúc này. Vui lòng thử lại sau.",
+      );
+    }
+  };
 
   if (isLoading || isFetchingSessions) {
     return (
@@ -69,27 +98,44 @@ export default function TutorDetailPage() {
     rating: tutorDto.rating || 0,
     reviewCount: tutorDto.reviewCount || 0,
     specialty: tutorDto.specialization || "Chưa cập nhật",
-    experience: tutorDto.experience ? `${tutorDto.experience} năm` : "Chưa cập nhật",
+    experience: tutorDto.experience
+      ? `${tutorDto.experience} năm`
+      : "Chưa cập nhật",
     education: tutorDto.education || "Chưa cập nhật",
     pricePerHour: tutorDto.pricePerHour || 0,
     skills: tutorDto.specialization ? [tutorDto.specialization] : [],
-    subjects: Array.from(new Set([
-      ...(tutorDto.subjects ?? []).map((subject) => subject.name),
-      ...(tutorDto.subject ? [tutorDto.subject.name] : []),
-    ])),
-    grades: Array.from(new Set([
-      ...(tutorDto.grades ?? []).map((grade) => grade.name),
-      ...(tutorDto.grade ? [tutorDto.grade.name] : []),
-    ])),
+    subjects: Array.from(
+      new Set([
+        ...(tutorDto.subjects ?? []).map((subject) => subject.name),
+        ...(tutorDto.subject ? [tutorDto.subject.name] : []),
+      ]),
+    ),
+    grades: Array.from(
+      new Set([
+        ...(tutorDto.grades ?? []).map((grade) => grade.name),
+        ...(tutorDto.grade ? [tutorDto.grade.name] : []),
+      ]),
+    ),
     bio: tutorDto.bio || "",
-    // Note: teachingExperience, certifications, and reviews are not yet provided by the API
+    // Note: teachingExperience and certifications are not yet provided by the API
     teachingExperience: [],
     certifications: [],
-    reviews: [],
+    reviews:
+      reviewsData?.data?.map((review) => ({
+        id: review.id,
+        studentName: review.student.nickname || "Học viên",
+        role: "Học viên",
+        rating: review.rating,
+        content: review.comment || "",
+        createdAt: review.createdAt,
+        avatar: review.student.avatarUrl || undefined,
+      })) || [],
   };
 
   const initialAvailableSlots = mapApiToSlots(tutorDto.availability || []);
-  const scheduleClasses = sessionsData?.data ? mapSessionsToScheduleClasses(sessionsData.data) : [];
+  const scheduleClasses = sessionsData?.data
+    ? mapSessionsToScheduleClasses(sessionsData.data)
+    : [];
 
   return (
     <>
@@ -124,12 +170,16 @@ export default function TutorDetailPage() {
               tutor.teachingExperience.length > 0 && (
                 <TutorExperience experiences={tutor.teachingExperience} />
               )}
-            
+
             {/* Fixed Schedule Section */}
             <div className="rounded-lg border border-border bg-card p-6 shadow-sm flex flex-col gap-4">
               <div>
-                <h3 className="text-xl font-bold text-foreground">Lịch rảnh cố định</h3>
-                <p className="text-sm text-muted-foreground mt-1">Lịch rảnh và các buổi dạy đã được đặt của gia sư.</p>
+                <h3 className="text-xl font-bold text-foreground">
+                  Lịch rảnh cố định
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Lịch rảnh và các buổi dạy đã được đặt của gia sư.
+                </p>
               </div>
               <ScheduleCalendar
                 mode="fixed"
@@ -141,13 +191,13 @@ export default function TutorDetailPage() {
             </div>
 
             {/* Reviews section */}
-            {tutor.reviews && tutor.reviews.length > 0 && (
-              <TutorReviews
-                reviews={tutor.reviews}
-                rating={tutor.rating}
-                reviewCount={tutor.reviewCount}
-              />
-            )}
+            <TutorReviews
+              reviews={tutor.reviews || []}
+              rating={tutor.rating}
+              reviewCount={tutor.reviewCount}
+              isLoading={isFetchingReviews}
+              isError={isReviewsError}
+            />
           </div>
 
           {/* Sidebar */}
@@ -158,6 +208,8 @@ export default function TutorDetailPage() {
               tutorName={tutor.name}
               price={tutor.pricePerHour}
               tutorAvailableSlots={initialAvailableSlots}
+              onContactChat={handleContactChat}
+              isContacting={isContacting}
             />
           </div>
         </div>
